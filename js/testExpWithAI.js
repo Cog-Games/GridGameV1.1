@@ -1,5 +1,3 @@
-// var psiTurk = new PsiTurk(uniqueId, adServerLoc, mode);
-
 //5,8,8,
 var nTrialsFor1P1G = 2;
 var nTrialsFor1P2G = 2;
@@ -477,32 +475,31 @@ var saveCSVDataLocal = {
     }
 }
 
+var saveCSVToGoogleDrive = {
+    type: jsPsychCallFunction,
+    func: function () {
+        const csvContent = convertToCSV(allTrialsData);
+        fetch("https://script.google.com/macros/s/AKfycbwl6zfffuaFVivO0lSk97gJKhzbsFo_IQ9QtXkDlVhXTo6j46M1vfX51pvEbD92v29A/exec", {
+            method: "POST",
+            mode: "no-cors",
+            headers: {
+                "Content-Type": "text/plain"
+            },
+            body: csvContent
+        });
+    }
+};
+
 var endExpInfo = {
     type: jsPsychHtmlButtonResponse,
     stimulus: function() {
         return `
             <p style="font-size:30px;">You have finished all the tasks!</p>
-            <p style="font-size:20px;">Your data has been automatically downloaded as a CSV file.</p>
             <p style="font-size:30px;">Please press the button to save the data.</p>
         `;
     },
     choices: ['OK!'],
 };
-
-
-var endExp = {
-    type: jsPsychCallFunction,
-    async: true,
-    func: function () {
-
-        psiTurk.saveData({
-            success: function () {
-                psiTurk.completeHIT()
-            },
-            error: psiTurk.completeHIT()
-        });
-    }
-}
 
 // =================================================================================================
 // MAIN EXPERIMENT FLOW
@@ -534,9 +531,8 @@ timeline.push(welcome_1P2G);
 timeline.push(experiment_1P2G);
 timeline.push(welcome_2P2G);
 timeline.push(experiment_2P2G);
-timeline.push(saveCSVDataLocal);
+timeline.push(saveCSVToGoogleDrive);
 timeline.push(endExpInfo);
-timeline.push(endExp);
 
 // Run the entire experiment
 jsPsych.run(timeline);
