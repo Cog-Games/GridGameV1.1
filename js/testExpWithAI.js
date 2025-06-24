@@ -508,7 +508,8 @@ var endExpInfo = {
 // Welcome screen for the 1P1G task
 var welcome_1P1G = {
     type: jsPsychHtmlKeyboardResponse,
-    stimulus: '<p style="font-size:30px;">Welcome to the 1-Player-1-Goal Task. Press any key to begin.</p>'
+    stimulus: '<p style="font-size:30px;">Welcome to the 1-Player-1-Goal Task. Press space bar to begin.</p>',
+    choices: [' ']
 };
 
 // Welcome screen for the 1P2G task
