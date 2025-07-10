@@ -49,7 +49,7 @@ class CreateMaps():
     def __init__(self, gridSize):
         self.gridSize = gridSize
         self.direction = [0, 90, 180, 270]
-        self.bottom = [8, 10]
+        self.bottom = [10,12,14]
         self.height = [5, 6, 7]
 
     def __call__(self, conditionName):
@@ -84,6 +84,8 @@ class CreateMaps():
             return initAIGrid, target1Grid, target2Grid
         elif conditionName == '2P2G':
             return initPlayerGrid, initAIGrid, target1Grid, target2Grid
+        elif conditionName == '2P3G':
+            return initPlayerGrid, initAIGrid, target1Grid, target2Grid
         else:
             raise ValueError(f"Invalid map type: {conditionName}")
 
@@ -95,9 +97,10 @@ if __name__ == '__main__':
     df1P1G = {}
     df1P2G = {}
     df2P2G = {}
+    df2P3G = {}
 
-    trialTypes = ['1P1G', '1P2G', '2P2G']
-    trialNums = [99, 99, 99]
+    trialTypes = ['1P1G', '1P2G', '2P2G', '2P3G']
+    trialNums = [99, 99, 99, 99]
     allConditionNames = [conditionName for conditionName in trialTypes for _ in range(trialNums[trialTypes.index(conditionName)])]
 
     for mapIndex, conditionName in enumerate(allConditionNames):
@@ -132,6 +135,17 @@ if __name__ == '__main__':
             }
             df2P2G[mapIndex] = [mapData2P2G]
 
+        elif conditionName == '2P3G':
+            initPlayerGrid, initAIGrid, target1Grid, target2Grid = createMaps(conditionName)
+            mapData2P3G = {
+                'initPlayerGrid': initPlayerGrid,
+                'initAIGrid': initAIGrid,
+                'target1': target1Grid,
+                'target2': target2Grid,
+                'mapType': conditionName,
+            }
+            df2P3G[mapIndex] = [mapData2P3G]
+
 
     # Save to files
     import os
@@ -145,6 +159,7 @@ if __name__ == '__main__':
     PRACTICE_CONFIG_FILE = os.path.join(static_config_path, "MapsFor1P1G.js")
     EXP_CONFIG_FILE1 = os.path.join(static_config_path, "MapsFor1P2G.js")
     EXP_CONFIG_FILE2 = os.path.join(static_config_path, "MapsFor2P2G.js")
+    EXP_CONFIG_FILE3 = os.path.join(static_config_path, "MapsFor2P3G.js")
 
 
     # Save  maps
@@ -161,4 +176,9 @@ if __name__ == '__main__':
     with open(EXP_CONFIG_FILE2, "w") as f:
         f.write("const MapsFor2P2G = ")
         json.dump(df2P2G, f, indent=4, cls=NpEncoder)
+        f.write(";")
+
+    with open(EXP_CONFIG_FILE3, "w") as f:
+        f.write("const MapsFor2P3G = ")
+        json.dump(df2P3G, f, indent=4, cls=NpEncoder)
         f.write(";")

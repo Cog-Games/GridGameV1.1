@@ -4,17 +4,16 @@
 // =================================================================================================
 
 
-
-//5,8,8,
+//3,10,10,10
 var nTrialsFor1P1G = 2;
 var nTrialsFor1P2G = 2;
 var nTrialsFor2P2G = 2;
-var nTrialsFor2P3G = 3;
+var nTrialsFor2P3G = 2;
 
 var mapData2P2G = MapsFor2P2G;
 var mapData1P1G = MapsFor1P1G;
 var mapData1P2G = MapsFor1P2G;
-var mapData2P3G = MapsFor2P2G; // Reuse 2P2G maps for now
+var mapData2P3G = MapsFor2P3G;
 
 function selectRandomMaps(mapData, nTrials) {
     var shuffledIndex = shuffle(Object.keys(mapData));
@@ -29,7 +28,7 @@ function selectRandomMaps(mapData, nTrials) {
 mapData1P1G = selectRandomMaps(MapsFor1P1G, nTrialsFor1P1G);
 mapData1P2G = selectRandomMaps(MapsFor1P2G, nTrialsFor1P2G);
 mapData2P2G = selectRandomMaps(MapsFor2P2G, nTrialsFor2P2G);
-mapData2P3G = selectRandomMaps(MapsFor2P2G, nTrialsFor2P3G);
+mapData2P3G = selectRandomMaps(MapsFor2P3G, nTrialsFor2P3G);
 
 
 var gridMatrixList = Array(EXPSETTINGS.matrixsize).fill(0).map(()=>Array(EXPSETTINGS.matrixsize).fill(0))
@@ -99,9 +98,13 @@ var collaborationFeedback = {
         // Get the last trial data to check collaboration result
         let lastTrialData = allTrialsData[allTrialsData.length - 1];
         if (lastTrialData && lastTrialData.collaborationSucceeded) {
-            return '<p style="font-size:32px;text-align: center; color: red; font-weight: bold;">Collaboration succeeded!</p>';
+            // return '<p style="font-size:32px;text-align: center; color: red; font-weight: bold;">Collaboration succeeded!</p>';
+            return '<p style="font-size:32px;text-align: center; color: red; font-weight: bold;">You get 5 points! Collaboration succeeded!</p>';
+
         } else {
-            return '<p style="font-size:32px;text-align: center; color: red; font-weight: bold;">Collaboration failed!</p>';
+            // return '<p style="font-size:32px;text-align: center; color: red; font-weight: bold;">Collaboration failed!</p>';
+            return '<p style="font-size:32px;text-align: center; color: red; font-weight: bold;">You get 1 point! </p>';
+
         }
     },
     trial_duration: 1500,
@@ -396,7 +399,7 @@ function generateNewGoal(aiPos, humanPos, oldGoals, aiCurrentGoalIndex) {
                 // c) New goal should not block the path from human to the new goal
                 // d) New goal should not be in the rectangular area between AI and its prior goal
 
-                let distanceConstraint = newGoalDistanceToAI < aiDistanceToOldGoal - 2; // Allow slightly further
+                let distanceConstraint = newGoalDistanceToAI < aiDistanceToOldGoal - 3; // Allow slightly further
                 let sumConstraint = Math.abs(newDistanceSum - oldDistanceSum) < 0.1;
                 let blockingConstraint = !isGoalBlockingPath(humanPos, newGoal, oldGoals);
                 let rectangleConstraint = !isInRectangleBetween(newGoal, aiPos, aiCurrentGoal);
@@ -408,17 +411,12 @@ function generateNewGoal(aiPos, humanPos, oldGoals, aiCurrentGoalIndex) {
         }
     }
 
-    if (validPositions.length > 0) {
-        return validPositions[Math.floor(Math.random() * validPositions.length)];
-    }
-
     // Return a random valid position, or null if none found
     if (validPositions.length > 0) {
-        return validPositions[Math.floor(Math.random() * validPositions.length)];
+        return { isCloser: true, position: validPositions[Math.floor(Math.random() * validPositions.length)] };
     }
     else {
         console.log('no closer new goal found, trying to find a new goal');
-
         // Relax distance constraint - allow equal distance to AI's prior goal
         for (let row = 0; row < EXPSETTINGS.matrixsize; row++) {
             for (let col = 0; col < EXPSETTINGS.matrixsize; col++) {
@@ -446,10 +444,10 @@ function generateNewGoal(aiPos, humanPos, oldGoals, aiCurrentGoalIndex) {
         }
 
         if (validPositions.length > 0) {
-            return validPositions[Math.floor(Math.random() * validPositions.length)];
+            return { isCloser: false, position: validPositions[Math.floor(Math.random() * validPositions.length)] };
         }
+        return null;
     }
-    return null;
 }
 
 // Helper function to check if a new goal would block the path from human to the goal
@@ -644,6 +642,7 @@ var initialMap_2P3G = {
     func: function(){
         stepCount = 0;
         P1AtGoal_2P3G = false;
+        isNewGoalCloserToAI = null;
         newGoalPresented = false;
         newGoalPosition = null;
         humanCurrentGoal = null;
@@ -677,11 +676,12 @@ var initialMap_2P3G = {
             aimAction: [],
             aiAction: [],
             RT: [],
-            newGoalPresented: false,
+            isNewGoalCloserToAI: null,
+            newGoalPresentedTime: null,
             newGoalPosition: null,
             humanCurrentGoal: [],
             aiCurrentGoal: []
-        };
+                };
         singleTrialData = Object.assign({}, currentDesign, singleTrialDataToRecord);
         playerState = currentDesign.initPlayerGrid;
         aiState = currentDesign.initAIGrid;
@@ -765,9 +765,12 @@ var mainTaskHumanAI_2P3G = {
             // Check if both players are heading to the same goal
             if (aiCurrentGoal ===  humanCurrentGoal) {
                 // Generate new goal using current positions
-                newGoalPosition = generateNewGoal(aiState, playerState, goals, aiCurrentGoal);
+                let newGoalResult = generateNewGoal(aiState, playerState, goals, aiCurrentGoal);
 
-                if (newGoalPosition) {
+                if (newGoalResult) {
+                    isNewGoalCloserToAI = newGoalResult.isCloser;
+                    newGoalPosition = newGoalResult.position;
+
                     // Add new goal to the grid and goals list
                     gridMatrixList[newGoalPosition[0]][newGoalPosition[1]] = OBJECT.goal;
                     goals.push(newGoalPosition);
@@ -775,7 +778,8 @@ var mainTaskHumanAI_2P3G = {
                     newGoalPresented = true;
 
                     // Record in trial data
-                    singleTrialData.newGoalPresented = true;
+                    singleTrialData.isNewGoalCloserToAI = isNewGoalCloserToAI;
+                    singleTrialData.newGoalPresentedTime = stepCount;
                     singleTrialData.newGoalPosition = newGoalPosition;
                 }
             }
@@ -874,14 +878,16 @@ var experiment_2P3G = {
 
 // Function to convert allTrialsData to CSV format
 function convertToCSV(allTrialsData) {
-    if (allTrialsData.length === 0) {
-        return "No data available";
+    if (!allTrialsData || allTrialsData.length === 0) {
+        return "trialIndex,message\n0,No experimental data available";
     }
 
     // Get all unique keys from all trials
     const allKeys = new Set();
     allTrialsData.forEach(trial => {
-        Object.keys(trial).forEach(key => allKeys.add(key));
+        if (trial && typeof trial === 'object') {
+            Object.keys(trial).forEach(key => allKeys.add(key));
+        }
     });
 
     // Convert Set to Array and sort for consistent order
@@ -892,72 +898,470 @@ function convertToCSV(allTrialsData) {
 
     // Add data rows
     allTrialsData.forEach(trial => {
-        const row = headers.map(header => {
-            let value = trial[header];
+        if (trial && typeof trial === 'object') {
+            const row = headers.map(header => {
+                let value = trial[header];
 
-            // Handle arrays and objects
-            if (Array.isArray(value)) {
-                value = JSON.stringify(value);
-            } else if (typeof value === 'object' && value !== null) {
-                value = JSON.stringify(value);
-            } else if (value === null || value === undefined) {
-                value = '';
-            }
+                // Handle arrays and objects
+                if (Array.isArray(value)) {
+                    value = JSON.stringify(value);
+                } else if (typeof value === 'object' && value !== null) {
+                    value = JSON.stringify(value);
+                } else if (value === null || value === undefined) {
+                    value = '';
+                } else {
+                    value = String(value);
+                }
 
-            // Escape commas and quotes
-            if (typeof value === 'string') {
+                // Escape commas and quotes
                 if (value.includes(',') || value.includes('"') || value.includes('\n')) {
                     value = '"' + value.replace(/"/g, '""') + '"';
                 }
-            }
 
-            return value;
-        });
-        csv += row.join(',') + '\n';
+                return value;
+            });
+            csv += row.join(',') + '\n';
+        }
     });
 
     return csv;
 }
 
-// Function to download CSV file
-function downloadCSV(csvContent, filename) {
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
+// Function to convert questionnaire data to array format for Excel
+function convertQuestionnaireToArray(questionnaireData) {
+    if (!questionnaireData) {
+        return [
+            ['Question', 'Response'],
+            ['No questionnaire data available', '']
+        ];
+    }
 
-    if (link.download !== undefined) {
-        const url = URL.createObjectURL(blob);
-        link.setAttribute('href', url);
-        link.setAttribute('download', filename);
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+    // Define question mappings with multiple possible key formats
+    const questionMappings = [
+        {
+            keys: ['Q0', 'q0', 'P0_Q0', 'p0_q0', '0'],
+            question: 'Do you think the other player is a person or an AI agent?'
+        },
+        {
+            keys: ['Q1', 'q1', 'P0_Q1', 'p0_q1', '1'],
+            question: 'To what extent do you think the other player was a good collaborator?'
+        },
+        {
+            keys: ['Q2', 'q2', 'P0_Q2', 'p0_q2', '2'],
+            question: 'Will you play with them again?'
+        },
+        {
+            keys: ['Q3', 'q3', 'P1_Q0', 'p1_q0', '3'],
+            question: 'Did you use any strategy in the game? If yes, what was it?'
+        },
+        {
+            keys: ['Q4', 'q4', 'P1_Q1', 'p1_q1', '4'],
+            question: 'What do you think the purpose of this experiment is?'
+        },
+        {
+            keys: ['Q5', 'q5', 'P1_Q2', 'p1_q2', '5'],
+            question: 'Do you have any questions or comments?'
+        }
+    ];
+
+    const questionnaireArray = [['Question', 'Response']];
+
+    // Add each question-response pair
+    questionMappings.forEach((mapping, index) => {
+        let response = '';
+
+        // Try to find the response using different possible keys
+        for (let key of mapping.keys) {
+            if (questionnaireData[key] !== undefined && questionnaireData[key] !== null) {
+                response = questionnaireData[key];
+                break;
+            }
+        }
+
+        // If still not found, try to find by index in an array-like structure
+        if (response === '' && Array.isArray(questionnaireData)) {
+            response = questionnaireData[index] || '';
+        }
+
+        // If still not found, check if questionnaireData has a response array
+        if (response === '' && questionnaireData.response && Array.isArray(questionnaireData.response)) {
+            response = questionnaireData.response[index] || '';
+        }
+
+        questionnaireArray.push([mapping.question, String(response)]);
+    });
+
+    return questionnaireArray;
+}
+
+
+
+// Function to download Excel file with multiple sheets
+function downloadExcel(experimentData, questionnaireData, filename) {
+    try {
+        // Check if XLSX library is available
+        if (typeof XLSX === 'undefined') {
+            console.error('XLSX library not found. Please include the SheetJS library.');
+            alert('Excel export requires the SheetJS library. The file will be downloaded as CSV instead.');
+
+            // Fallback to CSV
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+            if (experimentData && experimentData.length > 0) {
+                const experimentCSV = convertToCSV(experimentData);
+                downloadCSV(experimentCSV, `experiment_data_${timestamp}.csv`);
+            }
+            if (questionnaireData && questionnaireData.length > 1) {
+                const questionnaireCSV = questionnaireData.map(row => row.join(',')).join('\n');
+                downloadCSV(questionnaireCSV, `questionnaire_data_${timestamp}.csv`);
+            }
+            return;
+        }
+
+        // Create a new workbook
+        const wb = XLSX.utils.book_new();
+
+        // Add experiment data sheet
+        if (experimentData && experimentData.length > 0) {
+            // Pre-process the data to handle complex objects and arrays
+            const processedData = experimentData.map(trial => {
+                const processedTrial = {};
+                for (const key in trial) {
+                    if (trial.hasOwnProperty(key)) {
+                        let value = trial[key];
+                        // Convert arrays and objects to JSON strings for Excel compatibility
+                        if (Array.isArray(value) || (typeof value === 'object' && value !== null)) {
+                            processedTrial[key] = JSON.stringify(value);
+                        } else if (value === null || value === undefined) {
+                            processedTrial[key] = ''; // Keep empty for null/undefined
+                        } else {
+                            processedTrial[key] = value;
+                        }
+                    }
+                }
+                return processedTrial;
+                         });
+
+            const experimentWS = XLSX.utils.json_to_sheet(processedData);
+            XLSX.utils.book_append_sheet(wb, experimentWS, "Experiment Data");
+        } else {
+            // Create empty sheet with message
+            const emptyWS = XLSX.utils.aoa_to_sheet([["No experiment data available - only questionnaire was run"]]);
+            XLSX.utils.book_append_sheet(wb, emptyWS, "Experiment Data");
+        }
+
+        // Add questionnaire data sheet
+        if (questionnaireData && questionnaireData.length > 1) {
+            const questionnaireWS = XLSX.utils.aoa_to_sheet(questionnaireData);
+            XLSX.utils.book_append_sheet(wb, questionnaireWS, "Questionnaire Data");
+        } else {
+            // Create empty questionnaire sheet
+            const emptyQuestionnaireWS = XLSX.utils.aoa_to_sheet([["No questionnaire data available"]]);
+            XLSX.utils.book_append_sheet(wb, emptyQuestionnaireWS, "Questionnaire Data");
+        }
+
+        // Write the file
+        XLSX.writeFile(wb, filename);
+
+    } catch (error) {
+        console.error('Error creating Excel file:', error);
+        alert('Error creating Excel file. Please try again.');
     }
 }
 
-var saveCSVDataLocal = {
+// Function to download CSV file (fallback)
+function downloadCSV(csvContent, filename) {
+    try {
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+
+        if (link.download !== undefined) {
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', filename);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        } else {
+            console.error('Download not supported in this browser');
+        }
+    } catch (error) {
+        console.error('Error downloading CSV:', error);
+    }
+}
+
+var saveDataToExcel = {
     type: jsPsychCallFunction,
     func: function () {
-        const csvContent = convertToCSV(allTrialsData);
-        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-        const filename = `experiment_data_${timestamp}.csv`;
-        downloadCSV(csvContent, filename);
+        try {
+            // Get all jsPsych data
+            const allJsPsychData = jsPsych.data.get().values();
+
+            // If allTrialsData is empty, try to extract trial data from jsPsych data
+            let experimentData = allTrialsData;
+            if (!allTrialsData || allTrialsData.length === 0) {
+                // Extract step-by-step data from jsPsych
+                const stepTrials = allJsPsychData.filter(trial => trial.type === 'eachStep');
+
+                // If we have step data, create a summary trial
+                if (stepTrials.length > 0) {
+                    const summaryTrial = {
+                        trialIndex: 0,
+                        totalSteps: stepTrials.length,
+                        trialType: '2P3G_partial',
+                        startTime: stepTrials[0].time_elapsed,
+                        endTime: stepTrials[stepTrials.length - 1].time_elapsed,
+                        duration: stepTrials[stepTrials.length - 1].time_elapsed - stepTrials[0].time_elapsed,
+                        responses: stepTrials.map(trial => trial.response),
+                        reactionTimes: stepTrials.map(trial => trial.rt),
+                        note: 'Trial not completed - partial data only'
+                    };
+                    experimentData = [summaryTrial];
+                }
+
+                // If still no data, create a placeholder
+                if (experimentData.length === 0) {
+                    experimentData = [{
+                        trialIndex: 0,
+                        note: 'No experimental data collected - experiment may not have been completed',
+                        totalJsPsychTrials: allJsPsychData.length,
+                        timestamp: new Date().toISOString()
+                    }];
+                }
+            }
+
+            // Get questionnaire data from jsPsych
+            let questionnaireResponse = null;
+            const questionnaireTrials = jsPsych.data.get().filter({type: 'postQuestionnaire'}).values();
+
+            if (questionnaireTrials.length > 0) {
+                const questionnaireData = questionnaireTrials[0];
+                questionnaireResponse = questionnaireData.response || questionnaireData;
+            }
+
+            // Convert questionnaire data to array format
+            const questionnaireArray = convertQuestionnaireToArray(questionnaireResponse);
+
+            // Create Excel file with both datasets
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+            const excelFilename = `experiment_data_${timestamp}.xlsx`;
+
+            downloadExcel(experimentData, questionnaireArray, excelFilename);
+
+        } catch (error) {
+            console.error('Error in saveDataToExcel:', error);
+            alert('Error saving data. Please try again.');
+        }
     }
+}
+
+// Function to create Excel file and send to Google Drive
+function sendExcelToGoogleDrive(experimentData, questionnaireData, filename) {
+    try {
+        // Check if XLSX library is available
+        if (typeof XLSX === 'undefined') {
+            console.error('XLSX library not found. Please include the SheetJS library.');
+            alert('Excel export requires the SheetJS library. Please refresh the page and try again.');
+            return;
+        }
+
+        // Create a new workbook
+        const wb = XLSX.utils.book_new();
+
+        // Add experiment data sheet
+        if (experimentData && experimentData.length > 0) {
+            // Pre-process the data to handle complex objects and arrays
+            const processedData = experimentData.map(trial => {
+                const processedTrial = {};
+                for (const key in trial) {
+                    if (trial.hasOwnProperty(key)) {
+                        let value = trial[key];
+                        // Convert arrays and objects to JSON strings for Excel compatibility
+                        if (Array.isArray(value) || (typeof value === 'object' && value !== null)) {
+                            processedTrial[key] = JSON.stringify(value);
+                        } else if (value === null || value === undefined) {
+                            processedTrial[key] = ''; // Keep empty for null/undefined
+                        } else {
+                            processedTrial[key] = value;
+                        }
+                    }
+                }
+                return processedTrial;
+            });
+
+            const experimentWS = XLSX.utils.json_to_sheet(processedData);
+            XLSX.utils.book_append_sheet(wb, experimentWS, "Experiment Data");
+        } else {
+            // Create empty sheet with message
+            const emptyWS = XLSX.utils.aoa_to_sheet([["No experiment data available - only questionnaire was run"]]);
+            XLSX.utils.book_append_sheet(wb, emptyWS, "Experiment Data");
+        }
+
+        // Add questionnaire data sheet
+        if (questionnaireData && questionnaireData.length > 1) {
+            const questionnaireWS = XLSX.utils.aoa_to_sheet(questionnaireData);
+            XLSX.utils.book_append_sheet(wb, questionnaireWS, "Questionnaire Data");
+        } else {
+            // Create empty questionnaire sheet
+            const emptyQuestionnaireWS = XLSX.utils.aoa_to_sheet([["No questionnaire data available"]]);
+            XLSX.utils.book_append_sheet(wb, emptyQuestionnaireWS, "Questionnaire Data");
+        }
+
+                // Convert workbook to binary array for sending to Google Drive
+        const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+
+        // Convert to base64 string for transmission
+        const base64String = btoa(String.fromCharCode.apply(null, new Uint8Array(wbout)));
+
+                // Create FormData to send file
+        const formData = new FormData();
+        formData.append('filename', filename);
+        formData.append('filedata', base64String);
+        formData.append('filetype', 'excel');
+
+        // Send to Google Drive via Apps Script
+        fetch("https://script.google.com/macros/s/AKfycbyfQ-XKsoFbmQZGM7c741rEXh2ZUpVK-uUIu9ycooXKnaxM5-hRSzIUhQ-uWZ668Qql/exec", {
+            method: "POST",
+            mode: "no-cors",  // Required for Google Apps Script from local files
+            body: formData
+        }).then(response => {
+            alert('Data saved successfully!');
+
+            // Redirect to Prolific completion page
+            redirectToProlific();
+
+        }).catch(error => {
+            console.error('Error saving to Google Drive:', error);
+            alert('Error saving to Google Drive. Please try again.');
+        });
+
+    } catch (error) {
+        console.error('Error creating Excel file for Google Drive:', error);
+        alert('Error creating Excel file. Please try again.');
+    }
+}
+
+redirectToProlific = function() {
+    window.location.href = "https://app.prolific.com/submissions/complete?cc=C19EH5X9";
 }
 
 var saveCSVToGoogleDrive = {
     type: jsPsychCallFunction,
     func: function () {
-        const csvContent = convertToCSV(allTrialsData);
-        fetch("https://script.google.com/macros/s/AKfycbwl6zfffuaFVivO0lSk97gJKhzbsFo_IQ9QtXkDlVhXTo6j46M1vfX51pvEbD92v29A/exec", {
-            method: "POST",
-            mode: "no-cors",
-            headers: {
-                "Content-Type": "text/plain"
-            },
-            body: csvContent
-        });
+        try {
+            // Get all jsPsych data
+            const allJsPsychData = jsPsych.data.get().values();
+
+            // If allTrialsData is empty, try to extract trial data from jsPsych data
+            let experimentData = allTrialsData;
+            if (!allTrialsData || allTrialsData.length === 0) {
+                // Extract step-by-step data from jsPsych
+                const stepTrials = allJsPsychData.filter(trial => trial.type === 'eachStep');
+
+                // If we have step data, create a summary trial
+                if (stepTrials.length > 0) {
+                    const summaryTrial = {
+                        trialIndex: 0,
+                        totalSteps: stepTrials.length,
+                        trialType: '2P3G_partial',
+                        startTime: stepTrials[0].time_elapsed,
+                        endTime: stepTrials[stepTrials.length - 1].time_elapsed,
+                        duration: stepTrials[stepTrials.length - 1].time_elapsed - stepTrials[0].time_elapsed,
+                        responses: stepTrials.map(trial => trial.response),
+                        reactionTimes: stepTrials.map(trial => trial.rt),
+                        note: 'Trial not completed - partial data only'
+                    };
+                    experimentData = [summaryTrial];
+                }
+
+                // If still no data, create a placeholder
+                if (experimentData.length === 0) {
+                    experimentData = [{
+                        trialIndex: 0,
+                        note: 'No experimental data collected - experiment may not have been completed',
+                        totalJsPsychTrials: allJsPsychData.length,
+                        timestamp: new Date().toISOString()
+                    }];
+                }
+            }
+
+            // Get questionnaire data from jsPsych
+            let questionnaireResponse = null;
+            const questionnaireTrials = jsPsych.data.get().filter({type: 'postQuestionnaire'}).values();
+
+            if (questionnaireTrials.length > 0) {
+                const questionnaireData = questionnaireTrials[0];
+                questionnaireResponse = questionnaireData.response || questionnaireData;
+            }
+
+            // Convert questionnaire data to array format
+            const questionnaireArray = convertQuestionnaireToArray(questionnaireResponse);
+
+            // Create Excel file to send to Google Drive
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+            const excelFilename = `experiment_data_${timestamp}.xlsx`;
+
+            sendExcelToGoogleDrive(experimentData, questionnaireArray, excelFilename);
+
+        } catch (error) {
+            console.error('Error in saveCSVToGoogleDrive:', error);
+            alert('Error saving data to Google Drive. Please try again.');
+        }
     }
+};
+
+// =================================================================================================
+// POST-QUESTIONNAIRE SECTION
+// =================================================================================================
+
+var postQuestionnaire = {
+    type: jsPsychSurvey,
+    pages: [
+        [
+            {
+                type: 'multi-choice',
+                prompt: 'Do you think the other player is a person or an AI agent?',
+                options: ['Definitely a person', 'Probably a person', 'Not sure', 'Probably an AI', 'Definitely an AI'],
+                required: true
+            },
+            {
+                type: 'multi-choice',
+                prompt: 'To what extent do you think the other player was a good collaborator?',
+                options: ['Very poor', 'Poor', 'Neutral', 'Good', 'Very good'],
+                required: true
+            },
+            {
+                type: 'multi-choice',
+                prompt: 'Will you play with them again?',
+                options: ['Definitely not', 'Probably not', 'Not sure', 'Probably yes', 'Definitely yes'],
+                required: true
+            }
+        ],
+        [
+            {
+                type: 'text',
+                prompt: 'Did you use any strategy in the game? If yes, what was it?',
+                placeholder: 'Please describe your strategy...',
+                required: false
+            },
+            {
+                type: 'text',
+                prompt: 'What do you think the purpose of this experiment is?',
+                placeholder: 'Please share your thoughts...',
+                required: false
+            },
+            {
+                type: 'text',
+                prompt: 'Do you have any questions or comments?',
+                placeholder: 'Any additional feedback...',
+                required: false
+            }
+        ]
+    ],
+    title: 'Post-Experiment Questionnaire',
+    button_label_finish: 'Submit',
+    data: { type: 'postQuestionnaire' }
 };
 
 var endExpInfo = {
@@ -965,7 +1369,8 @@ var endExpInfo = {
     stimulus: function() {
         return `
             <p style="font-size:30px;">You have finished all the tasks!</p>
-            <p style="font-size:30px;">Please press the button to save the data.</p>
+            <p style="font-size:30px;">Wait for a few seconds and the data will be saved!</p>
+            <p style="font-size:30px;">Please do not close the browser.</p>
         `;
     },
     choices: ['OK!'],
@@ -994,6 +1399,25 @@ var welcome_2P2G = {
     stimulus: '<p style="font-size:30px;">Welcome to the 2-Player-2-Goals Task. Press any key to begin.</p>'
 };
 
+// Welcome screen for the 2P3G task
+var welcome_2P3G = {
+    type: jsPsychHtmlKeyboardResponse,
+    stimulus: `
+        <p style="font-size:24px; color: #333; margin-top: 30px;">
+            The game rules have been updated!
+        </p>
+        <ul style="font-size:22px; text-align:left; max-width: 700px; margin: 0 auto 20px auto;">
+            <li style="margin-bottom: 10px;">- If you and the other player both reach the same destination, you will both get <strong>5 points</strong>.</li>
+            <li style="margin-bottom: 10px;">- If you and the other player reach different destinations, you will both get <strong>1 point</strong>.</li>
+            <li style="margin-bottom: 10px;">- If you take too many steps or too much time, you get <strong>0 points</strong>!</li>
+        </ul>
+        <p style="font-size:22px; color: #333; margin-top: 20px;">
+            Notice: In this game, a new restaurant will open during the game. This restaurant is the same as the previous two restaurants, and you can choose any of the three!
+        </p>
+        <p style="font-size:24px; margin-top: 30px;">Press <strong>space bar</strong> to begin.</p>
+    `,
+    choices: [' ']
+};
 
 // Add the tasks to the main timeline
 // timeline.push(welcome_1P1G);
@@ -1002,9 +1426,11 @@ var welcome_2P2G = {
 // timeline.push(experiment_1P2G);
 // timeline.push(welcome_2P2G);
 // timeline.push(experiment_2P2G);
+// timeline.push(welcome_2P3G);
 timeline.push(experiment_2P3G);
+// timeline.push(postQuestionnaire);
 timeline.push(saveCSVToGoogleDrive);
-// timeline.push(saveCSVDataLocal);
+// timeline.push(saveDataToExcel);
 timeline.push(endExpInfo);
 
 // Run the entire experiment

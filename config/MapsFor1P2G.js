@@ -2,16 +2,16 @@ const MapsFor1P2G = {
     "99": [
         {
             "initPlayerGrid": [
-                12,
-                7
+                7,
+                12
             ],
             "target1": [
-                6,
-                2
+                1,
+                6
             ],
             "target2": [
-                6,
-                12
+                13,
+                6
             ],
             "mapType": "1P2G"
         }
@@ -19,16 +19,16 @@ const MapsFor1P2G = {
     "100": [
         {
             "initPlayerGrid": [
-                2,
-                7
+                7,
+                14
             ],
             "target1": [
-                8,
-                2
+                1,
+                8
             ],
             "target2": [
-                8,
-                12
+                13,
+                8
             ],
             "mapType": "1P2G"
         }
@@ -40,11 +40,11 @@ const MapsFor1P2G = {
                 7
             ],
             "target1": [
-                7,
+                6,
                 2
             ],
             "target2": [
-                7,
+                6,
                 12
             ],
             "mapType": "1P2G"
@@ -53,16 +53,16 @@ const MapsFor1P2G = {
     "102": [
         {
             "initPlayerGrid": [
-                7,
-                1
+                2,
+                7
             ],
             "target1": [
-                2,
-                6
+                8,
+                1
             ],
             "target2": [
-                12,
-                6
+                8,
+                13
             ],
             "mapType": "1P2G"
         }
@@ -71,15 +71,15 @@ const MapsFor1P2G = {
         {
             "initPlayerGrid": [
                 7,
-                14
+                3
             ],
             "target1": [
-                3,
-                7
+                2,
+                8
             ],
             "target2": [
-                11,
-                7
+                12,
+                8
             ],
             "mapType": "1P2G"
         }
@@ -88,14 +88,14 @@ const MapsFor1P2G = {
         {
             "initPlayerGrid": [
                 7,
-                0
+                1
             ],
             "target1": [
-                3,
+                2,
                 7
             ],
             "target2": [
-                11,
+                12,
                 7
             ],
             "mapType": "1P2G"
@@ -105,7 +105,24 @@ const MapsFor1P2G = {
         {
             "initPlayerGrid": [
                 7,
-                14
+                0
+            ],
+            "target1": [
+                1,
+                7
+            ],
+            "target2": [
+                13,
+                7
+            ],
+            "mapType": "1P2G"
+        }
+    ],
+    "106": [
+        {
+            "initPlayerGrid": [
+                7,
+                12
             ],
             "target1": [
                 2,
@@ -118,36 +135,19 @@ const MapsFor1P2G = {
             "mapType": "1P2G"
         }
     ],
-    "106": [
-        {
-            "initPlayerGrid": [
-                14,
-                7
-            ],
-            "target1": [
-                7,
-                3
-            ],
-            "target2": [
-                7,
-                11
-            ],
-            "mapType": "1P2G"
-        }
-    ],
     "107": [
         {
             "initPlayerGrid": [
-                11,
-                7
+                7,
+                12
             ],
             "target1": [
-                6,
-                2
+                1,
+                7
             ],
             "target2": [
-                6,
-                12
+                13,
+                7
             ],
             "mapType": "1P2G"
         }
@@ -155,7 +155,7 @@ const MapsFor1P2G = {
     "108": [
         {
             "initPlayerGrid": [
-                14,
+                13,
                 7
             ],
             "target1": [
@@ -172,16 +172,16 @@ const MapsFor1P2G = {
     "109": [
         {
             "initPlayerGrid": [
-                7,
-                1
+                10,
+                7
             ],
             "target1": [
-                2,
-                7
+                5,
+                1
             ],
             "target2": [
-                12,
-                7
+                5,
+                13
             ],
             "mapType": "1P2G"
         }
@@ -189,16 +189,16 @@ const MapsFor1P2G = {
     "110": [
         {
             "initPlayerGrid": [
-                7,
-                0
+                14,
+                7
             ],
             "target1": [
-                2,
-                7
+                7,
+                2
             ],
             "target2": [
-                12,
-                7
+                7,
+                12
             ],
             "mapType": "1P2G"
         }
@@ -207,15 +207,15 @@ const MapsFor1P2G = {
         {
             "initPlayerGrid": [
                 7,
-                12
+                1
             ],
             "target1": [
-                3,
-                7
+                2,
+                6
             ],
             "target2": [
-                11,
-                7
+                12,
+                6
             ],
             "mapType": "1P2G"
         }
@@ -223,16 +223,16 @@ const MapsFor1P2G = {
     "112": [
         {
             "initPlayerGrid": [
-                1,
+                2,
                 7
             ],
             "target1": [
-                6,
-                3
+                8,
+                1
             ],
             "target2": [
-                6,
-                11
+                8,
+                13
             ],
             "mapType": "1P2G"
         }
@@ -240,16 +240,16 @@ const MapsFor1P2G = {
     "113": [
         {
             "initPlayerGrid": [
+                7,
+                14
+            ],
+            "target1": [
                 0,
                 7
             ],
-            "target1": [
-                7,
-                3
-            ],
             "target2": [
-                7,
-                11
+                14,
+                7
             ],
             "mapType": "1P2G"
         }
@@ -257,16 +257,16 @@ const MapsFor1P2G = {
     "114": [
         {
             "initPlayerGrid": [
-                12,
-                7
+                7,
+                12
             ],
             "target1": [
-                7,
-                3
+                1,
+                6
             ],
             "target2": [
-                7,
-                11
+                13,
+                6
             ],
             "mapType": "1P2G"
         }
@@ -274,16 +274,16 @@ const MapsFor1P2G = {
     "115": [
         {
             "initPlayerGrid": [
-                7,
-                0
+                14,
+                7
             ],
             "target1": [
-                2,
-                7
+                7,
+                2
             ],
             "target2": [
-                12,
-                7
+                7,
+                12
             ],
             "mapType": "1P2G"
         }
@@ -292,15 +292,15 @@ const MapsFor1P2G = {
         {
             "initPlayerGrid": [
                 7,
-                0
+                12
             ],
             "target1": [
-                2,
-                7
+                1,
+                6
             ],
             "target2": [
-                12,
-                7
+                13,
+                6
             ],
             "mapType": "1P2G"
         }
@@ -308,16 +308,16 @@ const MapsFor1P2G = {
     "117": [
         {
             "initPlayerGrid": [
-                1,
-                7
+                7,
+                11
             ],
             "target1": [
-                7,
-                2
+                2,
+                6
             ],
             "target2": [
-                7,
-                12
+                12,
+                6
             ],
             "mapType": "1P2G"
         }
@@ -325,16 +325,16 @@ const MapsFor1P2G = {
     "118": [
         {
             "initPlayerGrid": [
-                2,
+                0,
                 7
             ],
             "target1": [
-                8,
-                3
+                6,
+                2
             ],
             "target2": [
-                8,
-                11
+                6,
+                12
             ],
             "mapType": "1P2G"
         }
@@ -342,16 +342,16 @@ const MapsFor1P2G = {
     "119": [
         {
             "initPlayerGrid": [
-                7,
-                1
+                14,
+                7
             ],
             "target1": [
-                3,
-                7
+                8,
+                0
             ],
             "target2": [
-                11,
-                7
+                8,
+                14
             ],
             "mapType": "1P2G"
         }
@@ -359,16 +359,16 @@ const MapsFor1P2G = {
     "120": [
         {
             "initPlayerGrid": [
-                3,
-                7
+                7,
+                2
             ],
             "target1": [
-                8,
-                3
+                1,
+                7
             ],
             "target2": [
-                8,
-                11
+                13,
+                7
             ],
             "mapType": "1P2G"
         }
@@ -376,16 +376,16 @@ const MapsFor1P2G = {
     "121": [
         {
             "initPlayerGrid": [
-                13,
+                0,
                 7
             ],
             "target1": [
-                8,
-                2
+                5,
+                0
             ],
             "target2": [
-                8,
-                12
+                5,
+                14
             ],
             "mapType": "1P2G"
         }
@@ -393,16 +393,16 @@ const MapsFor1P2G = {
     "122": [
         {
             "initPlayerGrid": [
-                7,
-                2
+                4,
+                7
             ],
             "target1": [
-                2,
-                8
+                9,
+                2
             ],
             "target2": [
-                12,
-                8
+                9,
+                12
             ],
             "mapType": "1P2G"
         }
@@ -411,15 +411,15 @@ const MapsFor1P2G = {
         {
             "initPlayerGrid": [
                 7,
-                14
+                1
             ],
             "target1": [
-                3,
-                7
+                2,
+                6
             ],
             "target2": [
-                11,
-                7
+                12,
+                6
             ],
             "mapType": "1P2G"
         }
@@ -427,16 +427,16 @@ const MapsFor1P2G = {
     "124": [
         {
             "initPlayerGrid": [
-                2,
+                11,
                 7
             ],
             "target1": [
-                7,
-                3
+                6,
+                1
             ],
             "target2": [
-                7,
-                11
+                6,
+                13
             ],
             "mapType": "1P2G"
         }
@@ -444,7 +444,7 @@ const MapsFor1P2G = {
     "125": [
         {
             "initPlayerGrid": [
-                1,
+                13,
                 7
             ],
             "target1": [
@@ -461,16 +461,16 @@ const MapsFor1P2G = {
     "126": [
         {
             "initPlayerGrid": [
-                7,
-                10
+                0,
+                7
             ],
             "target1": [
-                2,
-                5
+                7,
+                0
             ],
             "target2": [
-                12,
-                5
+                7,
+                14
             ],
             "mapType": "1P2G"
         }
@@ -478,16 +478,16 @@ const MapsFor1P2G = {
     "127": [
         {
             "initPlayerGrid": [
+                7,
+                0
+            ],
+            "target1": [
                 0,
                 7
             ],
-            "target1": [
-                7,
-                2
-            ],
             "target2": [
-                7,
-                12
+                14,
+                7
             ],
             "mapType": "1P2G"
         }
@@ -496,15 +496,15 @@ const MapsFor1P2G = {
         {
             "initPlayerGrid": [
                 7,
-                13
+                2
             ],
             "target1": [
-                2,
-                7
+                1,
+                8
             ],
             "target2": [
-                12,
-                7
+                13,
+                8
             ],
             "mapType": "1P2G"
         }
@@ -512,16 +512,16 @@ const MapsFor1P2G = {
     "129": [
         {
             "initPlayerGrid": [
-                7,
-                14
+                12,
+                7
             ],
             "target1": [
-                3,
-                7
+                7,
+                0
             ],
             "target2": [
-                11,
-                7
+                7,
+                14
             ],
             "mapType": "1P2G"
         }
@@ -529,16 +529,16 @@ const MapsFor1P2G = {
     "130": [
         {
             "initPlayerGrid": [
-                13,
+                1,
                 7
             ],
             "target1": [
                 7,
-                3
+                0
             ],
             "target2": [
                 7,
-                11
+                14
             ],
             "mapType": "1P2G"
         }
@@ -546,16 +546,16 @@ const MapsFor1P2G = {
     "131": [
         {
             "initPlayerGrid": [
-                7,
-                13
-            ],
-            "target1": [
                 2,
                 7
             ],
+            "target1": [
+                8,
+                0
+            ],
             "target2": [
-                12,
-                7
+                8,
+                14
             ],
             "mapType": "1P2G"
         }
@@ -563,16 +563,16 @@ const MapsFor1P2G = {
     "132": [
         {
             "initPlayerGrid": [
-                13,
-                7
+                7,
+                2
             ],
             "target1": [
-                8,
-                3
+                1,
+                8
             ],
             "target2": [
-                8,
-                11
+                13,
+                8
             ],
             "mapType": "1P2G"
         }
@@ -580,16 +580,16 @@ const MapsFor1P2G = {
     "133": [
         {
             "initPlayerGrid": [
-                14,
-                7
+                7,
+                11
             ],
             "target1": [
-                7,
-                2
+                1,
+                6
             ],
             "target2": [
-                7,
-                12
+                13,
+                6
             ],
             "mapType": "1P2G"
         }
@@ -598,14 +598,14 @@ const MapsFor1P2G = {
         {
             "initPlayerGrid": [
                 7,
-                0
+                1
             ],
             "target1": [
-                2,
+                0,
                 7
             ],
             "target2": [
-                12,
+                14,
                 7
             ],
             "mapType": "1P2G"
@@ -614,16 +614,16 @@ const MapsFor1P2G = {
     "135": [
         {
             "initPlayerGrid": [
-                14,
+                0,
                 7
             ],
             "target1": [
-                7,
-                2
+                5,
+                0
             ],
             "target2": [
-                7,
-                12
+                5,
+                14
             ],
             "mapType": "1P2G"
         }
@@ -631,16 +631,16 @@ const MapsFor1P2G = {
     "136": [
         {
             "initPlayerGrid": [
-                14,
-                7
+                7,
+                4
             ],
             "target1": [
-                7,
-                3
+                0,
+                9
             ],
             "target2": [
-                7,
-                11
+                14,
+                9
             ],
             "mapType": "1P2G"
         }
@@ -648,16 +648,16 @@ const MapsFor1P2G = {
     "137": [
         {
             "initPlayerGrid": [
-                3,
-                7
+                7,
+                0
             ],
             "target1": [
-                8,
-                3
+                0,
+                7
             ],
             "target2": [
-                8,
-                11
+                14,
+                7
             ],
             "mapType": "1P2G"
         }
@@ -669,12 +669,12 @@ const MapsFor1P2G = {
                 7
             ],
             "target1": [
-                7,
-                2
+                9,
+                0
             ],
             "target2": [
-                7,
-                12
+                9,
+                14
             ],
             "mapType": "1P2G"
         }
@@ -683,15 +683,15 @@ const MapsFor1P2G = {
         {
             "initPlayerGrid": [
                 7,
-                2
+                1
             ],
             "target1": [
-                2,
-                7
+                0,
+                6
             ],
             "target2": [
-                12,
-                7
+                14,
+                6
             ],
             "mapType": "1P2G"
         }
@@ -699,16 +699,16 @@ const MapsFor1P2G = {
     "140": [
         {
             "initPlayerGrid": [
-                11,
+                0,
                 7
             ],
             "target1": [
-                6,
-                2
+                7,
+                1
             ],
             "target2": [
-                6,
-                12
+                7,
+                13
             ],
             "mapType": "1P2G"
         }
@@ -716,16 +716,16 @@ const MapsFor1P2G = {
     "141": [
         {
             "initPlayerGrid": [
-                0,
-                7
+                7,
+                3
             ],
             "target1": [
-                6,
-                2
+                0,
+                8
             ],
             "target2": [
-                6,
-                12
+                14,
+                8
             ],
             "mapType": "1P2G"
         }
@@ -734,7 +734,7 @@ const MapsFor1P2G = {
         {
             "initPlayerGrid": [
                 7,
-                0
+                1
             ],
             "target1": [
                 2,
@@ -750,16 +750,16 @@ const MapsFor1P2G = {
     "143": [
         {
             "initPlayerGrid": [
-                1,
+                14,
                 7
             ],
             "target1": [
-                6,
-                3
+                8,
+                0
             ],
             "target2": [
-                6,
-                11
+                8,
+                14
             ],
             "mapType": "1P2G"
         }
@@ -768,20 +768,173 @@ const MapsFor1P2G = {
         {
             "initPlayerGrid": [
                 7,
-                2
+                3
             ],
             "target1": [
-                2,
+                0,
                 8
             ],
             "target2": [
-                12,
+                14,
                 8
             ],
             "mapType": "1P2G"
         }
     ],
     "145": [
+        {
+            "initPlayerGrid": [
+                2,
+                7
+            ],
+            "target1": [
+                7,
+                1
+            ],
+            "target2": [
+                7,
+                13
+            ],
+            "mapType": "1P2G"
+        }
+    ],
+    "146": [
+        {
+            "initPlayerGrid": [
+                7,
+                12
+            ],
+            "target1": [
+                1,
+                6
+            ],
+            "target2": [
+                13,
+                6
+            ],
+            "mapType": "1P2G"
+        }
+    ],
+    "147": [
+        {
+            "initPlayerGrid": [
+                0,
+                7
+            ],
+            "target1": [
+                5,
+                0
+            ],
+            "target2": [
+                5,
+                14
+            ],
+            "mapType": "1P2G"
+        }
+    ],
+    "148": [
+        {
+            "initPlayerGrid": [
+                7,
+                10
+            ],
+            "target1": [
+                0,
+                5
+            ],
+            "target2": [
+                14,
+                5
+            ],
+            "mapType": "1P2G"
+        }
+    ],
+    "149": [
+        {
+            "initPlayerGrid": [
+                7,
+                14
+            ],
+            "target1": [
+                2,
+                7
+            ],
+            "target2": [
+                12,
+                7
+            ],
+            "mapType": "1P2G"
+        }
+    ],
+    "150": [
+        {
+            "initPlayerGrid": [
+                7,
+                12
+            ],
+            "target1": [
+                0,
+                6
+            ],
+            "target2": [
+                14,
+                6
+            ],
+            "mapType": "1P2G"
+        }
+    ],
+    "151": [
+        {
+            "initPlayerGrid": [
+                2,
+                7
+            ],
+            "target1": [
+                7,
+                0
+            ],
+            "target2": [
+                7,
+                14
+            ],
+            "mapType": "1P2G"
+        }
+    ],
+    "152": [
+        {
+            "initPlayerGrid": [
+                14,
+                7
+            ],
+            "target1": [
+                7,
+                2
+            ],
+            "target2": [
+                7,
+                12
+            ],
+            "mapType": "1P2G"
+        }
+    ],
+    "153": [
+        {
+            "initPlayerGrid": [
+                13,
+                7
+            ],
+            "target1": [
+                7,
+                1
+            ],
+            "target2": [
+                7,
+                13
+            ],
+            "mapType": "1P2G"
+        }
+    ],
+    "154": [
         {
             "initPlayerGrid": [
                 7,
@@ -798,172 +951,19 @@ const MapsFor1P2G = {
             "mapType": "1P2G"
         }
     ],
-    "146": [
-        {
-            "initPlayerGrid": [
-                7,
-                3
-            ],
-            "target1": [
-                3,
-                8
-            ],
-            "target2": [
-                11,
-                8
-            ],
-            "mapType": "1P2G"
-        }
-    ],
-    "147": [
-        {
-            "initPlayerGrid": [
-                7,
-                14
-            ],
-            "target1": [
-                3,
-                7
-            ],
-            "target2": [
-                11,
-                7
-            ],
-            "mapType": "1P2G"
-        }
-    ],
-    "148": [
-        {
-            "initPlayerGrid": [
-                7,
-                0
-            ],
-            "target1": [
-                2,
-                7
-            ],
-            "target2": [
-                12,
-                7
-            ],
-            "mapType": "1P2G"
-        }
-    ],
-    "149": [
-        {
-            "initPlayerGrid": [
-                7,
-                11
-            ],
-            "target1": [
-                2,
-                6
-            ],
-            "target2": [
-                12,
-                6
-            ],
-            "mapType": "1P2G"
-        }
-    ],
-    "150": [
-        {
-            "initPlayerGrid": [
-                7,
-                14
-            ],
-            "target1": [
-                3,
-                7
-            ],
-            "target2": [
-                11,
-                7
-            ],
-            "mapType": "1P2G"
-        }
-    ],
-    "151": [
-        {
-            "initPlayerGrid": [
-                11,
-                7
-            ],
-            "target1": [
-                6,
-                3
-            ],
-            "target2": [
-                6,
-                11
-            ],
-            "mapType": "1P2G"
-        }
-    ],
-    "152": [
-        {
-            "initPlayerGrid": [
-                7,
-                4
-            ],
-            "target1": [
-                2,
-                9
-            ],
-            "target2": [
-                12,
-                9
-            ],
-            "mapType": "1P2G"
-        }
-    ],
-    "153": [
-        {
-            "initPlayerGrid": [
-                0,
-                7
-            ],
-            "target1": [
-                7,
-                3
-            ],
-            "target2": [
-                7,
-                11
-            ],
-            "mapType": "1P2G"
-        }
-    ],
-    "154": [
-        {
-            "initPlayerGrid": [
-                0,
-                7
-            ],
-            "target1": [
-                7,
-                3
-            ],
-            "target2": [
-                7,
-                11
-            ],
-            "mapType": "1P2G"
-        }
-    ],
     "155": [
         {
             "initPlayerGrid": [
-                0,
-                7
+                7,
+                14
             ],
             "target1": [
-                7,
-                2
+                0,
+                8
             ],
             "target2": [
-                7,
-                12
+                14,
+                8
             ],
             "mapType": "1P2G"
         }
@@ -972,15 +972,15 @@ const MapsFor1P2G = {
         {
             "initPlayerGrid": [
                 7,
-                1
+                13
             ],
             "target1": [
-                3,
-                6
+                0,
+                8
             ],
             "target2": [
-                11,
-                6
+                14,
+                8
             ],
             "mapType": "1P2G"
         }
@@ -989,15 +989,15 @@ const MapsFor1P2G = {
         {
             "initPlayerGrid": [
                 7,
-                0
+                1
             ],
             "target1": [
-                3,
-                7
+                1,
+                6
             ],
             "target2": [
-                11,
-                7
+                13,
+                6
             ],
             "mapType": "1P2G"
         }
@@ -1009,11 +1009,11 @@ const MapsFor1P2G = {
                 0
             ],
             "target1": [
-                3,
+                0,
                 7
             ],
             "target2": [
-                11,
+                14,
                 7
             ],
             "mapType": "1P2G"
@@ -1023,15 +1023,15 @@ const MapsFor1P2G = {
         {
             "initPlayerGrid": [
                 7,
-                14
+                12
             ],
             "target1": [
-                3,
-                8
+                2,
+                6
             ],
             "target2": [
-                11,
-                8
+                12,
+                6
             ],
             "mapType": "1P2G"
         }
@@ -1039,16 +1039,16 @@ const MapsFor1P2G = {
     "160": [
         {
             "initPlayerGrid": [
-                7,
-                14
+                14,
+                7
             ],
             "target1": [
-                2,
-                9
+                7,
+                0
             ],
             "target2": [
-                12,
-                9
+                7,
+                14
             ],
             "mapType": "1P2G"
         }
@@ -1056,16 +1056,16 @@ const MapsFor1P2G = {
     "161": [
         {
             "initPlayerGrid": [
-                3,
-                7
+                7,
+                3
             ],
             "target1": [
-                8,
-                2
+                1,
+                8
             ],
             "target2": [
-                8,
-                12
+                13,
+                8
             ],
             "mapType": "1P2G"
         }
@@ -1074,14 +1074,14 @@ const MapsFor1P2G = {
         {
             "initPlayerGrid": [
                 7,
-                14
+                1
             ],
             "target1": [
-                2,
+                1,
                 7
             ],
             "target2": [
-                12,
+                13,
                 7
             ],
             "mapType": "1P2G"
@@ -1091,15 +1091,15 @@ const MapsFor1P2G = {
         {
             "initPlayerGrid": [
                 7,
-                0
+                14
             ],
             "target1": [
-                3,
-                7
+                0,
+                8
             ],
             "target2": [
-                11,
-                7
+                14,
+                8
             ],
             "mapType": "1P2G"
         }
@@ -1107,8 +1107,42 @@ const MapsFor1P2G = {
     "164": [
         {
             "initPlayerGrid": [
+                14,
+                7
+            ],
+            "target1": [
                 7,
-                3
+                2
+            ],
+            "target2": [
+                7,
+                12
+            ],
+            "mapType": "1P2G"
+        }
+    ],
+    "165": [
+        {
+            "initPlayerGrid": [
+                0,
+                7
+            ],
+            "target1": [
+                7,
+                1
+            ],
+            "target2": [
+                7,
+                13
+            ],
+            "mapType": "1P2G"
+        }
+    ],
+    "166": [
+        {
+            "initPlayerGrid": [
+                7,
+                14
             ],
             "target1": [
                 2,
@@ -1121,52 +1155,18 @@ const MapsFor1P2G = {
             "mapType": "1P2G"
         }
     ],
-    "165": [
-        {
-            "initPlayerGrid": [
-                14,
-                7
-            ],
-            "target1": [
-                7,
-                3
-            ],
-            "target2": [
-                7,
-                11
-            ],
-            "mapType": "1P2G"
-        }
-    ],
-    "166": [
-        {
-            "initPlayerGrid": [
-                1,
-                7
-            ],
-            "target1": [
-                7,
-                3
-            ],
-            "target2": [
-                7,
-                11
-            ],
-            "mapType": "1P2G"
-        }
-    ],
     "167": [
         {
             "initPlayerGrid": [
-                12,
+                0,
                 7
             ],
             "target1": [
-                7,
+                6,
                 2
             ],
             "target2": [
-                7,
+                6,
                 12
             ],
             "mapType": "1P2G"
@@ -1175,24 +1175,7 @@ const MapsFor1P2G = {
     "168": [
         {
             "initPlayerGrid": [
-                7,
-                14
-            ],
-            "target1": [
-                3,
-                7
-            ],
-            "target2": [
-                11,
-                7
-            ],
-            "mapType": "1P2G"
-        }
-    ],
-    "169": [
-        {
-            "initPlayerGrid": [
-                13,
+                0,
                 7
             ],
             "target1": [
@@ -1206,24 +1189,160 @@ const MapsFor1P2G = {
             "mapType": "1P2G"
         }
     ],
-    "170": [
+    "169": [
         {
             "initPlayerGrid": [
                 0,
                 7
             ],
             "target1": [
-                5,
-                3
+                6,
+                0
             ],
             "target2": [
-                5,
-                11
+                6,
+                14
+            ],
+            "mapType": "1P2G"
+        }
+    ],
+    "170": [
+        {
+            "initPlayerGrid": [
+                7,
+                14
+            ],
+            "target1": [
+                0,
+                7
+            ],
+            "target2": [
+                14,
+                7
             ],
             "mapType": "1P2G"
         }
     ],
     "171": [
+        {
+            "initPlayerGrid": [
+                14,
+                7
+            ],
+            "target1": [
+                7,
+                0
+            ],
+            "target2": [
+                7,
+                14
+            ],
+            "mapType": "1P2G"
+        }
+    ],
+    "172": [
+        {
+            "initPlayerGrid": [
+                7,
+                12
+            ],
+            "target1": [
+                0,
+                6
+            ],
+            "target2": [
+                14,
+                6
+            ],
+            "mapType": "1P2G"
+        }
+    ],
+    "173": [
+        {
+            "initPlayerGrid": [
+                4,
+                7
+            ],
+            "target1": [
+                9,
+                1
+            ],
+            "target2": [
+                9,
+                13
+            ],
+            "mapType": "1P2G"
+        }
+    ],
+    "174": [
+        {
+            "initPlayerGrid": [
+                0,
+                7
+            ],
+            "target1": [
+                7,
+                0
+            ],
+            "target2": [
+                7,
+                14
+            ],
+            "mapType": "1P2G"
+        }
+    ],
+    "175": [
+        {
+            "initPlayerGrid": [
+                7,
+                14
+            ],
+            "target1": [
+                1,
+                7
+            ],
+            "target2": [
+                13,
+                7
+            ],
+            "mapType": "1P2G"
+        }
+    ],
+    "176": [
+        {
+            "initPlayerGrid": [
+                14,
+                7
+            ],
+            "target1": [
+                7,
+                1
+            ],
+            "target2": [
+                7,
+                13
+            ],
+            "mapType": "1P2G"
+        }
+    ],
+    "177": [
+        {
+            "initPlayerGrid": [
+                12,
+                7
+            ],
+            "target1": [
+                6,
+                0
+            ],
+            "target2": [
+                6,
+                14
+            ],
+            "mapType": "1P2G"
+        }
+    ],
+    "178": [
         {
             "initPlayerGrid": [
                 7,
@@ -1240,7 +1359,24 @@ const MapsFor1P2G = {
             "mapType": "1P2G"
         }
     ],
-    "172": [
+    "179": [
+        {
+            "initPlayerGrid": [
+                2,
+                7
+            ],
+            "target1": [
+                7,
+                2
+            ],
+            "target2": [
+                7,
+                12
+            ],
+            "mapType": "1P2G"
+        }
+    ],
+    "180": [
         {
             "initPlayerGrid": [
                 7,
@@ -1257,7 +1393,7 @@ const MapsFor1P2G = {
             "mapType": "1P2G"
         }
     ],
-    "173": [
+    "181": [
         {
             "initPlayerGrid": [
                 14,
@@ -1265,147 +1401,11 @@ const MapsFor1P2G = {
             ],
             "target1": [
                 7,
-                2
-            ],
-            "target2": [
-                7,
-                12
-            ],
-            "mapType": "1P2G"
-        }
-    ],
-    "174": [
-        {
-            "initPlayerGrid": [
-                7,
-                14
-            ],
-            "target1": [
-                2,
-                7
-            ],
-            "target2": [
-                12,
-                7
-            ],
-            "mapType": "1P2G"
-        }
-    ],
-    "175": [
-        {
-            "initPlayerGrid": [
-                7,
-                12
-            ],
-            "target1": [
-                3,
-                7
-            ],
-            "target2": [
-                11,
-                7
-            ],
-            "mapType": "1P2G"
-        }
-    ],
-    "176": [
-        {
-            "initPlayerGrid": [
-                7,
-                2
-            ],
-            "target1": [
-                3,
-                7
-            ],
-            "target2": [
-                11,
-                7
-            ],
-            "mapType": "1P2G"
-        }
-    ],
-    "177": [
-        {
-            "initPlayerGrid": [
-                7,
-                3
-            ],
-            "target1": [
-                2,
-                8
-            ],
-            "target2": [
-                12,
-                8
-            ],
-            "mapType": "1P2G"
-        }
-    ],
-    "178": [
-        {
-            "initPlayerGrid": [
-                11,
-                7
-            ],
-            "target1": [
-                6,
-                2
-            ],
-            "target2": [
-                6,
-                12
-            ],
-            "mapType": "1P2G"
-        }
-    ],
-    "179": [
-        {
-            "initPlayerGrid": [
-                7,
                 1
             ],
-            "target1": [
-                3,
-                7
-            ],
-            "target2": [
-                11,
-                7
-            ],
-            "mapType": "1P2G"
-        }
-    ],
-    "180": [
-        {
-            "initPlayerGrid": [
-                0,
-                7
-            ],
-            "target1": [
-                7,
-                2
-            ],
             "target2": [
                 7,
-                12
-            ],
-            "mapType": "1P2G"
-        }
-    ],
-    "181": [
-        {
-            "initPlayerGrid": [
-                1,
-                7
-            ],
-            "target1": [
-                7,
-                2
-            ],
-            "target2": [
-                7,
-                12
+                13
             ],
             "mapType": "1P2G"
         }
@@ -1413,16 +1413,16 @@ const MapsFor1P2G = {
     "182": [
         {
             "initPlayerGrid": [
-                14,
-                7
+                7,
+                0
             ],
             "target1": [
-                7,
-                3
+                2,
+                6
             ],
             "target2": [
-                7,
-                11
+                12,
+                6
             ],
             "mapType": "1P2G"
         }
@@ -1430,16 +1430,16 @@ const MapsFor1P2G = {
     "183": [
         {
             "initPlayerGrid": [
-                14,
+                12,
                 7
             ],
             "target1": [
-                9,
-                2
+                7,
+                1
             ],
             "target2": [
-                9,
-                12
+                7,
+                13
             ],
             "mapType": "1P2G"
         }
@@ -1452,11 +1452,11 @@ const MapsFor1P2G = {
             ],
             "target1": [
                 7,
-                2
+                0
             ],
             "target2": [
                 7,
-                12
+                14
             ],
             "mapType": "1P2G"
         }
@@ -1464,8 +1464,42 @@ const MapsFor1P2G = {
     "185": [
         {
             "initPlayerGrid": [
+                0,
+                7
+            ],
+            "target1": [
+                5,
+                2
+            ],
+            "target2": [
+                5,
+                12
+            ],
+            "mapType": "1P2G"
+        }
+    ],
+    "186": [
+        {
+            "initPlayerGrid": [
+                0,
+                7
+            ],
+            "target1": [
+                6,
+                0
+            ],
+            "target2": [
+                6,
+                14
+            ],
+            "mapType": "1P2G"
+        }
+    ],
+    "187": [
+        {
+            "initPlayerGrid": [
                 7,
-                1
+                12
             ],
             "target1": [
                 2,
@@ -1478,53 +1512,19 @@ const MapsFor1P2G = {
             "mapType": "1P2G"
         }
     ],
-    "186": [
-        {
-            "initPlayerGrid": [
-                13,
-                7
-            ],
-            "target1": [
-                7,
-                3
-            ],
-            "target2": [
-                7,
-                11
-            ],
-            "mapType": "1P2G"
-        }
-    ],
-    "187": [
-        {
-            "initPlayerGrid": [
-                12,
-                7
-            ],
-            "target1": [
-                7,
-                3
-            ],
-            "target2": [
-                7,
-                11
-            ],
-            "mapType": "1P2G"
-        }
-    ],
     "188": [
         {
             "initPlayerGrid": [
-                7,
-                14
+                0,
+                7
             ],
             "target1": [
-                3,
-                7
+                7,
+                0
             ],
             "target2": [
-                11,
-                7
+                7,
+                14
             ],
             "mapType": "1P2G"
         }
@@ -1533,15 +1533,15 @@ const MapsFor1P2G = {
         {
             "initPlayerGrid": [
                 7,
-                0
+                14
             ],
             "target1": [
                 2,
-                7
+                9
             ],
             "target2": [
                 12,
-                7
+                9
             ],
             "mapType": "1P2G"
         }
@@ -1550,15 +1550,15 @@ const MapsFor1P2G = {
         {
             "initPlayerGrid": [
                 7,
-                2
+                14
             ],
             "target1": [
-                2,
-                8
+                0,
+                7
             ],
             "target2": [
-                12,
-                8
+                14,
+                7
             ],
             "mapType": "1P2G"
         }
@@ -1566,16 +1566,16 @@ const MapsFor1P2G = {
     "191": [
         {
             "initPlayerGrid": [
-                14,
-                7
+                7,
+                0
             ],
             "target1": [
-                7,
-                3
+                2,
+                6
             ],
             "target2": [
-                7,
-                11
+                12,
+                6
             ],
             "mapType": "1P2G"
         }
@@ -1583,16 +1583,16 @@ const MapsFor1P2G = {
     "192": [
         {
             "initPlayerGrid": [
-                13,
-                7
+                7,
+                14
             ],
             "target1": [
-                8,
-                2
+                2,
+                8
             ],
             "target2": [
-                8,
-                12
+                12,
+                8
             ],
             "mapType": "1P2G"
         }
@@ -1600,16 +1600,16 @@ const MapsFor1P2G = {
     "193": [
         {
             "initPlayerGrid": [
-                13,
-                7
+                7,
+                14
             ],
             "target1": [
-                8,
-                2
+                2,
+                8
             ],
             "target2": [
-                8,
-                12
+                12,
+                8
             ],
             "mapType": "1P2G"
         }
@@ -1617,16 +1617,16 @@ const MapsFor1P2G = {
     "194": [
         {
             "initPlayerGrid": [
-                7,
-                1
+                0,
+                7
             ],
             "target1": [
-                2,
-                7
+                5,
+                2
             ],
             "target2": [
-                12,
-                7
+                5,
+                12
             ],
             "mapType": "1P2G"
         }
@@ -1634,25 +1634,8 @@ const MapsFor1P2G = {
     "195": [
         {
             "initPlayerGrid": [
-                3,
-                7
-            ],
-            "target1": [
-                8,
-                3
-            ],
-            "target2": [
-                8,
-                11
-            ],
-            "mapType": "1P2G"
-        }
-    ],
-    "196": [
-        {
-            "initPlayerGrid": [
                 7,
-                13
+                14
             ],
             "target1": [
                 2,
@@ -1665,19 +1648,36 @@ const MapsFor1P2G = {
             "mapType": "1P2G"
         }
     ],
-    "197": [
+    "196": [
         {
             "initPlayerGrid": [
-                14,
+                1,
                 7
             ],
             "target1": [
-                8,
-                3
+                6,
+                2
             ],
             "target2": [
-                8,
-                11
+                6,
+                12
+            ],
+            "mapType": "1P2G"
+        }
+    ],
+    "197": [
+        {
+            "initPlayerGrid": [
+                11,
+                7
+            ],
+            "target1": [
+                6,
+                2
+            ],
+            "target2": [
+                6,
+                12
             ],
             "mapType": "1P2G"
         }

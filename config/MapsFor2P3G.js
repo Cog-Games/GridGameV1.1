@@ -1,26 +1,26 @@
-const MapsFor2P2G = {
-    "198": [
+const MapsFor2P3G = {
+    "297": [
         {
             "initPlayerGrid": [
-                14,
-                7
+                7,
+                2
             ],
             "initAIGrid": [
-                4,
-                7
+                7,
+                14
             ],
             "target1": [
-                9,
-                1
+                0,
+                8
             ],
             "target2": [
-                9,
-                13
+                14,
+                8
             ],
-            "mapType": "2P2G"
+            "mapType": "2P3G"
         }
     ],
-    "199": [
+    "298": [
         {
             "initPlayerGrid": [
                 7,
@@ -28,20 +28,41 @@ const MapsFor2P2G = {
             ],
             "initAIGrid": [
                 7,
-                11
+                13
             ],
             "target1": [
                 1,
-                6
+                7
             ],
             "target2": [
                 13,
-                6
+                7
             ],
-            "mapType": "2P2G"
+            "mapType": "2P3G"
         }
     ],
-    "200": [
+    "299": [
+        {
+            "initPlayerGrid": [
+                0,
+                7
+            ],
+            "initAIGrid": [
+                14,
+                7
+            ],
+            "target1": [
+                7,
+                0
+            ],
+            "target2": [
+                7,
+                14
+            ],
+            "mapType": "2P3G"
+        }
+    ],
+    "300": [
         {
             "initPlayerGrid": [
                 7,
@@ -49,7 +70,70 @@ const MapsFor2P2G = {
             ],
             "initAIGrid": [
                 7,
+                0
+            ],
+            "target1": [
+                0,
+                7
+            ],
+            "target2": [
+                14,
+                7
+            ],
+            "mapType": "2P3G"
+        }
+    ],
+    "301": [
+        {
+            "initPlayerGrid": [
+                7,
+                0
+            ],
+            "initAIGrid": [
+                7,
+                14
+            ],
+            "target1": [
+                0,
+                7
+            ],
+            "target2": [
+                14,
+                7
+            ],
+            "mapType": "2P3G"
+        }
+    ],
+    "302": [
+        {
+            "initPlayerGrid": [
+                0,
+                7
+            ],
+            "initAIGrid": [
+                14,
+                7
+            ],
+            "target1": [
+                7,
+                1
+            ],
+            "target2": [
+                7,
+                13
+            ],
+            "mapType": "2P3G"
+        }
+    ],
+    "303": [
+        {
+            "initPlayerGrid": [
+                7,
                 2
+            ],
+            "initAIGrid": [
+                7,
+                14
             ],
             "target1": [
                 1,
@@ -59,10 +143,94 @@ const MapsFor2P2G = {
                 13,
                 8
             ],
-            "mapType": "2P2G"
+            "mapType": "2P3G"
         }
     ],
-    "201": [
+    "304": [
+        {
+            "initPlayerGrid": [
+                7,
+                0
+            ],
+            "initAIGrid": [
+                7,
+                14
+            ],
+            "target1": [
+                0,
+                7
+            ],
+            "target2": [
+                14,
+                7
+            ],
+            "mapType": "2P3G"
+        }
+    ],
+    "305": [
+        {
+            "initPlayerGrid": [
+                7,
+                11
+            ],
+            "initAIGrid": [
+                7,
+                1
+            ],
+            "target1": [
+                1,
+                6
+            ],
+            "target2": [
+                13,
+                6
+            ],
+            "mapType": "2P3G"
+        }
+    ],
+    "306": [
+        {
+            "initPlayerGrid": [
+                13,
+                7
+            ],
+            "initAIGrid": [
+                3,
+                7
+            ],
+            "target1": [
+                8,
+                0
+            ],
+            "target2": [
+                8,
+                14
+            ],
+            "mapType": "2P3G"
+        }
+    ],
+    "307": [
+        {
+            "initPlayerGrid": [
+                12,
+                7
+            ],
+            "initAIGrid": [
+                0,
+                7
+            ],
+            "target1": [
+                6,
+                1
+            ],
+            "target2": [
+                6,
+                13
+            ],
+            "mapType": "2P3G"
+        }
+    ],
+    "308": [
         {
             "initPlayerGrid": [
                 7,
@@ -73,38 +241,17 @@ const MapsFor2P2G = {
                 4
             ],
             "target1": [
-                1,
+                0,
                 9
             ],
             "target2": [
-                13,
+                14,
                 9
             ],
-            "mapType": "2P2G"
+            "mapType": "2P3G"
         }
     ],
-    "202": [
-        {
-            "initPlayerGrid": [
-                1,
-                7
-            ],
-            "initAIGrid": [
-                11,
-                7
-            ],
-            "target1": [
-                6,
-                1
-            ],
-            "target2": [
-                6,
-                13
-            ],
-            "mapType": "2P2G"
-        }
-    ],
-    "203": [
+    "309": [
         {
             "initPlayerGrid": [
                 7,
@@ -115,164 +262,164 @@ const MapsFor2P2G = {
                 1
             ],
             "target1": [
-                0,
+                2,
                 6
             ],
             "target2": [
-                14,
-                6
-            ],
-            "mapType": "2P2G"
-        }
-    ],
-    "204": [
-        {
-            "initPlayerGrid": [
-                7,
-                13
-            ],
-            "initAIGrid": [
-                7,
-                1
-            ],
-            "target1": [
-                0,
-                7
-            ],
-            "target2": [
-                14,
-                7
-            ],
-            "mapType": "2P2G"
-        }
-    ],
-    "205": [
-        {
-            "initPlayerGrid": [
-                0,
-                7
-            ],
-            "initAIGrid": [
-                14,
-                7
-            ],
-            "target1": [
-                7,
-                1
-            ],
-            "target2": [
-                7,
-                13
-            ],
-            "mapType": "2P2G"
-        }
-    ],
-    "206": [
-        {
-            "initPlayerGrid": [
-                14,
-                7
-            ],
-            "initAIGrid": [
-                0,
-                7
-            ],
-            "target1": [
-                7,
-                0
-            ],
-            "target2": [
-                7,
-                14
-            ],
-            "mapType": "2P2G"
-        }
-    ],
-    "207": [
-        {
-            "initPlayerGrid": [
-                14,
-                7
-            ],
-            "initAIGrid": [
-                0,
-                7
-            ],
-            "target1": [
-                7,
-                1
-            ],
-            "target2": [
-                7,
-                13
-            ],
-            "mapType": "2P2G"
-        }
-    ],
-    "208": [
-        {
-            "initPlayerGrid": [
-                0,
-                7
-            ],
-            "initAIGrid": [
-                14,
-                7
-            ],
-            "target1": [
-                7,
-                1
-            ],
-            "target2": [
-                7,
-                13
-            ],
-            "mapType": "2P2G"
-        }
-    ],
-    "209": [
-        {
-            "initPlayerGrid": [
-                1,
-                7
-            ],
-            "initAIGrid": [
-                13,
-                7
-            ],
-            "target1": [
-                7,
-                1
-            ],
-            "target2": [
-                7,
-                13
-            ],
-            "mapType": "2P2G"
-        }
-    ],
-    "210": [
-        {
-            "initPlayerGrid": [
                 12,
+                6
+            ],
+            "mapType": "2P3G"
+        }
+    ],
+    "310": [
+        {
+            "initPlayerGrid": [
+                7,
+                0
+            ],
+            "initAIGrid": [
+                7,
+                14
+            ],
+            "target1": [
+                0,
+                7
+            ],
+            "target2": [
+                14,
+                7
+            ],
+            "mapType": "2P3G"
+        }
+    ],
+    "311": [
+        {
+            "initPlayerGrid": [
+                7,
+                12
+            ],
+            "initAIGrid": [
+                7,
+                0
+            ],
+            "target1": [
+                1,
+                6
+            ],
+            "target2": [
+                13,
+                6
+            ],
+            "mapType": "2P3G"
+        }
+    ],
+    "312": [
+        {
+            "initPlayerGrid": [
+                7,
+                0
+            ],
+            "initAIGrid": [
+                7,
+                14
+            ],
+            "target1": [
+                0,
+                7
+            ],
+            "target2": [
+                14,
+                7
+            ],
+            "mapType": "2P3G"
+        }
+    ],
+    "313": [
+        {
+            "initPlayerGrid": [
+                7,
+                0
+            ],
+            "initAIGrid": [
+                7,
+                14
+            ],
+            "target1": [
+                0,
+                7
+            ],
+            "target2": [
+                14,
+                7
+            ],
+            "mapType": "2P3G"
+        }
+    ],
+    "314": [
+        {
+            "initPlayerGrid": [
+                10,
                 7
             ],
             "initAIGrid": [
+                0,
+                7
+            ],
+            "target1": [
+                5,
+                2
+            ],
+            "target2": [
+                5,
+                12
+            ],
+            "mapType": "2P3G"
+        }
+    ],
+    "315": [
+        {
+            "initPlayerGrid": [
+                7,
+                14
+            ],
+            "initAIGrid": [
+                7,
+                2
+            ],
+            "target1": [
                 2,
+                8
+            ],
+            "target2": [
+                12,
+                8
+            ],
+            "mapType": "2P3G"
+        }
+    ],
+    "316": [
+        {
+            "initPlayerGrid": [
+                0,
+                7
+            ],
+            "initAIGrid": [
+                14,
                 7
             ],
             "target1": [
                 7,
-                1
+                0
             ],
             "target2": [
                 7,
-                13
+                14
             ],
-            "mapType": "2P2G"
+            "mapType": "2P3G"
         }
     ],
-    "211": [
+    "317": [
         {
             "initPlayerGrid": [
                 7,
@@ -290,115 +437,10 @@ const MapsFor2P2G = {
                 14,
                 7
             ],
-            "mapType": "2P2G"
+            "mapType": "2P3G"
         }
     ],
-    "212": [
-        {
-            "initPlayerGrid": [
-                13,
-                7
-            ],
-            "initAIGrid": [
-                1,
-                7
-            ],
-            "target1": [
-                7,
-                1
-            ],
-            "target2": [
-                7,
-                13
-            ],
-            "mapType": "2P2G"
-        }
-    ],
-    "213": [
-        {
-            "initPlayerGrid": [
-                14,
-                7
-            ],
-            "initAIGrid": [
-                2,
-                7
-            ],
-            "target1": [
-                8,
-                2
-            ],
-            "target2": [
-                8,
-                12
-            ],
-            "mapType": "2P2G"
-        }
-    ],
-    "214": [
-        {
-            "initPlayerGrid": [
-                14,
-                7
-            ],
-            "initAIGrid": [
-                0,
-                7
-            ],
-            "target1": [
-                7,
-                2
-            ],
-            "target2": [
-                7,
-                12
-            ],
-            "mapType": "2P2G"
-        }
-    ],
-    "215": [
-        {
-            "initPlayerGrid": [
-                7,
-                13
-            ],
-            "initAIGrid": [
-                7,
-                1
-            ],
-            "target1": [
-                0,
-                7
-            ],
-            "target2": [
-                14,
-                7
-            ],
-            "mapType": "2P2G"
-        }
-    ],
-    "216": [
-        {
-            "initPlayerGrid": [
-                0,
-                7
-            ],
-            "initAIGrid": [
-                14,
-                7
-            ],
-            "target1": [
-                7,
-                2
-            ],
-            "target2": [
-                7,
-                12
-            ],
-            "mapType": "2P2G"
-        }
-    ],
-    "217": [
+    "318": [
         {
             "initPlayerGrid": [
                 7,
@@ -409,290 +451,59 @@ const MapsFor2P2G = {
                 13
             ],
             "target1": [
-                0,
-                8
-            ],
-            "target2": [
-                14,
-                8
-            ],
-            "mapType": "2P2G"
-        }
-    ],
-    "218": [
-        {
-            "initPlayerGrid": [
-                14,
-                7
-            ],
-            "initAIGrid": [
-                0,
-                7
-            ],
-            "target1": [
-                7,
-                2
-            ],
-            "target2": [
-                7,
-                12
-            ],
-            "mapType": "2P2G"
-        }
-    ],
-    "219": [
-        {
-            "initPlayerGrid": [
-                7,
-                14
-            ],
-            "initAIGrid": [
-                7,
-                0
-            ],
-            "target1": [
-                0,
-                7
-            ],
-            "target2": [
-                14,
-                7
-            ],
-            "mapType": "2P2G"
-        }
-    ],
-    "220": [
-        {
-            "initPlayerGrid": [
-                14,
-                7
-            ],
-            "initAIGrid": [
-                0,
-                7
-            ],
-            "target1": [
-                7,
-                0
-            ],
-            "target2": [
-                7,
-                14
-            ],
-            "mapType": "2P2G"
-        }
-    ],
-    "221": [
-        {
-            "initPlayerGrid": [
-                0,
-                7
-            ],
-            "initAIGrid": [
-                12,
-                7
-            ],
-            "target1": [
-                6,
-                0
-            ],
-            "target2": [
-                6,
-                14
-            ],
-            "mapType": "2P2G"
-        }
-    ],
-    "222": [
-        {
-            "initPlayerGrid": [
-                7,
-                2
-            ],
-            "initAIGrid": [
-                7,
-                14
-            ],
-            "target1": [
-                0,
-                8
-            ],
-            "target2": [
-                14,
-                8
-            ],
-            "mapType": "2P2G"
-        }
-    ],
-    "223": [
-        {
-            "initPlayerGrid": [
-                13,
-                7
-            ],
-            "initAIGrid": [
                 1,
-                7
-            ],
-            "target1": [
-                7,
-                2
+                8
             ],
             "target2": [
-                7,
-                12
+                13,
+                8
             ],
-            "mapType": "2P2G"
+            "mapType": "2P3G"
         }
     ],
-    "224": [
+    "319": [
         {
             "initPlayerGrid": [
+                7,
+                14
+            ],
+            "initAIGrid": [
+                7,
+                0
+            ],
+            "target1": [
+                0,
+                7
+            ],
+            "target2": [
+                14,
+                7
+            ],
+            "mapType": "2P3G"
+        }
+    ],
+    "320": [
+        {
+            "initPlayerGrid": [
+                7,
+                13
+            ],
+            "initAIGrid": [
+                7,
+                1
+            ],
+            "target1": [
                 2,
                 7
             ],
-            "initAIGrid": [
-                14,
-                7
-            ],
-            "target1": [
-                8,
-                1
-            ],
             "target2": [
-                8,
-                13
-            ],
-            "mapType": "2P2G"
-        }
-    ],
-    "225": [
-        {
-            "initPlayerGrid": [
-                14,
-                7
-            ],
-            "initAIGrid": [
-                4,
-                7
-            ],
-            "target1": [
-                9,
-                0
-            ],
-            "target2": [
-                9,
-                14
-            ],
-            "mapType": "2P2G"
-        }
-    ],
-    "226": [
-        {
-            "initPlayerGrid": [
-                0,
-                7
-            ],
-            "initAIGrid": [
                 12,
                 7
             ],
-            "target1": [
-                6,
-                1
-            ],
-            "target2": [
-                6,
-                13
-            ],
-            "mapType": "2P2G"
+            "mapType": "2P3G"
         }
     ],
-    "227": [
-        {
-            "initPlayerGrid": [
-                14,
-                7
-            ],
-            "initAIGrid": [
-                0,
-                7
-            ],
-            "target1": [
-                7,
-                0
-            ],
-            "target2": [
-                7,
-                14
-            ],
-            "mapType": "2P2G"
-        }
-    ],
-    "228": [
-        {
-            "initPlayerGrid": [
-                7,
-                4
-            ],
-            "initAIGrid": [
-                7,
-                14
-            ],
-            "target1": [
-                0,
-                9
-            ],
-            "target2": [
-                14,
-                9
-            ],
-            "mapType": "2P2G"
-        }
-    ],
-    "229": [
-        {
-            "initPlayerGrid": [
-                7,
-                0
-            ],
-            "initAIGrid": [
-                7,
-                12
-            ],
-            "target1": [
-                1,
-                6
-            ],
-            "target2": [
-                13,
-                6
-            ],
-            "mapType": "2P2G"
-        }
-    ],
-    "230": [
-        {
-            "initPlayerGrid": [
-                7,
-                0
-            ],
-            "initAIGrid": [
-                7,
-                12
-            ],
-            "target1": [
-                0,
-                6
-            ],
-            "target2": [
-                14,
-                6
-            ],
-            "mapType": "2P2G"
-        }
-    ],
-    "231": [
+    "321": [
         {
             "initPlayerGrid": [
                 7,
@@ -710,80 +521,17 @@ const MapsFor2P2G = {
                 13,
                 5
             ],
-            "mapType": "2P2G"
+            "mapType": "2P3G"
         }
     ],
-    "232": [
+    "322": [
         {
             "initPlayerGrid": [
-                2,
-                7
-            ],
-            "initAIGrid": [
-                14,
-                7
-            ],
-            "target1": [
-                8,
-                0
-            ],
-            "target2": [
-                8,
-                14
-            ],
-            "mapType": "2P2G"
-        }
-    ],
-    "233": [
-        {
-            "initPlayerGrid": [
-                7,
-                1
-            ],
-            "initAIGrid": [
-                7,
-                13
-            ],
-            "target1": [
-                1,
-                7
-            ],
-            "target2": [
-                13,
-                7
-            ],
-            "mapType": "2P2G"
-        }
-    ],
-    "234": [
-        {
-            "initPlayerGrid": [
-                13,
-                7
-            ],
-            "initAIGrid": [
-                1,
-                7
-            ],
-            "target1": [
-                7,
-                1
-            ],
-            "target2": [
-                7,
-                13
-            ],
-            "mapType": "2P2G"
-        }
-    ],
-    "235": [
-        {
-            "initPlayerGrid": [
-                12,
-                7
-            ],
-            "initAIGrid": [
                 0,
+                7
+            ],
+            "initAIGrid": [
+                12,
                 7
             ],
             "target1": [
@@ -794,304 +542,31 @@ const MapsFor2P2G = {
                 6,
                 14
             ],
-            "mapType": "2P2G"
+            "mapType": "2P3G"
         }
     ],
-    "236": [
+    "323": [
         {
             "initPlayerGrid": [
-                10,
-                7
-            ],
-            "initAIGrid": [
-                0,
-                7
-            ],
-            "target1": [
-                5,
-                0
-            ],
-            "target2": [
-                5,
-                14
-            ],
-            "mapType": "2P2G"
-        }
-    ],
-    "237": [
-        {
-            "initPlayerGrid": [
-                2,
-                7
-            ],
-            "initAIGrid": [
-                12,
-                7
-            ],
-            "target1": [
-                7,
-                0
-            ],
-            "target2": [
-                7,
-                14
-            ],
-            "mapType": "2P2G"
-        }
-    ],
-    "238": [
-        {
-            "initPlayerGrid": [
-                7,
-                14
-            ],
-            "initAIGrid": [
-                7,
-                0
-            ],
-            "target1": [
-                0,
-                7
-            ],
-            "target2": [
                 14,
                 7
             ],
-            "mapType": "2P2G"
-        }
-    ],
-    "239": [
-        {
-            "initPlayerGrid": [
-                7,
-                1
-            ],
-            "initAIGrid": [
-                7,
-                13
-            ],
-            "target1": [
-                1,
-                7
-            ],
-            "target2": [
-                13,
-                7
-            ],
-            "mapType": "2P2G"
-        }
-    ],
-    "240": [
-        {
-            "initPlayerGrid": [
-                7,
-                4
-            ],
-            "initAIGrid": [
-                7,
-                14
-            ],
-            "target1": [
-                2,
-                9
-            ],
-            "target2": [
-                12,
-                9
-            ],
-            "mapType": "2P2G"
-        }
-    ],
-    "241": [
-        {
-            "initPlayerGrid": [
-                10,
-                7
-            ],
             "initAIGrid": [
                 0,
                 7
             ],
             "target1": [
-                5,
-                2
-            ],
-            "target2": [
-                5,
-                12
-            ],
-            "mapType": "2P2G"
-        }
-    ],
-    "242": [
-        {
-            "initPlayerGrid": [
-                12,
-                7
-            ],
-            "initAIGrid": [
-                0,
-                7
-            ],
-            "target1": [
-                6,
-                1
-            ],
-            "target2": [
-                6,
-                13
-            ],
-            "mapType": "2P2G"
-        }
-    ],
-    "243": [
-        {
-            "initPlayerGrid": [
                 7,
                 0
             ],
-            "initAIGrid": [
+            "target2": [
                 7,
                 14
             ],
-            "target1": [
-                1,
-                7
-            ],
-            "target2": [
-                13,
-                7
-            ],
-            "mapType": "2P2G"
+            "mapType": "2P3G"
         }
     ],
-    "244": [
-        {
-            "initPlayerGrid": [
-                7,
-                0
-            ],
-            "initAIGrid": [
-                7,
-                14
-            ],
-            "target1": [
-                1,
-                7
-            ],
-            "target2": [
-                13,
-                7
-            ],
-            "mapType": "2P2G"
-        }
-    ],
-    "245": [
-        {
-            "initPlayerGrid": [
-                13,
-                7
-            ],
-            "initAIGrid": [
-                3,
-                7
-            ],
-            "target1": [
-                8,
-                0
-            ],
-            "target2": [
-                8,
-                14
-            ],
-            "mapType": "2P2G"
-        }
-    ],
-    "246": [
-        {
-            "initPlayerGrid": [
-                7,
-                4
-            ],
-            "initAIGrid": [
-                7,
-                14
-            ],
-            "target1": [
-                0,
-                9
-            ],
-            "target2": [
-                14,
-                9
-            ],
-            "mapType": "2P2G"
-        }
-    ],
-    "247": [
-        {
-            "initPlayerGrid": [
-                7,
-                0
-            ],
-            "initAIGrid": [
-                7,
-                14
-            ],
-            "target1": [
-                0,
-                7
-            ],
-            "target2": [
-                14,
-                7
-            ],
-            "mapType": "2P2G"
-        }
-    ],
-    "248": [
-        {
-            "initPlayerGrid": [
-                7,
-                14
-            ],
-            "initAIGrid": [
-                7,
-                0
-            ],
-            "target1": [
-                0,
-                7
-            ],
-            "target2": [
-                14,
-                7
-            ],
-            "mapType": "2P2G"
-        }
-    ],
-    "249": [
-        {
-            "initPlayerGrid": [
-                7,
-                14
-            ],
-            "initAIGrid": [
-                7,
-                0
-            ],
-            "target1": [
-                1,
-                7
-            ],
-            "target2": [
-                13,
-                7
-            ],
-            "mapType": "2P2G"
-        }
-    ],
-    "250": [
+    "324": [
         {
             "initPlayerGrid": [
                 0,
@@ -1109,10 +584,52 @@ const MapsFor2P2G = {
                 6,
                 12
             ],
-            "mapType": "2P2G"
+            "mapType": "2P3G"
         }
     ],
-    "251": [
+    "325": [
+        {
+            "initPlayerGrid": [
+                7,
+                2
+            ],
+            "initAIGrid": [
+                7,
+                14
+            ],
+            "target1": [
+                2,
+                8
+            ],
+            "target2": [
+                12,
+                8
+            ],
+            "mapType": "2P3G"
+        }
+    ],
+    "326": [
+        {
+            "initPlayerGrid": [
+                7,
+                0
+            ],
+            "initAIGrid": [
+                7,
+                14
+            ],
+            "target1": [
+                0,
+                7
+            ],
+            "target2": [
+                14,
+                7
+            ],
+            "mapType": "2P3G"
+        }
+    ],
+    "327": [
         {
             "initPlayerGrid": [
                 11,
@@ -1124,66 +641,108 @@ const MapsFor2P2G = {
             ],
             "target1": [
                 6,
-                0
+                2
             ],
             "target2": [
                 6,
-                14
+                12
             ],
-            "mapType": "2P2G"
+            "mapType": "2P3G"
         }
     ],
-    "252": [
+    "328": [
         {
             "initPlayerGrid": [
                 7,
-                12
+                1
             ],
             "initAIGrid": [
                 7,
-                0
+                11
             ],
             "target1": [
-                2,
+                0,
                 6
             ],
             "target2": [
-                12,
+                14,
                 6
             ],
-            "mapType": "2P2G"
+            "mapType": "2P3G"
         }
     ],
-    "253": [
+    "329": [
         {
             "initPlayerGrid": [
-                7,
-                0
-            ],
-            "initAIGrid": [
-                7,
-                14
-            ],
-            "target1": [
-                0,
-                7
-            ],
-            "target2": [
                 14,
                 7
             ],
-            "mapType": "2P2G"
+            "initAIGrid": [
+                0,
+                7
+            ],
+            "target1": [
+                7,
+                1
+            ],
+            "target2": [
+                7,
+                13
+            ],
+            "mapType": "2P3G"
         }
     ],
-    "254": [
+    "330": [
         {
             "initPlayerGrid": [
+                12,
+                7
+            ],
+            "initAIGrid": [
+                2,
+                7
+            ],
+            "target1": [
                 7,
+                1
+            ],
+            "target2": [
+                7,
+                13
+            ],
+            "mapType": "2P3G"
+        }
+    ],
+    "331": [
+        {
+            "initPlayerGrid": [
+                12,
+                7
+            ],
+            "initAIGrid": [
+                0,
+                7
+            ],
+            "target1": [
+                6,
+                2
+            ],
+            "target2": [
+                6,
                 12
             ],
+            "mapType": "2P3G"
+        }
+    ],
+    "332": [
+        {
+            "initPlayerGrid": [
+                7,
+                14
+            ],
             "initAIGrid": [
                 7,
-                2
+                0
             ],
             "target1": [
                 2,
@@ -1193,115 +752,31 @@ const MapsFor2P2G = {
                 12,
                 7
             ],
-            "mapType": "2P2G"
+            "mapType": "2P3G"
         }
     ],
-    "255": [
+    "333": [
         {
             "initPlayerGrid": [
-                7,
-                14
+                0,
+                7
             ],
             "initAIGrid": [
-                7,
-                2
-            ],
-            "target1": [
-                0,
-                8
-            ],
-            "target2": [
                 14,
-                8
-            ],
-            "mapType": "2P2G"
-        }
-    ],
-    "256": [
-        {
-            "initPlayerGrid": [
-                7,
-                14
-            ],
-            "initAIGrid": [
-                7,
-                0
-            ],
-            "target1": [
-                2,
-                7
-            ],
-            "target2": [
-                12,
-                7
-            ],
-            "mapType": "2P2G"
-        }
-    ],
-    "257": [
-        {
-            "initPlayerGrid": [
-                7,
-                0
-            ],
-            "initAIGrid": [
-                7,
-                14
-            ],
-            "target1": [
-                1,
-                7
-            ],
-            "target2": [
-                13,
-                7
-            ],
-            "mapType": "2P2G"
-        }
-    ],
-    "258": [
-        {
-            "initPlayerGrid": [
-                10,
-                7
-            ],
-            "initAIGrid": [
-                0,
                 7
             ],
             "target1": [
-                5,
-                0
+                7,
+                1
             ],
             "target2": [
-                5,
-                14
+                7,
+                13
             ],
-            "mapType": "2P2G"
+            "mapType": "2P3G"
         }
     ],
-    "259": [
-        {
-            "initPlayerGrid": [
-                7,
-                14
-            ],
-            "initAIGrid": [
-                7,
-                0
-            ],
-            "target1": [
-                2,
-                7
-            ],
-            "target2": [
-                12,
-                7
-            ],
-            "mapType": "2P2G"
-        }
-    ],
-    "260": [
+    "334": [
         {
             "initPlayerGrid": [
                 7,
@@ -1319,17 +794,17 @@ const MapsFor2P2G = {
                 12,
                 7
             ],
-            "mapType": "2P2G"
+            "mapType": "2P3G"
         }
     ],
-    "261": [
+    "335": [
         {
             "initPlayerGrid": [
-                1,
+                12,
                 7
             ],
             "initAIGrid": [
-                13,
+                2,
                 7
             ],
             "target1": [
@@ -1340,136 +815,31 @@ const MapsFor2P2G = {
                 7,
                 14
             ],
-            "mapType": "2P2G"
+            "mapType": "2P3G"
         }
     ],
-    "262": [
+    "336": [
         {
             "initPlayerGrid": [
+                7,
+                13
+            ],
+            "initAIGrid": [
+                7,
+                3
+            ],
+            "target1": [
                 0,
-                7
-            ],
-            "initAIGrid": [
-                14,
-                7
-            ],
-            "target1": [
-                7,
-                2
-            ],
-            "target2": [
-                7,
-                12
-            ],
-            "mapType": "2P2G"
-        }
-    ],
-    "263": [
-        {
-            "initPlayerGrid": [
-                3,
-                7
-            ],
-            "initAIGrid": [
-                13,
-                7
-            ],
-            "target1": [
-                8,
-                0
-            ],
-            "target2": [
-                8,
-                14
-            ],
-            "mapType": "2P2G"
-        }
-    ],
-    "264": [
-        {
-            "initPlayerGrid": [
-                0,
-                7
-            ],
-            "initAIGrid": [
-                14,
-                7
-            ],
-            "target1": [
-                7,
-                2
-            ],
-            "target2": [
-                7,
-                12
-            ],
-            "mapType": "2P2G"
-        }
-    ],
-    "265": [
-        {
-            "initPlayerGrid": [
-                1,
-                7
-            ],
-            "initAIGrid": [
-                13,
-                7
-            ],
-            "target1": [
-                7,
-                0
-            ],
-            "target2": [
-                7,
-                14
-            ],
-            "mapType": "2P2G"
-        }
-    ],
-    "266": [
-        {
-            "initPlayerGrid": [
-                7,
-                14
-            ],
-            "initAIGrid": [
-                7,
-                0
-            ],
-            "target1": [
-                1,
-                7
-            ],
-            "target2": [
-                13,
-                7
-            ],
-            "mapType": "2P2G"
-        }
-    ],
-    "267": [
-        {
-            "initPlayerGrid": [
-                7,
-                2
-            ],
-            "initAIGrid": [
-                7,
-                14
-            ],
-            "target1": [
-                1,
                 8
             ],
             "target2": [
-                13,
+                14,
                 8
             ],
-            "mapType": "2P2G"
+            "mapType": "2P3G"
         }
     ],
-    "268": [
+    "337": [
         {
             "initPlayerGrid": [
                 7,
@@ -1478,6 +848,27 @@ const MapsFor2P2G = {
             "initAIGrid": [
                 7,
                 14
+            ],
+            "target1": [
+                0,
+                7
+            ],
+            "target2": [
+                14,
+                7
+            ],
+            "mapType": "2P3G"
+        }
+    ],
+    "338": [
+        {
+            "initPlayerGrid": [
+                7,
+                14
+            ],
+            "initAIGrid": [
+                7,
+                0
             ],
             "target1": [
                 2,
@@ -1487,19 +878,61 @@ const MapsFor2P2G = {
                 12,
                 7
             ],
-            "mapType": "2P2G"
+            "mapType": "2P3G"
         }
     ],
-    "269": [
+    "339": [
         {
             "initPlayerGrid": [
-                14,
+                0,
                 7
             ],
             "initAIGrid": [
+                12,
+                7
+            ],
+            "target1": [
+                6,
+                0
+            ],
+            "target2": [
+                6,
+                14
+            ],
+            "mapType": "2P3G"
+        }
+    ],
+    "340": [
+        {
+            "initPlayerGrid": [
+                7,
+                12
+            ],
+            "initAIGrid": [
+                7,
+                0
+            ],
+            "target1": [
+                0,
+                6
+            ],
+            "target2": [
+                14,
+                6
+            ],
+            "mapType": "2P3G"
+        }
+    ],
+    "341": [
+        {
+            "initPlayerGrid": [
                 4,
                 7
             ],
+            "initAIGrid": [
+                14,
+                7
+            ],
             "target1": [
                 9,
                 2
@@ -1508,10 +941,31 @@ const MapsFor2P2G = {
                 9,
                 12
             ],
-            "mapType": "2P2G"
+            "mapType": "2P3G"
         }
     ],
-    "270": [
+    "342": [
+        {
+            "initPlayerGrid": [
+                4,
+                7
+            ],
+            "initAIGrid": [
+                14,
+                7
+            ],
+            "target1": [
+                9,
+                1
+            ],
+            "target2": [
+                9,
+                13
+            ],
+            "mapType": "2P3G"
+        }
+    ],
+    "343": [
         {
             "initPlayerGrid": [
                 7,
@@ -1520,6 +974,27 @@ const MapsFor2P2G = {
             "initAIGrid": [
                 7,
                 1
+            ],
+            "target1": [
+                0,
+                7
+            ],
+            "target2": [
+                14,
+                7
+            ],
+            "mapType": "2P3G"
+        }
+    ],
+    "344": [
+        {
+            "initPlayerGrid": [
+                7,
+                0
+            ],
+            "initAIGrid": [
+                7,
+                14
             ],
             "target1": [
                 2,
@@ -1529,10 +1004,10 @@ const MapsFor2P2G = {
                 12,
                 7
             ],
-            "mapType": "2P2G"
+            "mapType": "2P3G"
         }
     ],
-    "271": [
+    "345": [
         {
             "initPlayerGrid": [
                 7,
@@ -1540,41 +1015,62 @@ const MapsFor2P2G = {
             ],
             "initAIGrid": [
                 7,
+                0
+            ],
+            "target1": [
+                1,
+                6
+            ],
+            "target2": [
+                13,
+                6
+            ],
+            "mapType": "2P3G"
+        }
+    ],
+    "346": [
+        {
+            "initPlayerGrid": [
+                4,
+                7
+            ],
+            "initAIGrid": [
+                14,
+                7
+            ],
+            "target1": [
+                9,
                 2
             ],
-            "target1": [
-                0,
-                7
-            ],
             "target2": [
-                14,
-                7
+                9,
+                12
             ],
-            "mapType": "2P2G"
+            "mapType": "2P3G"
         }
     ],
-    "272": [
+    "347": [
         {
             "initPlayerGrid": [
+                7,
+                13
+            ],
+            "initAIGrid": [
+                7,
+                3
+            ],
+            "target1": [
                 2,
-                7
-            ],
-            "initAIGrid": [
-                14,
-                7
-            ],
-            "target1": [
-                8,
-                1
+                8
             ],
             "target2": [
-                8,
-                13
+                12,
+                8
             ],
-            "mapType": "2P2G"
+            "mapType": "2P3G"
         }
     ],
-    "273": [
+    "348": [
         {
             "initPlayerGrid": [
                 14,
@@ -1592,31 +1088,451 @@ const MapsFor2P2G = {
                 7,
                 13
             ],
-            "mapType": "2P2G"
+            "mapType": "2P3G"
         }
     ],
-    "274": [
+    "349": [
+        {
+            "initPlayerGrid": [
+                14,
+                7
+            ],
+            "initAIGrid": [
+                0,
+                7
+            ],
+            "target1": [
+                7,
+                0
+            ],
+            "target2": [
+                7,
+                14
+            ],
+            "mapType": "2P3G"
+        }
+    ],
+    "350": [
+        {
+            "initPlayerGrid": [
+                0,
+                7
+            ],
+            "initAIGrid": [
+                14,
+                7
+            ],
+            "target1": [
+                7,
+                2
+            ],
+            "target2": [
+                7,
+                12
+            ],
+            "mapType": "2P3G"
+        }
+    ],
+    "351": [
+        {
+            "initPlayerGrid": [
+                12,
+                7
+            ],
+            "initAIGrid": [
+                0,
+                7
+            ],
+            "target1": [
+                6,
+                2
+            ],
+            "target2": [
+                6,
+                12
+            ],
+            "mapType": "2P3G"
+        }
+    ],
+    "352": [
+        {
+            "initPlayerGrid": [
+                7,
+                14
+            ],
+            "initAIGrid": [
+                7,
+                4
+            ],
+            "target1": [
+                2,
+                9
+            ],
+            "target2": [
+                12,
+                9
+            ],
+            "mapType": "2P3G"
+        }
+    ],
+    "353": [
+        {
+            "initPlayerGrid": [
+                14,
+                7
+            ],
+            "initAIGrid": [
+                0,
+                7
+            ],
+            "target1": [
+                7,
+                0
+            ],
+            "target2": [
+                7,
+                14
+            ],
+            "mapType": "2P3G"
+        }
+    ],
+    "354": [
+        {
+            "initPlayerGrid": [
+                7,
+                12
+            ],
+            "initAIGrid": [
+                7,
+                0
+            ],
+            "target1": [
+                1,
+                6
+            ],
+            "target2": [
+                13,
+                6
+            ],
+            "mapType": "2P3G"
+        }
+    ],
+    "355": [
+        {
+            "initPlayerGrid": [
+                12,
+                7
+            ],
+            "initAIGrid": [
+                0,
+                7
+            ],
+            "target1": [
+                6,
+                1
+            ],
+            "target2": [
+                6,
+                13
+            ],
+            "mapType": "2P3G"
+        }
+    ],
+    "356": [
+        {
+            "initPlayerGrid": [
+                7,
+                0
+            ],
+            "initAIGrid": [
+                7,
+                12
+            ],
+            "target1": [
+                0,
+                6
+            ],
+            "target2": [
+                14,
+                6
+            ],
+            "mapType": "2P3G"
+        }
+    ],
+    "357": [
+        {
+            "initPlayerGrid": [
+                13,
+                7
+            ],
+            "initAIGrid": [
+                3,
+                7
+            ],
+            "target1": [
+                8,
+                0
+            ],
+            "target2": [
+                8,
+                14
+            ],
+            "mapType": "2P3G"
+        }
+    ],
+    "358": [
         {
             "initPlayerGrid": [
                 1,
                 7
             ],
             "initAIGrid": [
-                11,
+                13,
                 7
             ],
             "target1": [
-                6,
-                2
+                7,
+                1
             ],
             "target2": [
-                6,
-                12
+                7,
+                13
             ],
-            "mapType": "2P2G"
+            "mapType": "2P3G"
         }
     ],
-    "275": [
+    "359": [
+        {
+            "initPlayerGrid": [
+                7,
+                12
+            ],
+            "initAIGrid": [
+                7,
+                2
+            ],
+            "target1": [
+                2,
+                7
+            ],
+            "target2": [
+                12,
+                7
+            ],
+            "mapType": "2P3G"
+        }
+    ],
+    "360": [
+        {
+            "initPlayerGrid": [
+                7,
+                1
+            ],
+            "initAIGrid": [
+                7,
+                13
+            ],
+            "target1": [
+                1,
+                7
+            ],
+            "target2": [
+                13,
+                7
+            ],
+            "mapType": "2P3G"
+        }
+    ],
+    "361": [
+        {
+            "initPlayerGrid": [
+                4,
+                7
+            ],
+            "initAIGrid": [
+                14,
+                7
+            ],
+            "target1": [
+                9,
+                1
+            ],
+            "target2": [
+                9,
+                13
+            ],
+            "mapType": "2P3G"
+        }
+    ],
+    "362": [
+        {
+            "initPlayerGrid": [
+                7,
+                12
+            ],
+            "initAIGrid": [
+                7,
+                0
+            ],
+            "target1": [
+                0,
+                6
+            ],
+            "target2": [
+                14,
+                6
+            ],
+            "mapType": "2P3G"
+        }
+    ],
+    "363": [
+        {
+            "initPlayerGrid": [
+                7,
+                12
+            ],
+            "initAIGrid": [
+                7,
+                0
+            ],
+            "target1": [
+                2,
+                6
+            ],
+            "target2": [
+                12,
+                6
+            ],
+            "mapType": "2P3G"
+        }
+    ],
+    "364": [
+        {
+            "initPlayerGrid": [
+                7,
+                14
+            ],
+            "initAIGrid": [
+                7,
+                4
+            ],
+            "target1": [
+                2,
+                9
+            ],
+            "target2": [
+                12,
+                9
+            ],
+            "mapType": "2P3G"
+        }
+    ],
+    "365": [
+        {
+            "initPlayerGrid": [
+                7,
+                0
+            ],
+            "initAIGrid": [
+                7,
+                10
+            ],
+            "target1": [
+                0,
+                5
+            ],
+            "target2": [
+                14,
+                5
+            ],
+            "mapType": "2P3G"
+        }
+    ],
+    "366": [
+        {
+            "initPlayerGrid": [
+                7,
+                0
+            ],
+            "initAIGrid": [
+                7,
+                14
+            ],
+            "target1": [
+                0,
+                7
+            ],
+            "target2": [
+                14,
+                7
+            ],
+            "mapType": "2P3G"
+        }
+    ],
+    "367": [
+        {
+            "initPlayerGrid": [
+                7,
+                14
+            ],
+            "initAIGrid": [
+                7,
+                4
+            ],
+            "target1": [
+                2,
+                9
+            ],
+            "target2": [
+                12,
+                9
+            ],
+            "mapType": "2P3G"
+        }
+    ],
+    "368": [
+        {
+            "initPlayerGrid": [
+                0,
+                7
+            ],
+            "initAIGrid": [
+                14,
+                7
+            ],
+            "target1": [
+                7,
+                0
+            ],
+            "target2": [
+                7,
+                14
+            ],
+            "mapType": "2P3G"
+        }
+    ],
+    "369": [
+        {
+            "initPlayerGrid": [
+                14,
+                7
+            ],
+            "initAIGrid": [
+                2,
+                7
+            ],
+            "target1": [
+                8,
+                0
+            ],
+            "target2": [
+                8,
+                14
+            ],
+            "mapType": "2P3G"
+        }
+    ],
+    "370": [
         {
             "initPlayerGrid": [
                 7,
@@ -1627,20 +1543,20 @@ const MapsFor2P2G = {
                 13
             ],
             "target1": [
-                1,
+                2,
                 8
             ],
             "target2": [
-                13,
+                12,
                 8
             ],
-            "mapType": "2P2G"
+            "mapType": "2P3G"
         }
     ],
-    "276": [
+    "371": [
         {
             "initPlayerGrid": [
-                0,
+                2,
                 7
             ],
             "initAIGrid": [
@@ -1648,122 +1564,59 @@ const MapsFor2P2G = {
                 7
             ],
             "target1": [
-                6,
+                7,
                 1
             ],
             "target2": [
-                6,
+                7,
                 13
             ],
-            "mapType": "2P2G"
+            "mapType": "2P3G"
         }
     ],
-    "277": [
+    "372": [
         {
             "initPlayerGrid": [
-                0,
-                7
+                7,
+                0
             ],
             "initAIGrid": [
-                14,
-                7
+                7,
+                14
             ],
             "target1": [
-                7,
-                1
-            ],
-            "target2": [
-                7,
-                13
-            ],
-            "mapType": "2P2G"
-        }
-    ],
-    "278": [
-        {
-            "initPlayerGrid": [
-                3,
+                1,
                 7
             ],
-            "initAIGrid": [
+            "target2": [
                 13,
                 7
             ],
-            "target1": [
-                8,
-                0
-            ],
-            "target2": [
-                8,
-                14
-            ],
-            "mapType": "2P2G"
+            "mapType": "2P3G"
         }
     ],
-    "279": [
+    "373": [
         {
             "initPlayerGrid": [
-                0,
-                7
-            ],
-            "initAIGrid": [
-                14,
-                7
-            ],
-            "target1": [
-                7,
-                2
-            ],
-            "target2": [
                 7,
                 12
             ],
-            "mapType": "2P2G"
-        }
-    ],
-    "280": [
-        {
-            "initPlayerGrid": [
-                10,
-                7
-            ],
             "initAIGrid": [
-                0,
-                7
+                7,
+                2
             ],
             "target1": [
-                5,
-                0
-            ],
-            "target2": [
-                5,
-                14
-            ],
-            "mapType": "2P2G"
-        }
-    ],
-    "281": [
-        {
-            "initPlayerGrid": [
-                0,
+                1,
                 7
             ],
-            "initAIGrid": [
-                14,
+            "target2": [
+                13,
                 7
             ],
-            "target1": [
-                7,
-                0
-            ],
-            "target2": [
-                7,
-                14
-            ],
-            "mapType": "2P2G"
+            "mapType": "2P3G"
         }
     ],
-    "282": [
+    "374": [
         {
             "initPlayerGrid": [
                 7,
@@ -1781,157 +1634,10 @@ const MapsFor2P2G = {
                 13,
                 9
             ],
-            "mapType": "2P2G"
+            "mapType": "2P3G"
         }
     ],
-    "283": [
-        {
-            "initPlayerGrid": [
-                7,
-                0
-            ],
-            "initAIGrid": [
-                7,
-                14
-            ],
-            "target1": [
-                2,
-                7
-            ],
-            "target2": [
-                12,
-                7
-            ],
-            "mapType": "2P2G"
-        }
-    ],
-    "284": [
-        {
-            "initPlayerGrid": [
-                7,
-                0
-            ],
-            "initAIGrid": [
-                7,
-                14
-            ],
-            "target1": [
-                2,
-                7
-            ],
-            "target2": [
-                12,
-                7
-            ],
-            "mapType": "2P2G"
-        }
-    ],
-    "285": [
-        {
-            "initPlayerGrid": [
-                7,
-                0
-            ],
-            "initAIGrid": [
-                7,
-                14
-            ],
-            "target1": [
-                2,
-                7
-            ],
-            "target2": [
-                12,
-                7
-            ],
-            "mapType": "2P2G"
-        }
-    ],
-    "286": [
-        {
-            "initPlayerGrid": [
-                7,
-                0
-            ],
-            "initAIGrid": [
-                7,
-                14
-            ],
-            "target1": [
-                1,
-                7
-            ],
-            "target2": [
-                13,
-                7
-            ],
-            "mapType": "2P2G"
-        }
-    ],
-    "287": [
-        {
-            "initPlayerGrid": [
-                13,
-                7
-            ],
-            "initAIGrid": [
-                1,
-                7
-            ],
-            "target1": [
-                7,
-                2
-            ],
-            "target2": [
-                7,
-                12
-            ],
-            "mapType": "2P2G"
-        }
-    ],
-    "288": [
-        {
-            "initPlayerGrid": [
-                7,
-                12
-            ],
-            "initAIGrid": [
-                7,
-                2
-            ],
-            "target1": [
-                2,
-                7
-            ],
-            "target2": [
-                12,
-                7
-            ],
-            "mapType": "2P2G"
-        }
-    ],
-    "289": [
-        {
-            "initPlayerGrid": [
-                13,
-                7
-            ],
-            "initAIGrid": [
-                1,
-                7
-            ],
-            "target1": [
-                7,
-                1
-            ],
-            "target2": [
-                7,
-                13
-            ],
-            "mapType": "2P2G"
-        }
-    ],
-    "290": [
+    "375": [
         {
             "initPlayerGrid": [
                 2,
@@ -1943,19 +1649,40 @@ const MapsFor2P2G = {
             ],
             "target1": [
                 8,
-                1
+                0
             ],
             "target2": [
                 8,
-                13
+                14
             ],
-            "mapType": "2P2G"
+            "mapType": "2P3G"
         }
     ],
-    "291": [
+    "376": [
         {
             "initPlayerGrid": [
-                12,
+                0,
+                7
+            ],
+            "initAIGrid": [
+                10,
+                7
+            ],
+            "target1": [
+                5,
+                1
+            ],
+            "target2": [
+                5,
+                13
+            ],
+            "mapType": "2P3G"
+        }
+    ],
+    "377": [
+        {
+            "initPlayerGrid": [
+                14,
                 7
             ],
             "initAIGrid": [
@@ -1963,59 +1690,17 @@ const MapsFor2P2G = {
                 7
             ],
             "target1": [
-                7,
-                0
+                8,
+                2
             ],
             "target2": [
-                7,
-                14
-            ],
-            "mapType": "2P2G"
-        }
-    ],
-    "292": [
-        {
-            "initPlayerGrid": [
-                7,
+                8,
                 12
             ],
-            "initAIGrid": [
-                7,
-                0
-            ],
-            "target1": [
-                0,
-                6
-            ],
-            "target2": [
-                14,
-                6
-            ],
-            "mapType": "2P2G"
+            "mapType": "2P3G"
         }
     ],
-    "293": [
-        {
-            "initPlayerGrid": [
-                0,
-                7
-            ],
-            "initAIGrid": [
-                12,
-                7
-            ],
-            "target1": [
-                6,
-                1
-            ],
-            "target2": [
-                6,
-                13
-            ],
-            "mapType": "2P2G"
-        }
-    ],
-    "294": [
+    "378": [
         {
             "initPlayerGrid": [
                 7,
@@ -2033,14 +1718,119 @@ const MapsFor2P2G = {
                 12,
                 8
             ],
-            "mapType": "2P2G"
+            "mapType": "2P3G"
         }
     ],
-    "295": [
+    "379": [
+        {
+            "initPlayerGrid": [
+                14,
+                7
+            ],
+            "initAIGrid": [
+                0,
+                7
+            ],
+            "target1": [
+                7,
+                1
+            ],
+            "target2": [
+                7,
+                13
+            ],
+            "mapType": "2P3G"
+        }
+    ],
+    "380": [
         {
             "initPlayerGrid": [
                 7,
-                11
+                0
+            ],
+            "initAIGrid": [
+                7,
+                14
+            ],
+            "target1": [
+                2,
+                7
+            ],
+            "target2": [
+                12,
+                7
+            ],
+            "mapType": "2P3G"
+        }
+    ],
+    "381": [
+        {
+            "initPlayerGrid": [
+                7,
+                12
+            ],
+            "initAIGrid": [
+                7,
+                0
+            ],
+            "target1": [
+                2,
+                6
+            ],
+            "target2": [
+                12,
+                6
+            ],
+            "mapType": "2P3G"
+        }
+    ],
+    "382": [
+        {
+            "initPlayerGrid": [
+                7,
+                2
+            ],
+            "initAIGrid": [
+                7,
+                12
+            ],
+            "target1": [
+                2,
+                7
+            ],
+            "target2": [
+                12,
+                7
+            ],
+            "mapType": "2P3G"
+        }
+    ],
+    "383": [
+        {
+            "initPlayerGrid": [
+                1,
+                7
+            ],
+            "initAIGrid": [
+                11,
+                7
+            ],
+            "target1": [
+                6,
+                2
+            ],
+            "target2": [
+                6,
+                12
+            ],
+            "mapType": "2P3G"
+        }
+    ],
+    "384": [
+        {
+            "initPlayerGrid": [
+                7,
+                13
             ],
             "initAIGrid": [
                 7,
@@ -2048,23 +1838,170 @@ const MapsFor2P2G = {
             ],
             "target1": [
                 1,
-                6
+                7
             ],
             "target2": [
                 13,
-                6
+                7
             ],
-            "mapType": "2P2G"
+            "mapType": "2P3G"
         }
     ],
-    "296": [
+    "385": [
         {
             "initPlayerGrid": [
                 2,
                 7
             ],
             "initAIGrid": [
+                14,
+                7
+            ],
+            "target1": [
+                8,
+                2
+            ],
+            "target2": [
+                8,
+                12
+            ],
+            "mapType": "2P3G"
+        }
+    ],
+    "386": [
+        {
+            "initPlayerGrid": [
+                7,
+                10
+            ],
+            "initAIGrid": [
+                7,
+                0
+            ],
+            "target1": [
+                1,
+                5
+            ],
+            "target2": [
+                13,
+                5
+            ],
+            "mapType": "2P3G"
+        }
+    ],
+    "387": [
+        {
+            "initPlayerGrid": [
+                13,
+                7
+            ],
+            "initAIGrid": [
+                3,
+                7
+            ],
+            "target1": [
+                8,
+                2
+            ],
+            "target2": [
+                8,
+                12
+            ],
+            "mapType": "2P3G"
+        }
+    ],
+    "388": [
+        {
+            "initPlayerGrid": [
+                7,
+                4
+            ],
+            "initAIGrid": [
+                7,
+                14
+            ],
+            "target1": [
+                0,
+                9
+            ],
+            "target2": [
+                14,
+                9
+            ],
+            "mapType": "2P3G"
+        }
+    ],
+    "389": [
+        {
+            "initPlayerGrid": [
+                7,
+                14
+            ],
+            "initAIGrid": [
+                7,
+                0
+            ],
+            "target1": [
+                1,
+                7
+            ],
+            "target2": [
+                13,
+                7
+            ],
+            "mapType": "2P3G"
+        }
+    ],
+    "390": [
+        {
+            "initPlayerGrid": [
+                7,
+                14
+            ],
+            "initAIGrid": [
+                7,
+                0
+            ],
+            "target1": [
+                2,
+                7
+            ],
+            "target2": [
                 12,
+                7
+            ],
+            "mapType": "2P3G"
+        }
+    ],
+    "391": [
+        {
+            "initPlayerGrid": [
+                7,
+                0
+            ],
+            "initAIGrid": [
+                7,
+                12
+            ],
+            "target1": [
+                2,
+                6
+            ],
+            "target2": [
+                12,
+                6
+            ],
+            "mapType": "2P3G"
+        }
+    ],
+    "392": [
+        {
+            "initPlayerGrid": [
+                0,
+                7
+            ],
+            "initAIGrid": [
+                14,
                 7
             ],
             "target1": [
@@ -2075,7 +2012,70 @@ const MapsFor2P2G = {
                 7,
                 12
             ],
-            "mapType": "2P2G"
+            "mapType": "2P3G"
+        }
+    ],
+    "393": [
+        {
+            "initPlayerGrid": [
+                7,
+                14
+            ],
+            "initAIGrid": [
+                7,
+                2
+            ],
+            "target1": [
+                1,
+                8
+            ],
+            "target2": [
+                13,
+                8
+            ],
+            "mapType": "2P3G"
+        }
+    ],
+    "394": [
+        {
+            "initPlayerGrid": [
+                7,
+                1
+            ],
+            "initAIGrid": [
+                7,
+                13
+            ],
+            "target1": [
+                2,
+                7
+            ],
+            "target2": [
+                12,
+                7
+            ],
+            "mapType": "2P3G"
+        }
+    ],
+    "395": [
+        {
+            "initPlayerGrid": [
+                3,
+                7
+            ],
+            "initAIGrid": [
+                13,
+                7
+            ],
+            "target1": [
+                8,
+                1
+            ],
+            "target2": [
+                8,
+                13
+            ],
+            "mapType": "2P3G"
         }
     ]
 };
