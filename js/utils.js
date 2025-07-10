@@ -59,9 +59,9 @@ function localRecord(data,name){
 }
 
 function calculatetGirdDistance(grid1,grid2){
-    return math.norm([math.abs(grid1[1]-grid2[1]), math.abs(grid1[0]-grid2[0])],1);
+    // Calculate Manhattan distance (L1 norm) without relying on math.js
+    return Math.abs(grid1[0] - grid2[0]) + Math.abs(grid1[1] - grid2[1]);
 }
-
 
 function getRandomArrayElements(arr, count) {
     var shuffled = arr.slice(0), i = arr.length, min = i - count, temp, index;

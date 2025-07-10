@@ -23,7 +23,19 @@ function drawGrid(c, currentGoals = null){
         0 - EXPSETTINGS.padding,
         WINSETTING.w + EXPSETTINGS.padding, WINSETTING.h + EXPSETTINGS.padding);
 
-    // First pass: draw everything except goals
+    // Get current player positions (if available)
+    let humanPos = null;
+    let aiPos = null;
+
+    // Try to get positions from global variables if they exist
+    if (typeof playerState !== 'undefined') {
+        humanPos = playerState;
+    }
+    if (typeof aiState !== 'undefined') {
+        aiPos = aiState;
+    }
+
+    // First pass: draw everything except goals and players
     for (let row = 0; row < gridMatrixList.length; row++) {
         for (let col = 0; col < gridMatrixList.length; col++) {
             const cellVal = gridMatrixList[row][col];
@@ -33,12 +45,6 @@ function drawGrid(c, currentGoals = null){
                 case OBJECT.obstacle:
                     color = COLORPOOL.obstacle;
                     break;
-                case OBJECT.player:
-                    color = COLORPOOL.player;
-                    break;
-                case OBJECT.ai_player:
-                    color = "orange";
-                    break;
                 case OBJECT.goal:
                     // Skip goals in first pass
                     continue;
@@ -46,15 +52,41 @@ function drawGrid(c, currentGoals = null){
                     color = COLORPOOL.map;
             }
 
-            // Draw squares for obstacles, circles for players
-            if (cellVal === OBJECT.player || cellVal === OBJECT.ai_player) {
-                drawCircle(context, color, 1/3 * EXPSETTINGS.padding,
-                    col, row, 0, 2 * Math.PI);
-            } else {
+            // Draw squares for obstacles, skip players for now
+            if (cellVal !== OBJECT.player && cellVal !== OBJECT.ai_player) {
                 context.fillStyle = color;
                 context.fillRect(col * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding,
                     row * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding,
                     EXPSETTINGS.cellSize, EXPSETTINGS.cellSize);
+            }
+        }
+    }
+
+    // Second pass: draw players with overlap detection
+    if (humanPos && aiPos) {
+        // Check if players are in the same position
+        if (humanPos[0] === aiPos[0] && humanPos[1] === aiPos[1]) {
+            // Draw overlapping circles
+            drawOverlappingCircles(context, humanPos[1], humanPos[0]);
+        } else {
+            // Draw separate circles
+            drawCircle(context, COLORPOOL.player, 1/3 * EXPSETTINGS.padding,
+                humanPos[1], humanPos[0], 0, 2 * Math.PI);
+            drawCircle(context, "orange", 1/3 * EXPSETTINGS.padding,
+                aiPos[1], aiPos[0], 0, 2 * Math.PI);
+        }
+    } else {
+        // Fallback to original method if positions not available
+        for (let row = 0; row < gridMatrixList.length; row++) {
+            for (let col = 0; col < gridMatrixList.length; col++) {
+                const cellVal = gridMatrixList[row][col];
+                if (cellVal === OBJECT.player) {
+                    drawCircle(context, COLORPOOL.player, 1/3 * EXPSETTINGS.padding,
+                        col, row, 0, 2 * Math.PI);
+                } else if (cellVal === OBJECT.ai_player) {
+                    drawCircle(context, "orange", 1/3 * EXPSETTINGS.padding,
+                        col, row, 0, 2 * Math.PI);
+                }
             }
         }
     }
@@ -82,18 +114,13 @@ function drawGrid(c, currentGoals = null){
         context.fillStyle = COLORPOOL.goal;
         context.globalAlpha = 0.5; // Make it more transparent for overlay
 
-        // Draw first goal
-        if (currentGoals[0] && Array.isArray(currentGoals[0]) && currentGoals[0].length >= 2) {
-            context.fillRect(currentGoals[0][1] * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding,
-                currentGoals[0][0] * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding,
-                EXPSETTINGS.cellSize, EXPSETTINGS.cellSize);
-        }
-
-        // Draw second goal
-        if (currentGoals[1] && Array.isArray(currentGoals[1]) && currentGoals[1].length >= 2) {
-            context.fillRect(currentGoals[1][1] * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding,
-                currentGoals[1][0] * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding,
-                EXPSETTINGS.cellSize, EXPSETTINGS.cellSize);
+        // Draw all goals (supports 2 or 3 goals)
+        for (let i = 0; i < currentGoals.length; i++) {
+            if (currentGoals[i] && Array.isArray(currentGoals[i]) && currentGoals[i].length >= 2) {
+                context.fillRect(currentGoals[i][1] * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding,
+                    currentGoals[i][0] * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding,
+                    EXPSETTINGS.cellSize, EXPSETTINGS.cellSize);
+            }
         }
 
         context.globalAlpha = 1.0; // Reset transparency
@@ -118,6 +145,36 @@ function drawCircle(c, color, lineWidth, colPos, rowPos, startAngle, tmpAngle) {
         rowPos * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding + EXPSETTINGS.cellSize/2,
         circleRadius,
         startAngle, tmpAngle);
+    c.fill();
+    c.stroke();
+}
+
+function drawOverlappingCircles(c, colPos, rowPos) {
+    // First draw white background
+    c.fillStyle = COLORPOOL.map;
+    c.fillRect(colPos * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding,
+        rowPos * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding,
+        EXPSETTINGS.cellSize, EXPSETTINGS.cellSize);
+
+    const circleRadius = EXPSETTINGS.cellSize * 0.35; // Slightly smaller for overlap
+    const centerX = colPos * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding + EXPSETTINGS.cellSize/2;
+    const centerY = rowPos * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding + EXPSETTINGS.cellSize/2;
+    const offset = EXPSETTINGS.cellSize * 0.15; // Offset for overlap
+
+    // Draw human player circle (red) on the left
+    c.beginPath();
+    c.lineWidth = 1/3 * EXPSETTINGS.padding;
+    c.strokeStyle = COLORPOOL.player;
+    c.fillStyle = COLORPOOL.player;
+    c.arc(centerX - offset, centerY, circleRadius, 0, 2 * Math.PI);
+    c.fill();
+    c.stroke();
+
+    // Draw AI player circle (orange) on the right
+    c.beginPath();
+    c.strokeStyle = "orange";
+    c.fillStyle = "orange";
+    c.arc(centerX + offset, centerY, circleRadius, 0, 2 * Math.PI);
     c.fill();
     c.stroke();
 }

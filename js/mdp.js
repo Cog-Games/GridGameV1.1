@@ -58,13 +58,12 @@ function isGoalReached(playerState, goalStates) {
 
 function whichGoalReached(playerState, goalStates) {
     const [player_x,player_y] = playerState
-    if (player_x === goalStates[0][0] && player_y === goalStates[0][1])
-    {return 1;}
-    else if
-    (player_x === goalStates[1][0] && player_y === goalStates[1][1])
-    {return 2;}
-    else
-    {return 0;}
+    for (let i = 0; i < goalStates.length; i++) {
+        if (player_x === goalStates[i][0] && player_y === goalStates[i][1]) {
+            return i + 1; // Return 1-based index
+        }
+    }
+    return 0; // No goal reached
 }
 
 function calCloserDestination(playerState, goalStates) {
