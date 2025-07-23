@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unified Grid Game - Cognitive Science Experiment</title>
+
+    <!-- Include CSS files matching nodeGameHumanAIVersion.js -->
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/exp.css">
+
+    <style>
+        /* Additional styles for error handling */
+        .error-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: #f8f9fa;
+        }
+
+        .error-card {
+            max-width: 600px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 40px;
+            text-align: center;
+        }
+
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            background: #0056b3;
+        }
+
+        .btn.secondary {
+            background: #6c757d;
+        }
+
+        .btn.secondary:hover {
+            background: #545b62;
+        }
+
+        /* Spinning animation for loading states */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Main experiment container -->
+    <div id="container">
+        <!-- Content will be dynamically loaded by the experiment -->
+    </div>
+
+    <!-- Socket.io for real-time communication -->
+    <script src="/socket.io/socket.io.js"></script>
+
+    <!-- Dependencies - load in correct order -->
+    <script>
+        // Check for required globals and provide fallbacks
+        window.OBJECT = window.OBJECT || {
+            obstacle: 1,
+            goal: 2,
+            player: 3,
+            ai_player: 4
+        };
+
+        window.COLORPOOL = window.COLORPOOL || {
+            line: '#333',
+            obstacle: '#333',
+            map: '#fff',
+            player: '#dc3545',
+            goal: '#007bff'
+        };
+
+        window.WINSETTING = window.WINSETTING || { w: 480, h: 480 };
+
+        window.EXPSETTINGS = window.EXPSETTINGS || {
+            padding: 2,
+            cellSize: 30,
+            matrixsize: 15
+        };
+    </script>
+
+    <!-- Core game scripts (now local) -->
+    <script src="js/setup.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/mdp.js"></script>
+    <script src="js/vizWithAI.js"></script>
+    <script src="js/rlAgent.js"></script>
+
+    <!-- Map data files (now local) -->
+    <script src="designData/MapsFor1P1G.js"></script>
+    <script src="designData/MapsFor1P2G.js"></script>
+    <script src="designData/MapsFor2P2G.js"></script>
+    <script src="designData/MapsFor2P3G.js"></script>
+
+    <!-- SheetJS library for Excel export functionality -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.19.3/package/dist/xlsx.full.min.js"></script>
+
+    <!-- Experiment configuration -->
+    <script src="config/experimentConfig.js"></script>
+
+    <!-- Unified NodeGame experiment system -->
+    <script src="js/unifiedNodeGameExperiment.js"></script>
+
+    <script>
+        function showError(title, message, showTryAgain = true) {
+            document.getElementById('container').innerHTML = `
+                <div class="error-container">
+                    <div class="error-card">
+                        <h2 style="color: #dc3545; margin-bottom: 20px;">${title}</h2>
+                        <p style="color: #666; margin-bottom: 30px;">${message}</p>
+                        ${showTryAgain ? `
+                            <button class="btn" onclick="location.reload()">Try Again</button>
+                        ` : `
+                            <button class="btn secondary" onclick="window.close()">Close</button>
+                        `}
+                    </div>
+                </div>
+            `;
+        }
+
+        function checkDependencies() {
+            const missing = [];
+
+            // Check basic dependencies
+            if (typeof DIRECTIONS === 'undefined') missing.push('DIRECTIONS');
+            if (typeof OBJECT === 'undefined') missing.push('OBJECT');
+
+            // Check map files
+            if (typeof MapsFor1P1G === 'undefined') missing.push('1P1G Maps');
+            if (typeof MapsFor1P2G === 'undefined') missing.push('1P2G Maps');
+            if (typeof MapsFor2P2G === 'undefined') missing.push('2P2G Maps');
+            if (typeof MapsFor2P3G === 'undefined') missing.push('2P3G Maps');
+
+            // Check mode-specific dependencies
+            if (window.EXPERIMENT_CONFIG?.experimentMode === 'human-human') {
+                if (typeof io === 'undefined') missing.push('Socket.io');
+            }
+
+            if (window.EXPERIMENT_CONFIG?.experimentMode === 'human-ai') {
+                if (typeof window.RLAgent === 'undefined') missing.push('RL Agent');
+            }
+
+            return missing;
+        }
+
+        // Initialize unified NodeGame experiment system
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Page loaded, checking dependencies...');
+
+            // Check for missing dependencies
+            const missingDeps = checkDependencies();
+            if (missingDeps.length > 0) {
+                showError(
+                    'Missing Dependencies',
+                    `The following required components could not be loaded: ${missingDeps.join(', ')}. Please ensure the server is running and all files are present.`
+                );
+                return;
+            }
+
+            console.log('All dependencies loaded successfully');
+            console.log('Initializing Unified NodeGame Experiment System...');
+
+            try {
+                // Initialize the unified NodeGame experiment system
+                if (typeof window.UnifiedNodeGameExperiment !== 'undefined') {
+                    const initialized = window.UnifiedNodeGameExperiment.initialize();
+                    console.log('Unified NodeGame experiment initialized:', initialized);
+
+                    if (initialized) {
+                        console.log('Starting unified NodeGame experiment...');
+                        window.UnifiedNodeGameExperiment.start();
+                    } else {
+                        showError(
+                            'Initialization Failed',
+                            'The experiment system could not be initialized. This may be because the server is not running or there is a configuration issue.'
+                        );
+                    }
+                } else {
+                    showError(
+                        'System Error',
+                        'The unified NodeGame experiment system is not available. Please check that all required files are loaded.'
+                    );
+                }
+            } catch (error) {
+                console.error('Error during initialization:', error);
+                showError(
+                    'Initialization Error',
+                    `An error occurred while starting the experiment: ${error.message}`
+                );
+            }
+        });
+
+        // Global error handling
+        window.addEventListener('error', function(event) {
+            console.error('Global error:', event.error);
+
+            // Only show error page if container is empty or has default content
+            const container = document.getElementById('container');
+            if (!container.innerHTML.trim() || container.innerHTML.includes('error-container')) {
+                showError(
+                    'JavaScript Error',
+                    `A JavaScript error occurred: ${event.error.message}. Please refresh the page to try again.`
+                );
+            }
+        });
+
+        // Handle unhandled promise rejections
+        window.addEventListener('unhandledrejection', function(event) {
+            console.error('Unhandled promise rejection:', event.reason);
+        });
+    </script>
+</body>
+</html>

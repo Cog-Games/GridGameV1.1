@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Standalone Grid World Experiment</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .button-group {
+            margin: 20px 0;
+            text-align: center;
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .btn-success {
+            background: #28a745;
+        }
+        .btn-success:hover {
+            background: #1e7e34;
+        }
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+        #container {
+            min-height: 400px;
+            border: 2px dashed #ccc;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .info {
+            background: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Standalone Grid World Experiment</h1>
+
+        <div class="info">
+            <h3>About this experiment:</h3>
+            <p>This is a standalone version of the grid world experiment that runs without nodeGame dependencies.
+            It includes all the same functionality as the original experiment but runs independently in the browser.</p>
+        </div>
+
+        <div class="warning">
+            <h3>Required Dependencies:</h3>
+            <p>Make sure the following files are loaded before this script:</p>
+            <ul>
+                <li><code>utils.js</code> - Game utilities and constants</li>
+                <li><code>rlAgent.js</code> - AI agent implementation</li>
+                <li><code>nodeGameHelpers.js</code> - Canvas drawing functions</li>
+                <li>Map data files (MapsFor1P1G.js, MapsFor1P2G.js, etc.)</li>
+            </ul>
+        </div>
+
+        <div class="button-group">
+            <h3>Start Experiment:</h3>
+            <button class="btn btn-success" onclick="startStandaloneExperiment('all')">Run All Experiments</button>
+            <button class="btn" onclick="startStandaloneExperiment('1P1G')">1P1G Only</button>
+            <button class="btn" onclick="startStandaloneExperiment('1P2G')">1P2G Only</button>
+            <button class="btn" onclick="startStandaloneExperiment('2P2G')">2P2G Only</button>
+            <button class="btn" onclick="startStandaloneExperiment('2P3G')">2P3G Only</button>
+        </div>
+
+        <div class="button-group">
+            <h3>Configuration:</h3>
+            <button class="btn btn-warning" onclick="setExperimentAll()">Set All Experiments</button>
+            <button class="btn btn-warning" onclick="setExperimentSinglePlayer()">Single Player Only</button>
+            <button class="btn btn-warning" onclick="setExperimentCollaboration()">Collaboration Only</button>
+        </div>
+
+        <div class="button-group">
+            <h3>Data Export:</h3>
+            <button class="btn" onclick="exportExperimentData()">Download Data</button>
+            <button class="btn" onclick="downloadExcel()">Download Excel</button>
+            <button class="btn" onclick="downloadCSV()">Download CSV</button>
+        </div>
+
+        <div id="container">
+            <p style="color: #666; font-size: 18px;">Click a button above to start the experiment</p>
+        </div>
+
+        <div class="info">
+            <h3>Experiment Types:</h3>
+            <ul>
+                <li><strong>1P1G:</strong> Single player, single goal</li>
+                <li><strong>1P2G:</strong> Single player, two goals (choice task)</li>
+                <li><strong>2P2G:</strong> Two players, two goals (collaboration task)</li>
+                <li><strong>2P3G:</strong> Two players, three goals (dynamic collaboration task)</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Load required dependencies -->
+    <script src="js/utils.js"></script>
+    <script src="js/rlAgent.js"></script>
+    <script src="js/nodeGameHelpers.js"></script>
+
+    <!-- Load map data -->
+    <script src="config/MapsFor1P1G.js"></script>
+    <script src="config/MapsFor1P2G.js"></script>
+    <script src="config/MapsFor2P2G.js"></script>
+    <script src="config/MapsFor2P3G.js"></script>
+
+    <!-- Load the standalone experiment -->
+    <script src="js/standaloneExperiment.js"></script>
+
+    <script>
+        // Add some helper functions for the test page
+        function startStandaloneExperiment(type) {
+            if (type === 'all') {
+                setExperimentAll();
+            } else {
+                setCustomExperimentOrder([type]);
+            }
+
+            // Start the experiment
+            startStandaloneExperiment();
+        }
+
+        // Check if dependencies are loaded
+        window.addEventListener('load', function() {
+            var missingDeps = [];
+
+            if (typeof DIRECTIONS === 'undefined') missingDeps.push('utils.js');
+            if (typeof RLAgent === 'undefined') missingDeps.push('rlAgent.js');
+            if (typeof nodeGameCreateGameCanvas === 'undefined') missingDeps.push('nodeGameHelpers.js');
+            if (typeof MapsFor1P1G === 'undefined') missingDeps.push('MapsFor1P1G.js');
+            if (typeof MapsFor1P2G === 'undefined') missingDeps.push('MapsFor1P2G.js');
+            if (typeof MapsFor2P2G === 'undefined') missingDeps.push('MapsFor2P2G.js');
+            if (typeof MapsFor2P3G === 'undefined') missingDeps.push('MapsFor2P3G.js');
+
+            if (missingDeps.length > 0) {
+                document.getElementById('container').innerHTML = `
+                    <div style="color: red; text-align: center;">
+                        <h3>⚠️ Missing Dependencies</h3>
+                        <p>The following files are missing or not loaded properly:</p>
+                        <ul style="text-align: left; display: inline-block;">
+                            ${missingDeps.map(dep => '<li>' + dep + '</li>').join('')}
+                        </ul>
+                        <p>Please check that all required files are in the correct location.</p>
+                    </div>
+                `;
+            } else {
+                console.log('All dependencies loaded successfully');
+            }
+        });
+    </script>
+</body>
+</html>

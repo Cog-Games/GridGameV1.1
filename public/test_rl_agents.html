@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RL Agent Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .agent-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #fafafa;
+        }
+        .agent-section h3 {
+            color: #555;
+            margin-top: 0;
+        }
+        .controls {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button.active {
+            background-color: #28a745;
+        }
+        .config-section {
+            margin: 15px 0;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        .config-section label {
+            display: inline-block;
+            width: 150px;
+            font-weight: bold;
+        }
+        .config-section input {
+            width: 100px;
+            padding: 5px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 5px;
+        }
+        .output {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .grid-display {
+            display: inline-block;
+            margin: 10px;
+            font-family: monospace;
+            font-size: 12px;
+            line-height: 1;
+        }
+        .grid-cell {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            text-align: center;
+            line-height: 20px;
+            border: 1px solid #ccc;
+            margin: 1px;
+        }
+        .player { background-color: #ff6b6b; color: white; }
+        .ai { background-color: #4ecdc4; color: white; }
+        .goal { background-color: #45b7d1; color: white; }
+        .blank { background-color: #f8f9fa; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>RL Agent Test Interface</h1>
+
+        <div class="agent-section">
+            <h3>Agent Type Selection</h3>
+            <div class="controls">
+                <button id="individualBtn" onclick="setAgentType('individual')">Individual RL</button>
+                <button id="jointBtn" onclick="setAgentType('joint')">Joint RL</button>
+            </div>
+            <p><strong>Current Agent:</strong> <span id="currentAgent">individual</span></p>
+        </div>
+
+        <div class="agent-section">
+            <h3>Configuration</h3>
+            <div class="config-section">
+                <label>Grid Size:</label>
+                <input type="number" id="gridSize" value="15" min="5" max="20">
+                <label>Gamma:</label>
+                <input type="number" id="gamma" value="0.9" min="0.1" max="1.0" step="0.1">
+                <label>Goal Reward:</label>
+                <input type="number" id="goalReward" value="30" min="1" max="100">
+            </div>
+            <div class="config-section">
+                <label>Softmax Beta:</label>
+                <input type="number" id="softmaxBeta" value="5" min="0.1" max="20" step="0.1">
+                <label>Joint Temperature:</label>
+                <input type="number" id="jointTemp" value="0.1" min="0.01" max="2.0" step="0.01">
+                <button onclick="updateConfig()">Update Config</button>
+            </div>
+        </div>
+
+        <div class="agent-section">
+            <h3>Test Scenario</h3>
+            <div class="test-section">
+                <p><strong>Scenario:</strong> AI at [7, 0], Human at [7, 14], Goals at [7, 2] and [7, 12]</p>
+                <div class="grid-display" id="gridDisplay"></div>
+                <button onclick="testAgent()">Test Current Agent</button>
+                <button onclick="testAllAgents()">Test All Agents</button>
+                <button onclick="checkRLAgentStatus()">Check RL Agent Status</button>
+            </div>
+            <div class="output" id="output"></div>
+        </div>
+    </div>
+
+    <script src="js/rlAgent.js"></script>
+    <script src="js/nodeGameHumanAIVersion.js"></script>
+    <script>
+        let currentAgentType = 'individual';
+
+        function setAgentType(type) {
+            currentAgentType = type;
+            document.getElementById('currentAgent').textContent = type;
+
+            // Update button styles
+            document.querySelectorAll('.controls button').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(type + 'Btn').classList.add('active');
+
+            // Set the agent type
+            if (window.RLAgent) {
+                window.RLAgent.setRLAgentType(type);
+            }
+
+            log(`Agent type set to: ${type}`);
+        }
+
+        function updateConfig() {
+            const config = {
+                gridSize: parseInt(document.getElementById('gridSize').value),
+                gamma: parseFloat(document.getElementById('gamma').value),
+                goalReward: parseInt(document.getElementById('goalReward').value),
+                softmaxBeta: parseFloat(document.getElementById('softmaxBeta').value),
+                jointTemperature: parseFloat(document.getElementById('jointTemp').value)
+            };
+
+            if (window.RLAgent) {
+                window.RLAgent.updateRLAgentConfig(config);
+            }
+
+            log(`Configuration updated: ${JSON.stringify(config, null, 2)}`);
+        }
+
+        function testAgent() {
+            const aiPos = [7, 0];
+            const humanPos = [7, 14];
+            const goals = [[7, 2], [7, 12]];
+
+            log(`Testing ${currentAgentType} agent...`);
+            log(`AI Position: [${aiPos}]`);
+            log(`Human Position: [${humanPos}]`);
+            log(`Goals: [${goals.map(g => `[${g}]`).join(', ')}]`);
+
+            try {
+                const action = getAIAction(null, aiPos, goals, humanPos);
+                log(`Action: [${action}]`);
+
+                // Calculate next position
+                const nextPos = [aiPos[0] + action[0], aiPos[1] + action[1]];
+                log(`Next AI Position: [${nextPos}]`);
+
+                // Calculate distances
+                const distToGoal1 = Math.abs(nextPos[0] - goals[0][0]) + Math.abs(nextPos[1] - goals[0][1]);
+                const distToGoal2 = Math.abs(nextPos[0] - goals[1][0]) + Math.abs(nextPos[1] - goals[1][1]);
+                log(`Distance to Goal 1: ${distToGoal1}`);
+                log(`Distance to Goal 2: ${distToGoal2}`);
+
+            } catch (error) {
+                log(`Error: ${error.message}`);
+            }
+
+            log('---');
+        }
+
+        function testAllAgents() {
+            const agents = ['individual', 'joint'];
+            const aiPos = [7, 0];
+            const humanPos = [7, 14];
+            const goals = [[7, 2], [7, 12]];
+
+            log('Testing all agents...\n');
+
+            agents.forEach(agentType => {
+                log(`=== ${agentType.toUpperCase()} AGENT ===`);
+                setAgentType(agentType);
+
+                try {
+                    const action = getAIAction(null, aiPos, goals, humanPos);
+                    const nextPos = [aiPos[0] + action[0], aiPos[1] + action[1]];
+                    const distToGoal1 = Math.abs(nextPos[0] - goals[0][0]) + Math.abs(nextPos[1] - goals[0][1]);
+                    const distToGoal2 = Math.abs(nextPos[0] - goals[1][0]) + Math.abs(nextPos[1] - goals[1][1]);
+
+                    log(`Action: [${action}]`);
+                    log(`Next Position: [${nextPos}]`);
+                    log(`Distance to Goal 1: ${distToGoal1}`);
+                    log(`Distance to Goal 2: ${distToGoal2}`);
+                } catch (error) {
+                    log(`Error: ${error.message}`);
+                }
+
+                log('');
+            });
+        }
+
+        function log(message) {
+            const output = document.getElementById('output');
+            output.textContent += message + '\n';
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function updateGridDisplay() {
+            const grid = document.getElementById('gridDisplay');
+            const aiPos = [7, 0];
+            const humanPos = [7, 14];
+            const goals = [[7, 2], [7, 12]];
+
+            let html = '';
+            for (let row = 0; row < 15; row++) {
+                for (let col = 0; col < 15; col++) {
+                    let cellClass = 'blank';
+                    let content = '';
+
+                    if (row === aiPos[0] && col === aiPos[1]) {
+                        cellClass = 'ai';
+                        content = 'A';
+                    } else if (row === humanPos[0] && col === humanPos[1]) {
+                        cellClass = 'player';
+                        content = 'H';
+                    } else if (goals.some(g => g[0] === row && g[1] === col)) {
+                        cellClass = 'goal';
+                        content = 'G';
+                    }
+
+                    html += `<div class="grid-cell ${cellClass}">${content}</div>`;
+                }
+                html += '<br>';
+            }
+
+            grid.innerHTML = html;
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            setAgentType('individual');
+            updateGridDisplay();
+            log('RL Agent Test Interface loaded. Select an agent type and test it!');
+
+            // Check RL Agent status
+            if (window.RLAgent) {
+                log(`Current RL Agent Type: ${window.RLAgent.getRLAgentType()}`);
+                log(`RL Agent Config: ${JSON.stringify(window.RLAgent.getRLAgentConfig(), null, 2)}`);
+            } else {
+                log('❌ RL Agent not loaded!');
+            }
+        });
+
+        // Debug function to check RL Agent status
+        function checkRLAgentStatus() {
+            if (window.RLAgent) {
+                log(`🤖 RL Agent Status:`);
+                log(`   Type: ${window.RLAgent.getRLAgentType()}`);
+                log(`   Config: ${JSON.stringify(window.RLAgent.getRLAgentConfig(), null, 2)}`);
+            } else {
+                log('❌ RL Agent not available');
+            }
+        }
+    </script>
+</body>
+</html>

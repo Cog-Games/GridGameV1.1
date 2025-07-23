@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Fix - Unified Grid Game</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-result { padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .pass { background: #d4edda; color: #155724; }
+        .fail { background: #f8d7da; color: #721c24; }
+        #results { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Test Fix - Unified Grid Game</h1>
+    <p>This page tests if the null trial data error is fixed.</p>
+
+    <button onclick="runTest()">Run Test</button>
+    <div id="results"></div>
+
+    <!-- Socket.io for real-time communication -->
+    <script src="/socket.io/socket.io.js"></script>
+
+    <!-- Core game scripts -->
+    <script src="js/setup.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/mdp.js"></script>
+    <script src="js/vizWithAI.js"></script>
+    <script src="js/rlAgent.js"></script>
+
+    <!-- Map data files -->
+    <script src="designData/MapsFor1P1G.js"></script>
+    <script src="designData/MapsFor1P2G.js"></script>
+    <script src="designData/MapsFor2P2G.js"></script>
+    <script src="designData/MapsFor2P3G.js"></script>
+
+    <!-- Experiment configuration -->
+    <script src="config/experimentConfig.js"></script>
+
+    <!-- Unified NodeGame experiment system -->
+    <script src="js/unifiedNodeGameExperiment.js"></script>
+
+    <script>
+        function addResult(message, passed) {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `test-result ${passed ? 'pass' : 'fail'}`;
+            div.textContent = `${passed ? '✅' : '❌'} ${message}`;
+            results.appendChild(div);
+        }
+
+        function runTest() {
+            document.getElementById('results').innerHTML = '';
+
+            console.log('=== Running Fix Test ===');
+
+            // Test 1: Check if dependencies are loaded
+            addResult('Dependencies loaded',
+                typeof DIRECTIONS !== 'undefined' &&
+                typeof OBJECT !== 'undefined' &&
+                typeof MapsFor2P3G !== 'undefined'
+            );
+
+            // Test 2: Check if experiment system is available
+            addResult('Experiment system available',
+                typeof window.UnifiedNodeGameExperiment !== 'undefined'
+            );
+
+            // Test 3: Test initializeTrialData with null experiment type
+            try {
+                if (typeof window.UnifiedNodeGameExperiment !== 'undefined') {
+                    // This should not throw an error anymore
+                    const result = window.UnifiedNodeGameExperiment.gameData;
+                    addResult('Game data accessible', result !== null);
+                } else {
+                    addResult('Game data accessible', false);
+                }
+            } catch (error) {
+                addResult('Game data accessible', false);
+                console.error('Error accessing game data:', error);
+            }
+
+            // Test 4: Test map data availability
+            const mapData = window.MapsFor2P3G;
+            addResult('Map data available', mapData && Object.keys(mapData).length > 0);
+
+            // Test 5: Test experiment initialization
+            try {
+                if (typeof window.UnifiedNodeGameExperiment !== 'undefined') {
+                    const initialized = window.UnifiedNodeGameExperiment.initialize();
+                    addResult('Experiment initialization', initialized === true);
+                } else {
+                    addResult('Experiment initialization', false);
+                }
+            } catch (error) {
+                addResult('Experiment initialization', false);
+                console.error('Error during initialization:', error);
+            }
+
+            // Test 6: Test the specific error scenario
+            try {
+                if (typeof window.UnifiedNodeGameExperiment !== 'undefined') {
+                    // Simulate the scenario that was causing the error
+                    const gameData = window.UnifiedNodeGameExperiment.gameData;
+                    gameData.currentExperiment = null;
+                    gameData.currentTrial = 0;
+
+                    // This should not throw an error anymore
+                    const experimentType = gameData.currentExperiment;
+                    const trialIndex = gameData.currentTrial;
+
+                    addResult('Null experiment type handling', true);
+                } else {
+                    addResult('Null experiment type handling', false);
+                }
+            } catch (error) {
+                addResult('Null experiment type handling', false);
+                console.error('Error handling null experiment type:', error);
+            }
+
+            console.log('=== Test Complete ===');
+        }
+
+        // Auto-run test on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(runTest, 1000);
+        });
+    </script>
+</body>
+</html>
