@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualization Fix Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #f8f9fa;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        #gameCanvas {
+            border: 2px solid #333;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Human-Human Visualization Fix Test</h1>
+
+        <div class="test-section">
+            <h3>Test 1: Basic Visualization</h3>
+            <p>Test if the renderGameBoardFallback function works with null gameData:</p>
+            <button class="btn" onclick="testBasicViz()">Test Basic Visualization</button>
+            <div id="test1Canvas"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Test 2: With Game Data</h3>
+            <p>Test if the visualization works with proper game data:</p>
+            <button class="btn" onclick="testWithGameData()">Test With Game Data</button>
+            <div id="test2Canvas"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Test 3: Missing Functions</h3>
+            <p>Test if all required functions are available:</p>
+            <button class="btn" onclick="testMissingFunctions()">Test Missing Functions</button>
+            <div id="test3Results"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Console Output</h3>
+            <div id="consoleOutput" style="background: #f8f9fa; padding: 10px; border-radius: 5px; font-family: monospace; font-size: 12px; max-height: 200px; overflow-y: auto;"></div>
+        </div>
+    </div>
+
+    <!-- Load dependencies -->
+    <script>
+        // Mock global variables
+        window.OBJECT = {
+            obstacle: 1,
+            goal: 2,
+            player: 3,
+            ai_player: 4
+        };
+
+        window.COLORPOOL = {
+            line: '#333',
+            obstacle: '#333',
+            map: '#fff',
+            player: '#dc3545',
+            goal: '#007bff',
+            fixation: '#666'
+        };
+
+        window.WINSETTING = { w: 480, h: 480 };
+
+        window.EXPSETTINGS = {
+            padding: 2,
+            cellSize: 30,
+            matrixsize: 15
+        };
+
+        // Mock gameData
+        window.gameData = {
+            currentExperiment: '2P2G',
+            currentGoals: [[2, 7], [12, 7]],
+            gridMatrix: Array(15).fill(0).map(() => Array(15).fill(0)),
+            playerStartPos: [7, 2],
+            partnerStartPos: [7, 12],
+            currentPlayerPos: [7, 2]
+        };
+
+        // Mock playerOrder
+        window.playerOrder = {
+            isFirstPlayer: true
+        };
+    </script>
+
+    <script src="js/setup.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/vizWithAI.js"></script>
+    <script src="js/nodeGameHelpers.js"></script>
+    <script src="js/experimentConfig.js"></script>
+    <script src="js/expTimeline.js"></script>
+    <script src="js/nodeGameHumanHumanVersion.js"></script>
+
+    <script>
+        function log(message) {
+            console.log(message);
+            const output = document.getElementById('consoleOutput');
+            output.innerHTML += message + '<br>';
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function testBasicViz() {
+            log('=== Testing Basic Visualization ===');
+
+            // Clear gameData to test null handling
+            const originalGameData = window.gameData;
+            window.gameData = null;
+
+            try {
+                // Create canvas container
+                const container = document.getElementById('test1Canvas');
+                container.innerHTML = '<div id="gameCanvas"></div>';
+
+                // Call renderGameBoardFallback
+                renderGameBoardFallback();
+
+                log('✅ Basic visualization test passed - no errors with null gameData');
+            } catch (error) {
+                log('❌ Basic visualization test failed: ' + error.message);
+            } finally {
+                // Restore gameData
+                window.gameData = originalGameData;
+            }
+        }
+
+        function testWithGameData() {
+            log('=== Testing With Game Data ===');
+
+            try {
+                // Create canvas container
+                const container = document.getElementById('test2Canvas');
+                container.innerHTML = '<div id="gameCanvas"></div>';
+
+                // Call renderGameBoardFallback
+                renderGameBoardFallback();
+
+                log('✅ Game data visualization test passed');
+            } catch (error) {
+                log('❌ Game data visualization test failed: ' + error.message);
+            }
+        }
+
+        function testMissingFunctions() {
+            log('=== Testing Missing Functions ===');
+
+            const requiredFunctions = [
+                'renderGameBoardFallback',
+                'drawCircleHumanHuman',
+                'drawOverlappingCirclesHumanHuman',
+                'showCollaborationFeedbackOnGameBoard',
+                'showServerNotRunningMessage',
+                'showErrorMessage',
+                'showPartnerDisconnectedMessage',
+                'showDisconnectionMessage'
+            ];
+
+            const missingFunctions = [];
+
+            requiredFunctions.forEach(funcName => {
+                if (typeof window[funcName] === 'function') {
+                    log('✅ ' + funcName + ' - Found');
+                } else {
+                    log('❌ ' + funcName + ' - Missing');
+                    missingFunctions.push(funcName);
+                }
+            });
+
+            if (missingFunctions.length === 0) {
+                log('✅ All required functions are available');
+            } else {
+                log('❌ Missing functions: ' + missingFunctions.join(', '));
+            }
+        }
+
+        // Run tests on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            log('Page loaded, running tests...');
+            setTimeout(() => {
+                testMissingFunctions();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

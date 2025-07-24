@@ -28,7 +28,8 @@ const GAME_CONFIG = {
     maxGameLength: 50,
     syncInterval: 100,   // 100ms
     gridSize: 15,        // Updated to match map configurations
-    enableSinglePlayerTesting: true  // Allow single player testing
+    enableSinglePlayerTesting: true,  // Allow single player testing
+    debugMode: false     // Disable excessive logging by default
 };
 
 // Load map data
@@ -513,11 +514,13 @@ class GameRoom {
         const player2 = playerStates[1];
         const sharedGoal = this.gameState.goals[sharedGoalIndex];
 
-        console.log(`=== SERVER NEW GOAL PRESENTATION ===`);
-        console.log(`Room: ${this.roomId}, Trial: ${this.currentTrial + 1}`);
-        console.log(`Player1 pos: ${player1.position}, Player2 pos: ${player2.position}`);
-        console.log(`Shared goal: ${sharedGoal} (index: ${sharedGoalIndex})`);
-        console.log(`Distance condition: ${this.gameState.distanceCondition}`);
+        if (GAME_CONFIG.debugMode) {
+            console.log(`=== SERVER NEW GOAL PRESENTATION ===`);
+            console.log(`Room: ${this.roomId}, Trial: ${this.currentTrial + 1}`);
+            console.log(`Player1 pos: ${player1.position}, Player2 pos: ${player2.position}`);
+            console.log(`Shared goal: ${sharedGoal} (index: ${sharedGoalIndex})`);
+            console.log(`Distance condition: ${this.gameState.distanceCondition}`);
+        }
 
         // Generate new goal using the same logic as client but with server's distance condition
         const newGoal = this.generateNewGoalWithServerLogic(player1.position, player2.position, sharedGoal, sharedGoalIndex);
@@ -544,30 +547,43 @@ class GameRoom {
     }
 
     generateNewGoalWithServerLogic(player1Pos, player2Pos, sharedGoal, sharedGoalIndex, distanceCondition) {
-        console.log('=== SERVER GENERATE NEW GOAL DEBUG ===');
-        console.log('player1Pos:', player1Pos, 'player2Pos:', player2Pos);
-        console.log('sharedGoal:', sharedGoal, 'sharedGoalIndex:', sharedGoalIndex);
-        console.log('distanceCondition:', distanceCondition);
+        // Only log in debug mode
+        if (GAME_CONFIG.debugMode) {
+            console.log('=== SERVER GENERATE NEW GOAL DEBUG ===');
+            console.log('player1Pos:', player1Pos, 'player2Pos:', player2Pos);
+            console.log('sharedGoal:', sharedGoal, 'sharedGoalIndex:', sharedGoalIndex);
+            console.log('distanceCondition:', distanceCondition);
+        }
 
         // Check if no new goal should be generated
         if (distanceCondition === 'no_new_goal') {
-            console.log('NO_NEW_GOAL condition - returning null');
+            if (GAME_CONFIG.debugMode) {
+                console.log('NO_NEW_GOAL condition - returning null');
+            }
             return null;
         }
 
         if (sharedGoalIndex === null || sharedGoalIndex >= this.gameState.goals.length) {
-            console.log('Invalid sharedGoalIndex - returning null');
+            if (GAME_CONFIG.debugMode) {
+                console.log('Invalid sharedGoalIndex - returning null');
+            }
             return null;
         }
 
         const oldDistanceSum = this.calculateGridDistance(player2Pos, sharedGoal) +
                               this.calculateGridDistance(player1Pos, sharedGoal);
 
-        console.log('sharedGoal:', sharedGoal, 'oldDistanceSum:', oldDistanceSum);
+        if (GAME_CONFIG.debugMode) {
+            console.log('sharedGoal:', sharedGoal, 'oldDistanceSum:', oldDistanceSum);
+        }
 
         // Find all valid positions for the new goal based on distance condition
         const validPositions = [];
         let useRelaxedConstraints = false;
+
+        // Pre-calculate distances to old goal for efficiency
+        const player2DistanceToOldGoal = this.calculateGridDistance(player2Pos, sharedGoal);
+        const player1DistanceToOldGoal = this.calculateGridDistance(player1Pos, sharedGoal);
 
         // First pass: try with strict constraints
         for (let row = 0; row < 15; row++) {
@@ -580,11 +596,7 @@ class GameRoom {
                     const newGoalDistanceToPlayer1 = this.calculateGridDistance(player1Pos, newGoal);
                     const newDistanceSum = newGoalDistanceToPlayer2 + newGoalDistanceToPlayer1;
 
-                    const player2DistanceToOldGoal = this.calculateGridDistance(player2Pos, sharedGoal);
-                    const player1DistanceToOldGoal = this.calculateGridDistance(player1Pos, sharedGoal);
-
                     // Basic constraints that apply to all conditions
-                    const sumConstraint = false; // Disable sum constraint to match client-side behavior
                     const player1DistanceConstraint = newGoalDistanceToPlayer1 >= 1 && newGoalDistanceToPlayer1 <= 10;
 
                     // Distance condition-specific constraints
@@ -612,7 +624,9 @@ class GameRoom {
                             break;
 
                         default:
-                            console.log('Unknown distance condition:', distanceCondition);
+                            if (GAME_CONFIG.debugMode) {
+                                console.log('Unknown distance condition:', distanceCondition);
+                            }
                             return null;
                     }
 
@@ -631,7 +645,9 @@ class GameRoom {
 
         // If no valid positions found with strict constraints, try with relaxed constraints for EQUAL_TO_BOTH
         if (validPositions.length === 0 && distanceCondition === 'equal_to_both') {
-            console.log('No valid positions found with strict constraints, trying with relaxed constraints...');
+            if (GAME_CONFIG.debugMode) {
+                console.log('No valid positions found with strict constraints, trying with relaxed constraints...');
+            }
             useRelaxedConstraints = true;
 
             for (let row = 0; row < 15; row++) {
@@ -644,11 +660,7 @@ class GameRoom {
                         const newGoalDistanceToPlayer1 = this.calculateGridDistance(player1Pos, newGoal);
                         const newDistanceSum = newGoalDistanceToPlayer2 + newGoalDistanceToPlayer1;
 
-                        const player2DistanceToOldGoal = this.calculateGridDistance(player2Pos, sharedGoal);
-                        const player1DistanceToOldGoal = this.calculateGridDistance(player1Pos, sharedGoal);
-
                         // Basic constraints that apply to all conditions
-                        const sumConstraint = false; // Disable sum constraint to match client-side behavior
                         const player1DistanceConstraint = newGoalDistanceToPlayer1 >= 1 && newGoalDistanceToPlayer1 <= 10;
 
                         // Relaxed distance condition constraint for EQUAL_TO_BOTH
@@ -669,20 +681,26 @@ class GameRoom {
             }
         }
 
-        console.log(`Found ${validPositions.length} valid positions for distance condition: ${distanceCondition}`);
+        if (GAME_CONFIG.debugMode) {
+            console.log(`Found ${validPositions.length} valid positions for distance condition: ${distanceCondition}`);
+        }
 
         if (validPositions.length > 0) {
             // Select a random valid position
             const randomIndex = Math.floor(Math.random() * validPositions.length);
             const selectedPosition = validPositions[randomIndex];
 
-            console.log(`Selected position: ${selectedPosition.position}`);
-            console.log(`Condition type: ${selectedPosition.conditionType}`);
-            console.log(`Distances - Player2: ${selectedPosition.distanceToPlayer2}, Player1: ${selectedPosition.distanceToPlayer1}`);
+            if (GAME_CONFIG.debugMode) {
+                console.log(`Selected position: ${selectedPosition.position}`);
+                console.log(`Condition type: ${selectedPosition.conditionType}`);
+                console.log(`Distances - Player2: ${selectedPosition.distanceToPlayer2}, Player1: ${selectedPosition.distanceToPlayer1}`);
+            }
 
             return selectedPosition.position;
         } else {
-            console.log('No valid positions found for new goal generation');
+            if (GAME_CONFIG.debugMode) {
+                console.log('No valid positions found for new goal generation');
+            }
             return null;
         }
     }
@@ -868,12 +886,21 @@ class GameRoom {
     }
 
     broadcastToRoom(event, data) {
-        console.log(`🔍 Broadcasting ${event} to ${this.players.size} players in room ${this.roomId}`);
+        // Only log broadcasts in debug mode or for important events
+        if (GAME_CONFIG.debugMode || event !== 'game_state_update') {
+            console.log(`🔍 Broadcasting ${event} to ${this.players.size} players in room ${this.roomId}`);
+        }
+
         for (const [playerId, player] of this.players) {
-            console.log(`🔍 Sending ${event} to player ${playerId}`);
+            if (GAME_CONFIG.debugMode || event !== 'game_state_update') {
+                console.log(`🔍 Sending ${event} to player ${playerId}`);
+            }
             player.socket.emit(event, data);
         }
-        console.log(`🔍 Broadcast complete for ${event}`);
+
+        if (GAME_CONFIG.debugMode || event !== 'game_state_update') {
+            console.log(`🔍 Broadcast complete for ${event}`);
+        }
     }
 
     getRoomInfo() {
@@ -1085,30 +1112,40 @@ io.on('connection', (socket) => {
 
     // Handle new goal request (new server-side logic for 2P3G)
     socket.on('request_new_goal', (data) => {
-        console.log(`🔍 REQUEST_NEW_GOAL received from ${socket.id}`);
-        console.log(`🔍 Current room:`, currentRoom ? currentRoom.roomId : 'null');
-        console.log(`🔍 Game type:`, currentRoom ? currentRoom.gameType : 'null');
+        if (GAME_CONFIG.debugMode) {
+            console.log(`🔍 REQUEST_NEW_GOAL received from ${socket.id}`);
+            console.log(`🔍 Current room:`, currentRoom ? currentRoom.roomId : 'null');
+            console.log(`🔍 Game type:`, currentRoom ? currentRoom.gameType : 'null');
+        }
 
         if (currentRoom && currentRoom.gameType === '2P3G') {
-            console.log(`Player ${socket.id} requested new goal generation:`, data);
+            if (GAME_CONFIG.debugMode) {
+                console.log(`Player ${socket.id} requested new goal generation:`, data);
+            }
 
             // Check if another player is already requesting a goal
             if (currentRoom.goalGenerationInProgress) {
-                console.log(`Goal generation already in progress by ${currentRoom.goalGenerationInProgress}, rejecting ${socket.id}`);
+                if (GAME_CONFIG.debugMode) {
+                    console.log(`Goal generation already in progress by ${currentRoom.goalGenerationInProgress}, rejecting ${socket.id}`);
+                }
                 return;
             }
 
             // Set the lock to prevent other players from requesting
             currentRoom.goalGenerationInProgress = socket.id;
-            console.log(`Set goal generation lock for player ${socket.id}`);
+            if (GAME_CONFIG.debugMode) {
+                console.log(`Set goal generation lock for player ${socket.id}`);
+            }
 
-            console.log(`🔍 About to call generateNewGoalWithServerLogic with:`, {
-                player2Pos: data.player2Pos,
-                player1Pos: data.player1Pos,
-                sharedGoal: data.currentGoals[data.sharedGoalIndex],
-                sharedGoalIndex: data.sharedGoalIndex,
-                distanceCondition: data.distanceCondition
-            });
+            if (GAME_CONFIG.debugMode) {
+                console.log(`🔍 About to call generateNewGoalWithServerLogic with:`, {
+                    player2Pos: data.player2Pos,
+                    player1Pos: data.player1Pos,
+                    sharedGoal: data.currentGoals[data.sharedGoalIndex],
+                    sharedGoalIndex: data.sharedGoalIndex,
+                    distanceCondition: data.distanceCondition
+                });
+            }
 
             // Generate new goal using server-side logic
             const newGoal = currentRoom.generateNewGoalWithServerLogic(
@@ -1119,13 +1156,17 @@ io.on('connection', (socket) => {
                 data.distanceCondition
             );
 
-            console.log(`🔍 generateNewGoalWithServerLogic returned:`, newGoal);
+            if (GAME_CONFIG.debugMode) {
+                console.log(`🔍 generateNewGoalWithServerLogic returned:`, newGoal);
+            }
 
             if (newGoal) {
                 console.log(`Server generated new goal at position ${newGoal} for room ${currentRoom.roomId}`);
 
                 // Broadcast new goal to ALL players in the room
-                console.log(`🔍 Broadcasting server_new_goal to room ${currentRoom.roomId}`);
+                if (GAME_CONFIG.debugMode) {
+                    console.log(`🔍 Broadcasting server_new_goal to room ${currentRoom.roomId}`);
+                }
                 currentRoom.broadcastToRoom('server_new_goal', {
                     newGoalPosition: newGoal,
                     distanceCondition: data.distanceCondition,
@@ -1150,11 +1191,15 @@ io.on('connection', (socket) => {
             setTimeout(() => {
                 if (currentRoom && currentRoom.goalGenerationInProgress === socket.id) {
                     currentRoom.goalGenerationInProgress = null;
-                    console.log(`Cleared goal generation lock for player ${socket.id}`);
+                    if (GAME_CONFIG.debugMode) {
+                        console.log(`Cleared goal generation lock for player ${socket.id}`);
+                    }
                 }
             }, 1000);
         } else {
-            console.log(`❌ Invalid room or game type for goal generation request`);
+            if (GAME_CONFIG.debugMode) {
+                console.log(`❌ Invalid room or game type for goal generation request`);
+            }
         }
     });
 
@@ -1256,9 +1301,17 @@ app.get('/health', (req, res) => {
 });
 
 // Start server
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 4000;
+
+// Check for debug mode flag
+if (process.argv.includes('--debug')) {
+    GAME_CONFIG.debugMode = true;
+    console.log('🔍 Debug mode enabled - verbose logging active');
+}
+
 server.listen(PORT, () => {
     console.log(`Human-Human Multiplayer Server running on port ${PORT}`);
     console.log(`Access the experiment at: http://localhost:${PORT}`);
     console.log(`Test interface at: http://localhost:${PORT}/test`);
+    console.log(`Debug mode: ${GAME_CONFIG.debugMode ? 'ON' : 'OFF'}`);
 });

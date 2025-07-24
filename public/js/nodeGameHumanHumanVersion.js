@@ -1,4 +1,3 @@
-
 /**
  * NodeGame Configuration and Setup for Human-Human Experiments
  */
@@ -9,56 +8,6 @@ if (typeof node !== 'undefined') {
 } else if (typeof require !== 'undefined') {
     var node = require('nodegame-client');
 }
-
-// Experiment configuration
-const NODEGAME_HUMAN_HUMAN_CONFIG = {
-    name: 'GridWorldHumanHumanExperiment',
-    version: '1.0.0',
-
-    // EXPERIMENT SELECTION (modify this to test different combinations)
-    // Default: Test collaboration experiments (2P2G and 2P3G)
-    // experimentOrder: ['2P2G'],           // Test 2P2G only
-    experimentOrder: ['2P3G'],           // Test 2P3G only
-    // experimentOrder: ['2P2G', '2P3G'],      // Test collaboration experiments
-
-    // Trial counts
-    numTrials: {
-        '2P2G': 12,
-        '2P3G': 12
-    },
-
-    // Success threshold configuration
-    // Set enabled: false to disable early termination and run all trials
-    successThreshold: {
-        enabled: true,                   // Disabled to ensure all 12 trials are run
-        consecutiveSuccessesRequired: 8,  // Increased to require 8 consecutive successes
-        minTrialsBeforeCheck: 12,         // Don't check until after 12 trials
-        maxTrials: 30,
-        randomSamplingAfterTrial: 2
-    },
-
-    // Game settings
-    maxGameLength: 50,
-    enableProlificRedirect: true,
-    prolificCompletionCode: 'C19EH5X9',
-
-    // Timing configurations (same as human-AI version)
-    timing: {
-        feedbackDisplayDuration: 2000,
-        preTrialDisplayDuration: 2000,
-        fixationDuration: 2000,
-        newGoalMessageDuration: 0
-    },
-
-    // Multiplayer settings
-    multiplayer: {
-        maxWaitTime: 60000,      // 60 seconds to wait for partner
-        roomTimeout: 300000,     // 5 minutes room timeout
-        reconnectAttempts: 3,
-        syncInterval: 100,
-        moveTimeout: 10000       // 10 seconds for move timeout
-    }
-};
 
 // Global game state variables
 let socket = null;
@@ -85,6 +34,9 @@ var playerOrder = {
     secondPlayerId: null, // Second player to join (should be orange)
     isFirstPlayer: false  // Whether current player is the first player
 };
+
+// Make playerOrder globally accessible for vizWithAI.js
+window.playerOrder = playerOrder;
 
 // Game data storage (matching human-AI version structure)
 let gameData = {
@@ -119,6 +71,9 @@ let gameData = {
     }
 };
 
+// Make gameData globally accessible for nodeGameHelpers.js functions
+window.gameData = gameData;
+
 // Timeline state (matching human-AI version)
 let timeline = {
     currentStage: 0,
@@ -130,46 +85,6 @@ let timeline = {
     inTrialStage: false
 };
 
-// 2P3G Configuration (matching human-AI version)
-const TWOP3G_CONFIG = {
-    // Timing options
-    minStepsBeforeNewGoal: 1,           // Minimum steps before new goal can appear
-    newGoalMessageDuration: 5000,       // Duration of "New goal appeared!" message (ms)
-
-    // Distance condition types for new goal generation
-    distanceConditions: {
-        CLOSER_TO_PLAYER2: 'closer_to_player2',           // New goal closer to player2, equal joint distance
-        CLOSER_TO_PLAYER1: 'closer_to_player1',     // New goal closer to player1, equal joint distance
-        EQUAL_TO_BOTH: 'equal_to_both',         // New goal equal distance to both player1 and player2, equal joint distance
-        NO_NEW_GOAL: 'no_new_goal'              // No new goal will be generated
-    },
-
-    // Distance condition sequence will be generated dynamically based on number of trials
-    distanceConditionSequence: null, // Will be set by generateRandomizedDistanceSequence()
-
-    // Positioning constraints
-    distanceConstraint: {
-        closerThreshold: 2,              // How much closer new goal should be to player2
-        allowEqualDistance: false,        // Allow equal distance if closer not found
-        maxDistanceIncrease: 5           // Maximum distance increase allowed
-    },
-
-    // Goal generation constraints
-    goalConstraints: {
-        minDistanceFromPlayer1: 1,         // Minimum distance from player1
-        maxDistanceFromPlayer1: 12,        // Maximum distance from player1
-        avoidRectangleArea: false,       // Avoid rectangular area between player2 and current goal
-        maintainDistanceSum: false,      // Maintain similar total distance sum
-        blockPathCheck: false            // Check if goal blocks path
-    },
-
-    // Debug options
-    debug: {
-        logGoalDetection: false,         // Log goal detection decisions
-        logNewGoalGeneration: true,      // Log new goal generation attempts
-        showGoalHistory: false           // Show goal history in console
-    }
-};
 
 // =================================================================================================
 // SOCKET.IO CONNECTION AND EVENT HANDLING
@@ -193,8 +108,21 @@ function initializeSocket() {
     try {
         socket = io();
 
+        // Add connection timeout
+        const connectionTimeout = setTimeout(() => {
+            if (!isConnected) {
+                console.warn('Socket connection timeout - continuing with fallback ID');
+                // Ensure we have a fallback ID
+                if (!myPlayerId) {
+                    myPlayerId = `participant_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+                    gameData.multiplayer.myPlayerId = myPlayerId;
+                }
+            }
+        }, 5000); // 5 second timeout
+
         socket.on('connect', () => {
             console.log('Connected to server');
+            clearTimeout(connectionTimeout);
             isConnected = true;
             myPlayerId = socket.id;
             gameData.multiplayer.myPlayerId = myPlayerId;
@@ -237,12 +165,8 @@ function initializeSocket() {
 
         socket.on('room_full', (data) => {
             console.log('Room is full:', data);
-            updateWaitingStatus('Both players connected! Preparing to start...');
-            // Auto-ready the player since we're in an experiment context
-            if (socket) {
-                console.log('Sending player_ready event');
-                socket.emit('player_ready', {});
-            }
+            // Both players are now connected, show "Game is ready" message
+            showGameReadyMessage();
         });
 
         socket.on('player_left', (data) => {
@@ -281,6 +205,7 @@ function initializeSocket() {
 
                     if (playerStates[myPlayerId]) {
                         gameData.playerStartPos = playerStates[myPlayerId].position;
+                        gameData.currentPlayerPos = [...playerStates[myPlayerId].position];
                         console.log('Updated my position to:', gameData.playerStartPos);
                     } else {
                         console.warn('No position found for my player ID:', myPlayerId);
@@ -333,6 +258,12 @@ function initializeSocket() {
                     setupKeyboardControls();
                 }
             }
+
+            // Always update visualization after game data is received
+            console.log('Game data received from server, updating visualization...');
+            // console.log('Current goals:', gameData.currentGoals);
+            // console.log('Current player pos:', gameData.currentPlayerPos);
+            updateGameVisualization();
         });
 
         socket.on('partner_left', (data) => {
@@ -340,7 +271,19 @@ function initializeSocket() {
             handlePartnerLeft(data);
         });
 
+        socket.on('move_rejected', (data) => {
+            console.error('Move rejected by server:', data.message);
+            // Reset movement flag to allow retry
+            timeline.isMoving = false;
+            // Show error message to user
+            alert('Move rejected: ' + data.message);
+        });
+
         socket.on('game_state_update', (data) => {
+            // console.log('=== GAME STATE UPDATE RECEIVED ===');
+            // console.log('Server data:', data);
+            // console.log('My player ID:', myPlayerId);
+
             gameState = data.gameState;
             gameData.multiplayer.playerStates = data.gameState.playerStates;
             gameData.multiplayer.isMyTurn = data.currentPlayer === myPlayerId || movementMode === 'simultaneous';
@@ -362,18 +305,31 @@ function initializeSocket() {
                 // Update player positions from server state
                 if (data.gameState.playerStates) {
                     const playerStates = data.gameState.playerStates;
+                    // console.log('Player states from server:', playerStates);
+
                     if (playerStates[myPlayerId]) {
                         gameData.playerStartPos = playerStates[myPlayerId].position;
+                        gameData.currentPlayerPos = [...playerStates[myPlayerId].position];
+                        // console.log('Updated my position to:', gameData.currentPlayerPos);
+                    } else {
+                        console.warn('No position found for my player ID:', myPlayerId);
                     }
+
                     // Find partner position
                     for (const [playerId, playerState] of Object.entries(playerStates)) {
                         if (playerId !== myPlayerId) {
                             gameData.partnerStartPos = playerState.position;
                             gameData.partnerPlayerId = playerId; // Store in gameData for new goal logic
+                            // console.log('Updated partner position to:', gameData.partnerStartPos);
                             break;
                         }
                     }
                 }
+
+            //     console.log('Updated game data:');
+            //     console.log('  - currentPlayerPos:', gameData.currentPlayerPos);
+            //     console.log('  - currentGoals:', gameData.currentGoals);
+            //     console.log('  - gridMatrix:', gameData.gridMatrix ? 'exists' : 'null');
             }
 
             updateGameVisualization();
@@ -394,6 +350,7 @@ function initializeSocket() {
                     for (const [playerId, playerState] of Object.entries(data.gameState.playerStates)) {
                         if (playerId === myPlayerId) {
                             gameData.playerStartPos = playerState.position;
+                            gameData.currentPlayerPos = [...playerState.position];
                         } else {
                             gameData.partnerStartPos = playerState.position;
                         }
@@ -516,7 +473,6 @@ function initializeSocket() {
             isConnected = false;
             isGameActive = false;
         });
-
 
 
         // Handle new goal generated by partner (legacy - kept for compatibility)
@@ -652,9 +608,10 @@ function handleRoomJoined(data) {
  * Handle partner joined
  */
 function handlePartnerJoined(data) {
-    // Both players are now connected, proceed with experiment
-    proceedToNextStage();
+    // Both players are now connected, show "Game is ready" message
+    showGameReadyMessage();
 }
+
 
 /**
  * Handle partner left
@@ -712,6 +669,73 @@ function startMultiplayerTrial(trialIndex, design) {
 }
 
 /**
+ * Make single-player move (1P1G, 1P2G)
+ */
+function makeSinglePlayerMove(action) {
+    if (!isGameActive || timeline.isMoving) {
+        console.log('Move blocked - game not active or already moving');
+        return;
+    }
+
+    timeline.isMoving = true;
+
+    // Record move with timestamp
+    const reactionTime = Date.now() - gameData.gameStartTime;
+    recordPlayerMove(action, reactionTime);
+
+    // Convert string action to array format
+    let actionArray;
+    switch (action) {
+        case 'up':
+            actionArray = [-1, 0];
+            break;
+        case 'down':
+            actionArray = [1, 0];
+            break;
+        case 'left':
+            actionArray = [0, -1];
+            break;
+        case 'right':
+            actionArray = [0, 1];
+            break;
+        default:
+            console.log('Unknown action:', action);
+            timeline.isMoving = false;
+            return;
+    }
+
+    // Calculate new position
+    console.log('Current position:', gameData.currentPlayerPos, 'Action array:', actionArray);
+    const newPosition = transition(gameData.currentPlayerPos, actionArray);
+    console.log('New position:', newPosition);
+
+    // Check if move is valid
+    if (newPosition && isValidPosition(newPosition)) {
+        gameData.currentPlayerPos = newPosition;
+        gameData.stepCount++;
+
+        // Check if goal is reached
+        const goalReached = isGoalReached(gameData.currentPlayerPos, gameData.currentGoals);
+
+        if (goalReached) {
+            console.log('Goal reached in single-player mode!');
+            // End trial after a short delay
+            setTimeout(() => {
+                finalizeTrial(true);
+                timeline.isMoving = false;
+            }, 500);
+        } else {
+            // Update visualization
+            updateGameVisualization();
+            timeline.isMoving = false;
+        }
+    } else {
+        console.log('Invalid move, position unchanged');
+        timeline.isMoving = false;
+    }
+}
+
+/**
  * Make a move in the multiplayer game
  */
 function makeMultiplayerMove(action) {
@@ -722,9 +746,9 @@ function makeMultiplayerMove(action) {
 
     timeline.isMoving = true;
 
-    // Record the move with reaction time
-    const reactionTime = Date.now() - gameData.gameStartTime;
-    recordPlayerMove(action, reactionTime);
+    // Don't record the move here - wait for server confirmation
+    // The move will be recorded in the 'move_made' event when the server confirms it
+    const reactionTime = gameData.gameStartTime > 0 ? Date.now() - gameData.gameStartTime : 0;
 
     // Send move to server
     socket.emit('make_move', {
@@ -734,7 +758,11 @@ function makeMultiplayerMove(action) {
     });
 
     console.log('Move sent to server:', action);
-    timeline.isMoving = false;
+
+    // Reset movement flag after a short delay to prevent rapid successive moves
+    setTimeout(() => {
+        timeline.isMoving = false;
+    }, 100);
 }
 
 /**
@@ -772,13 +800,13 @@ function recordMove(data) {
 
     // Record player move if current player made a move
     if (currentPlayerAction) {
-        var reactionTime = Date.now() - gameData.currentTrialData.startTime;
+        var reactionTime = data.reactionTime || 0;
         recordPlayerMove(currentPlayerAction, reactionTime);
     }
 
     // Record partner move if partner made a move
     if (partnerAction) {
-        var reactionTime = Date.now() - gameData.currentTrialData.startTime;
+        var reactionTime = data.reactionTime || 0;
         recordPartnerMove(partnerAction, reactionTime);
     }
 
@@ -843,6 +871,9 @@ function recordMove(data) {
 
         // Check trial end for 2P3G
         checkTrialEnd2P3G();
+    } else if (gameData.currentExperiment === '2P2G') {
+        // Check trial end for 2P2G
+        checkTrialEnd2P2G();
     }
 }
 
@@ -855,9 +886,6 @@ function handleTrialComplete(data) {
 
     // Show collaboration feedback directly on the game board for 2P experiments
     const experimentType = gameData.currentExperiment;
-    if (experimentType.includes('2P') && data.success !== undefined) {
-        showCollaborationFeedbackOnGameBoard(data.success);
-    }
 
     // Use the same logic as post-trial stage for transitioning
     setTimeout(() => {
@@ -884,6 +912,28 @@ function handleTrialComplete(data) {
     }, NODEGAME_HUMAN_HUMAN_CONFIG.timing.feedbackDisplayDuration);
 }
 
+function shouldContinueToNextTrial(experimentType, trialIndex) {
+    // Only apply to collaboration games
+    if (!experimentType.includes('2P')) {
+        return true; // Always continue for non-collaboration games
+    }
+
+    // Check if experiment should end due to success threshold
+    if (shouldEndExperimentDueToSuccessThreshold()) {
+        console.log(`Ending ${experimentType} experiment due to success threshold`);
+        return false;
+    }
+
+    // Check if we've reached the configured number of trials
+    var configuredTrials = NODEGAME_HUMAN_HUMAN_CONFIG.numTrials[experimentType];  // Fixed: Use correct config
+    if (trialIndex >= configuredTrials - 1) {
+        console.log(`Ending ${experimentType} experiment: Completed ${configuredTrials} trials`);
+        return false;
+    }
+
+    return true;
+}
+
 // =================================================================================================
 // EXPERIMENT FLOW AND STAGES (matching human-AI version)
 // =================================================================================================
@@ -894,18 +944,26 @@ function handleTrialComplete(data) {
 function initializeNodeGameHumanHumanFullExperiments() {
     console.log('Initializing NodeGame Human-Human Full Experiments');
 
+    // Set a fallback participant ID in case socket connection fails
+    if (!myPlayerId) {
+        myPlayerId = `participant_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        gameData.multiplayer.myPlayerId = myPlayerId;
+        console.log('Set fallback participant ID:', myPlayerId);
+    }
+
     // Initialize socket connection
     const socketInitialized = initializeSocket();
     if (!socketInitialized) {
         console.error('Failed to initialize socket connection');
-        return false;
+        // Don't return false - continue with fallback ID
+        console.log('Continuing with fallback participant ID');
     }
 
     // Initialize success threshold tracking
     initializeSuccessThresholdTracking();
 
     // Create timeline stages
-    createTimelineStages();
+    createTimelineStagesForHumanHuman();
 
     console.log('Human-Human experiments initialized successfully');
     return true;
@@ -933,328 +991,127 @@ function startNodeGameHumanHumanExperiment(experimentType) {
 }
 
 /**
- * Create timeline stages (based on human-AI version)
+ * Create timeline stages (using timeline.js functions)
  */
-function createTimelineStages() {
-    timeline.stages = [
-        // {
-        //     type: 'consent',
-        //     name: 'consent',
-        //     handler: showConsentStage
-        // },
-        {
-            type: 'welcome',
-            name: 'welcome',
-            experimentType: NODEGAME_HUMAN_HUMAN_CONFIG.experimentOrder[0], // Use first experiment type for welcome
-            handler: showWelcomeStage
-        },
-        // {
-        //     type: 'instructions',
-        //     name: 'instructions',
-        //     experimentType: NODEGAME_HUMAN_HUMAN_CONFIG.experimentOrder[0], // Use first experiment type for instructions
-        //     handler: showInstructionsStage
-        // },
-        {
+function createTimelineStagesForHumanHuman() {
+    timeline.stages = [];
+    timeline.mapData = {};
+
+    // =================================================================================================
+    // EXPERIMENT SETUP - LOG CURRENT CONFIGURATION
+    // =================================================================================================
+    console.log('=== EXPERIMENT CONFIGURATION ===');
+    console.log('Experiments to run:', NODEGAME_HUMAN_HUMAN_CONFIG.experimentOrder);
+    console.log('Total experiments:', NODEGAME_HUMAN_HUMAN_CONFIG.experimentOrder.length);
+
+    var totalTrials = 0;
+    NODEGAME_HUMAN_HUMAN_CONFIG.experimentOrder.forEach(expType => {
+        var trials = NODEGAME_HUMAN_HUMAN_CONFIG.numTrials[expType];
+        totalTrials += trials;
+        console.log(`- ${expType}: ${trials} trials`);
+    });
+    console.log('Total trials:', totalTrials);
+    console.log('================================');
+
+    // Add welcome screen for first experiment
+    timeline.stages.push({
+        type: 'welcome',
+        experimentType: NODEGAME_HUMAN_HUMAN_CONFIG.experimentOrder[0],
+        experimentIndex: 0,
+        handler: showWelcomeStage
+    });
+
+    // Separate single-player and multiplayer experiments
+    var singlePlayerExperiments = [];
+    var multiplayerExperiments = [];
+
+    NODEGAME_HUMAN_HUMAN_CONFIG.experimentOrder.forEach((expType, expIndex) => {
+        if (expType.includes('1P')) {
+            singlePlayerExperiments.push({ type: expType, index: expIndex });
+        } else if (expType.includes('2P')) {
+            multiplayerExperiments.push({ type: expType, index: expIndex });
+        }
+    });
+
+    // Add single-player experiments first (1P1G, 1P2G)
+    singlePlayerExperiments.forEach(({ type: experimentType, index: expIndex }) => {
+        var numTrials = NODEGAME_HUMAN_HUMAN_CONFIG.numTrials[experimentType];
+
+        console.log(`Setting up single-player experiment ${expIndex + 1}: ${experimentType} (${numTrials} trials)`);
+
+        // Select maps for this experiment
+        var experimentMaps = getMapsForExperiment(experimentType);
+        var selectedMaps = selectRandomMaps(experimentMaps, numTrials);
+        timeline.mapData[experimentType] = selectedMaps;
+
+        // Generate randomized distance condition sequence for 1P2G experiments
+        if (experimentType === '1P2G') {
+            ONEP2G_CONFIG.distanceConditionSequence = generateRandomized1P2GDistanceSequence(numTrials);
+        }
+
+        // Add trial stages for single-player experiments (fixed number)
+        for (var i = 0; i < numTrials; i++) {
+            addTrialStages(experimentType, expIndex, i);
+        }
+    });
+
+    // Add waiting for partner stage before multiplayer experiments
+    if (multiplayerExperiments.length > 0) {
+        timeline.stages.push({
             type: 'waiting_for_partner',
-            name: 'waiting_for_partner',
             handler: showWaitingForPartnerStage
+        });
+    }
+
+    // Add multiplayer experiments (2P2G, 2P3G)
+    multiplayerExperiments.forEach(({ type: experimentType, index: expIndex }) => {
+        var numTrials = NODEGAME_HUMAN_HUMAN_CONFIG.numTrials[experimentType];
+
+        console.log(`Setting up multiplayer experiment ${expIndex + 1}: ${experimentType} (${numTrials} trials)`);
+
+        // Select maps for this experiment
+        var experimentMaps = getMapsForExperiment(experimentType);
+        var selectedMaps = selectRandomMaps(experimentMaps, numTrials);
+        timeline.mapData[experimentType] = selectedMaps;
+
+        // Generate randomized distance condition sequence for 2P3G experiments
+        if (experimentType === '2P3G') {
+            TWOP3G_CONFIG.distanceConditionSequence = generateRandomizedDistanceSequence(numTrials);
         }
-    ];
 
-    // Add experiment stages for each experiment type
-    NODEGAME_HUMAN_HUMAN_CONFIG.experimentOrder.forEach((experimentType, experimentIndex) => {
-        addExperimentStages(experimentType, experimentIndex);
-    });
-
-    // Add final stages
-    timeline.stages.push(
-        {
-            type: 'questionnaire',
-            name: 'questionnaire',
-            handler: showQuestionnaireStage
-        },
-        {
-            type: 'completion',
-            name: 'completion',
-            handler: showCompletionStage
-        }
-    );
-
-    console.log(`Created timeline with ${timeline.stages.length} stages`);
-}
-
-/**
- * Add experiment stages for a specific experiment type
- */
-function addExperimentStages(experimentType, experimentIndex) {
-    const maxTrials = NODEGAME_HUMAN_HUMAN_CONFIG.numTrials[experimentType];
-
-    for (let trialIndex = 0; trialIndex < maxTrials; trialIndex++) {
-        // Pre-trial stage
-        // timeline.stages.push({
-        //     type: 'pre_trial',
-        //     name: `pre_trial_${experimentType}_${trialIndex}`,
-        //     experimentType: experimentType,
-        //     experimentIndex: experimentIndex,
-        //     trialIndex: trialIndex,
-        //     handler: showPreTrialStage
-        // });
-
-        // Fixation stage
-        timeline.stages.push({
-            type: 'fixation',
-            name: `fixation_${experimentType}_${trialIndex}`,
-            experimentType: experimentType,
-            experimentIndex: experimentIndex,
-            trialIndex: trialIndex,
-            handler: showFixationStage
-        });
-
-        // Trial stage
-        timeline.stages.push({
-            type: 'trial',
-            name: `trial_${experimentType}_${trialIndex}`,
-            experimentType: experimentType,
-            experimentIndex: experimentIndex,
-            trialIndex: trialIndex,
-            handler: runTrialStage
-        });
-
-        // Post-trial stage
-        timeline.stages.push({
-            type: 'post_trial',
-            name: `post_trial_${experimentType}_${trialIndex}`,
-            experimentType: experimentType,
-            experimentIndex: experimentIndex,
-            trialIndex: trialIndex,
-            handler: showPostTrialStage
-        });
-    }
-}
-
-/**
- * Run next stage in timeline
- */
-function runNextStage() {
-    if (timeline.currentStage >= timeline.stages.length) {
-        console.log('All stages completed');
-        return;
-    }
-
-    const stage = timeline.stages[timeline.currentStage];
-    console.log(`Running stage ${timeline.currentStage}: ${stage.name} (${stage.type})`);
-
-    // Update current experiment data if stage has experiment info
-    if (stage.experimentType) {
-        gameData.currentExperiment = stage.experimentType;
-        gameData.currentExperimentIndex = stage.experimentIndex;
-        gameData.currentTrial = stage.trialIndex;
-    }
-
-    // Run stage handler
-    if (stage.handler) {
-        stage.handler(stage);
-    } else {
-        console.warn(`No handler for stage: ${stage.name}`);
-        nextStage();
-    }
-}
-
-/**
- * Proceed to next stage
- */
-function nextStage() {
-    // Reset trial stage flag when moving to next stage
-    timeline.inTrialStage = false;
-    timeline.currentStage++;
-    runNextStage();
-}
-
-/**
- * Proceed to next stage (alias for compatibility)
- */
-function proceedToNextStage() {
-    nextStage();
-}
-
-// =================================================================================================
-// STAGE HANDLERS (based on human-AI version)
-// =================================================================================================
-
-/**
- * Show consent stage
- */
-function showConsentStage(stage) {
-    const container = document.getElementById('container');
-    container.innerHTML = `
-        <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
-            <div style="max-width: 800px; margin: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 40px;">
-                <h1 style="color: #333; text-align: center; margin-bottom: 30px;">Informed Consent for Research Participation</h1>
-
-                <div style="max-height: 400px; overflow-y: auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px; margin-bottom: 30px; background: #fafafa;">
-                    <h3>Study Title: Human-Human Collaboration in Grid World Environments</h3>
-
-                    <h4>Purpose of the Study</h4>
-                    <p>You are being invited to participate in a research study examining how two people collaborate to solve spatial navigation tasks. This study will help us understand coordination and communication in collaborative problem-solving.</p>
-
-                    <h4>What You Will Do</h4>
-                    <p>You will be paired with another participant to play collaboration games on a grid. Your goal is to work together to reach target locations. The session will take approximately 30-45 minutes and consists of:</p>
-                    <ul>
-                        <li>Reading instructions about the collaboration tasks</li>
-                        <li>Waiting to be matched with another participant</li>
-                        <li>Playing collaboration games together in real-time</li>
-                        <li>Completing a brief questionnaire about your experience</li>
-                    </ul>
-
-                    <h4>Risks and Benefits</h4>
-                    <p>There are no known risks beyond those encountered in routine daily activities. This research may contribute to our understanding of human collaboration and coordination.</p>
-
-                    <h4>Confidentiality</h4>
-                    <p>Your responses will be kept confidential. Data will be stored securely and only accessible to the research team. No personally identifying information will be collected.</p>
-
-                    <h4>Voluntary Participation</h4>
-                    <p>Your participation is completely voluntary. You may withdraw at any time without penalty. You may skip any questions you prefer not to answer.</p>
-
-                    <h4>Contact Information</h4>
-                    <p>If you have questions about this study, please contact the research team. If you have questions about your rights as a research participant, please contact your institution's IRB.</p>
-                </div>
-
-                <div style="text-align: center;">
-                    <label style="display: flex; align-items: center; justify-content: center; margin-bottom: 20px; font-size: 16px;">
-                        <input type="checkbox" id="consentCheckbox" style="margin-right: 10px; transform: scale(1.2);">
-                        I have read and understood the above information, and I consent to participate in this study.
-                    </label>
-
-                    <button id="continueBtn" disabled style="background: #28a745; color: white; border: none; padding: 12px 30px; font-size: 16px; border-radius: 5px; cursor: not-allowed; margin-right: 10px;">
-                        Continue to Experiment
-                    </button>
-
-                    <button onclick="window.close()" style="background: #6c757d; color: white; border: none; padding: 12px 30px; font-size: 16px; border-radius: 5px; cursor: pointer;">
-                        Decline and Exit
-                    </button>
-                </div>
-            </div>
-        </div>
-    `;
-
-    // Handle consent checkbox
-    const checkbox = document.getElementById('consentCheckbox');
-    const continueBtn = document.getElementById('continueBtn');
-
-    checkbox.addEventListener('change', function() {
-        if (this.checked) {
-            continueBtn.disabled = false;
-            continueBtn.style.cursor = 'pointer';
-            continueBtn.style.background = '#28a745';
+        // For collaboration games, we'll create stages dynamically based on success threshold
+        if (NODEGAME_HUMAN_HUMAN_CONFIG.successThreshold.enabled) {
+            // Add a single trial stage that will be repeated dynamically
+            addCollaborationExperimentStages(experimentType, expIndex, 0);
         } else {
-            continueBtn.disabled = true;
-            continueBtn.style.cursor = 'not-allowed';
-            continueBtn.style.background = '#ccc';
+            // Add trial stages for this experiment (fixed number)
+            for (var i = 0; i < numTrials; i++) {
+                addTrialStages(experimentType, expIndex, i);
+            }
         }
     });
 
-    continueBtn.addEventListener('click', function() {
-        if (!this.disabled) {
-            nextStage();
-        }
+    // Add post-questionnaire stage (only once at the end, before completion)
+    timeline.stages.push({
+        type: 'questionnaire',
+        handler: showQuestionnaireStage
     });
-}
 
-/**
- * Show welcome stage
- */
-function showWelcomeStage(stage) {
-    const container = document.getElementById('container');
-    const experimentType = stage.experimentType;
-    const welcomeMessage = getWelcomeMessage(experimentType);
+    // Add end experiment info stage (matching jsPsych version)
+    timeline.stages.push({
+        type: 'end-info',
+        handler: showEndExperimentInfoStage
+    });
 
-    container.innerHTML = `
-        <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
-            <div style="max-width: 700px; margin: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 40px; text-align: center;">
-                ${welcomeMessage}
-            </div>
-        </div>
-    `;
+    // Add completion stage (only once at the end)
+    timeline.stages.push({
+        type: 'completion',
+        handler: showCompletionStage
+    });
 
-    // Set up spacebar handler (matching human-AI version)
-    function handleKeyPress(event) {
-        if (event.code === 'Space') {
-            event.preventDefault();
-            document.removeEventListener('keydown', handleKeyPress);
-            nextStage();
-        }
-    }
-
-    document.addEventListener('keydown', handleKeyPress);
-    document.body.focus();
-}
-
-/**
- * Get welcome message for experiment type (matching human-AI version exactly)
- */
-function getWelcomeMessage(experimentType) {
-    switch(experimentType) {
-        case '1P1G':
-            return '<p style="font-size:30px;">Welcome to the 1-Player-1-Goal Task. Press space bar to begin.</p>';
-        case '1P2G':
-            return '<p style="font-size:30px;">Welcome to the 1-Player-2-Goals Task. Press any key to begin.</p>';
-        case '2P2G':
-            return '<p style="font-size:30px;">Welcome to the 2-Player-2-Goals Task. Press any key to begin.</p>';
-        case '2P3G':
-            return `
-                <p style="font-size:24px; color: #333; margin-top: 30px;">
-                    The game rules have been updated!
-                </p>
-                <p style="font-size:22px; color: #333; margin-top: 20px;">
-                    In this game, a new restaurant will open during the game. This restaurant is the same as the previous two restaurants, and you can choose any of the three!
-                </p>
-                <p style="font-size:24px; margin-top: 30px;">Press <strong>space bar</strong> to begin.</p>
-            `;
-        default:
-            return '<p style="font-size:30px;">Welcome to the task. Press space bar to begin.</p>';
-    }
-}
-
-/**
- * Show instructions stage
- */
-function showInstructionsStage(stage) {
-    const container = document.getElementById('container');
-    const experimentType = stage.experimentType;
-    const instructions = getInstructionsForExperiment(experimentType);
-
-    container.innerHTML = `
-        <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
-            <div style="max-width: 700px; margin: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 40px; text-align: center;">
-                ${instructions}
-            </div>
-        </div>
-    `;
-
-    // Set up spacebar handler (matching human-AI version)
-    function handleSpacebar(event) {
-        if (event.code === 'Space') {
-            event.preventDefault();
-            document.removeEventListener('keydown', handleSpacebar);
-            nextStage();
-        }
-    }
-
-    document.addEventListener('keydown', handleSpacebar);
-    document.body.focus();
-}
-
-/**
- * Get instructions for experiment type (matching human-AI version exactly)
- */
-function getInstructionsForExperiment(experimentType) {
-    // jsPsych version didn't have detailed instructions - just welcome screens and basic controls
-    return `
-        <h3>Game Instructions</h3>
-        <p>Navigate the grid to reach the goal(s).</p>
-        ${experimentType.includes('2P') ? '<p>You will be playing with another player.</p>' : ''}
-        <p>Use the arrow keys to move your player around the grid.</p>
-    `;
+    console.log('Timeline stages created:', timeline.stages.length, 'stages');
+    console.log('Single-player experiments:', singlePlayerExperiments.map(e => e.type));
+    console.log('Multiplayer experiments:', multiplayerExperiments.map(e => e.type));
 }
 
 /**
@@ -1310,12 +1167,366 @@ function showWaitingForPartnerStage(stage) {
     }, 1000); // Wait a moment for socket to be ready
 
     // Make function globally available
-    window.handleWaitingCancel = function() {
+    window.handleWaitingCancel = function () {
         if (socket) {
             socket.disconnect();
         }
         window.close();
     };
+}
+
+
+/**
+ * Add trial stages for a specific trial
+ * @param {string} experimentType - Type of experiment
+ * @param {number} experimentIndex - Index of experiment
+ * @param {number} trialIndex - Index of trial
+ */
+function addTrialStages(experimentType, experimentIndex, trialIndex) {
+    // Fixation screen (500ms, matching jsPsych) - first thing shown for each trial
+    timeline.stages.push({
+        type: 'fixation',
+        experimentType: experimentType,
+        experimentIndex: experimentIndex,
+        trialIndex: trialIndex,
+        handler: showFixationStage
+    });
+
+    // Main trial
+    timeline.stages.push({
+        type: 'trial',
+        experimentType: experimentType,
+        experimentIndex: experimentIndex,
+        trialIndex: trialIndex,
+        handler: runTrialStage
+    });
+
+    // Post-trial feedback
+    timeline.stages.push({
+        type: 'post-trial',
+        experimentType: experimentType,
+        experimentIndex: experimentIndex,
+        trialIndex: trialIndex,
+        handler: showPostTrialStage
+    });
+}
+
+/**
+ * Add collaboration experiment stages (for 2P games with success threshold)
+ */
+function addCollaborationExperimentStages(experimentType, experimentIndex, trialIndex) {
+    // Fixation screen
+    timeline.stages.push({
+        type: 'fixation',
+        experimentType: experimentType,
+        experimentIndex: experimentIndex,
+        trialIndex: trialIndex,
+        handler: showFixationStage
+    });
+
+    // Main trial
+    timeline.stages.push({
+        type: 'trial',
+        experimentType: experimentType,
+        experimentIndex: experimentIndex,
+        trialIndex: trialIndex,
+        handler: runTrialStage
+    });
+
+    // Post-trial feedback with dynamic continuation
+    timeline.stages.push({
+        type: 'post-trial',
+        experimentType: experimentType,
+        experimentIndex: experimentIndex,
+        trialIndex: trialIndex,
+        handler: showPostTrialStage
+    });
+}
+
+/**
+ * Add next trial stages dynamically for collaboration games
+ * @param {string} experimentType - Type of experiment
+ * @param {number} experimentIndex - Index of experiment
+ * @param {number} trialIndex - Index of trial
+ */
+function addNextTrialStages(experimentType, experimentIndex, trialIndex) {
+    // Find the current post-trial stage index
+    var currentStageIndex = timeline.currentStage;
+
+    // Insert the next trial stages after the current post-trial stage
+    var stagesToInsert = [
+        {
+            type: 'fixation',
+            experimentType: experimentType,
+            experimentIndex: experimentIndex,
+            trialIndex: trialIndex,
+            handler: showFixationStage
+        },
+        {
+            type: 'trial',
+            experimentType: experimentType,
+            experimentIndex: experimentIndex,
+            trialIndex: trialIndex,
+            handler: runTrialStage
+        },
+        {
+            type: 'post-trial',
+            experimentType: experimentType,
+            experimentIndex: experimentIndex,
+            trialIndex: trialIndex,
+            handler: showPostTrialStage
+        }
+    ];
+
+    // Insert stages after current stage
+    timeline.stages.splice(currentStageIndex + 1, 0, ...stagesToInsert);
+
+    console.log(`Added next trial stages for ${experimentType} trial ${trialIndex + 1}`);
+}
+
+/**
+ * Fallback rendering function using exact human-AI version parameters
+ */
+function renderGameBoardFallback() {
+    // First try to find the canvas by ID
+    let canvas = document.getElementById('gameCanvas');
+
+    // If not found by ID, try to find canvas inside the gameCanvas container
+    if (!canvas || canvas.tagName !== 'CANVAS') {
+        const canvasContainer = document.getElementById('gameCanvas');
+        if (canvasContainer) {
+            canvas = canvasContainer.querySelector('canvas');
+        }
+    }
+
+    // If still not found, try to find any canvas
+    if (!canvas || canvas.tagName !== 'CANVAS') {
+        canvas = document.querySelector('canvas');
+    }
+
+    if (!canvas || canvas.tagName !== 'CANVAS') {
+        // If still no canvas, create one in the game container
+        const canvasContainer = document.getElementById('gameCanvas');
+
+        if (canvasContainer) {
+            canvas = createGameCanvas();
+            canvasContainer.appendChild(canvas);
+        } else {
+            console.error('No canvas container found for rendering');
+            return;
+        }
+    }
+
+    // Ensure we have a valid canvas element
+    if (!canvas || typeof canvas.getContext !== 'function') {
+        console.error('Invalid canvas element');
+        return;
+    }
+
+    const ctx = canvas.getContext('2d');
+
+    // Use exact same parameters as human-AI version
+    canvas.width = WINSETTING.w;
+    canvas.height = WINSETTING.h;
+    canvas.style.marginLeft = 0;
+    canvas.style.marginTop = 0;
+
+    // Draw background using COLORPOOL.line like human-AI version
+    ctx.fillStyle = COLORPOOL.line;
+    ctx.fillRect(0 - EXPSETTINGS.padding,
+        0 - EXPSETTINGS.padding,
+        WINSETTING.w + EXPSETTINGS.padding,
+        WINSETTING.h + EXPSETTINGS.padding);
+
+    // Draw grid background using exact human-AI parameters (first pass: everything except goals and players)
+    const gridSize = EXPSETTINGS.matrixsize;
+    for (let row = 0; row < gridSize; row++) {
+        for (let col = 0; col < gridSize; col++) {
+            const x = col * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding;
+            const y = row * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding;
+
+            // Check if this cell is an obstacle
+            let cellValue = 0; // Default to empty
+            if (gameData && gameData.gridMatrix && gameData.gridMatrix[row] && gameData.gridMatrix[row][col] !== undefined) {
+                cellValue = gameData.gridMatrix[row][col];
+            }
+
+            // Use COLORPOOL colors like human-AI version
+            if (cellValue === 1) { // OBJECT.obstacle
+                ctx.fillStyle = COLORPOOL.obstacle; // black
+            } else {
+                ctx.fillStyle = COLORPOOL.map; // white
+            }
+
+            ctx.fillRect(x, y, EXPSETTINGS.cellSize, EXPSETTINGS.cellSize);
+        }
+    }
+
+    // Second pass: draw players
+    if (gameData && gameData.currentExperiment && gameData.currentExperiment.includes('1P')) {
+        // Single-player experiments (1P1G, 1P2G)
+        if (gameData.currentPlayerPos && gameData.currentPlayerPos.length >= 2) {
+            // Draw single player in red
+            drawCircleHumanHuman(ctx, COLORPOOL.player, 1 / 3 * EXPSETTINGS.padding,
+                gameData.currentPlayerPos[1], gameData.currentPlayerPos[0], 0, 2 * Math.PI);
+        }
+    } else {
+        // Multiplayer experiments (2P2G, 2P3G)
+        if (gameData && gameData.playerStartPos && gameData.partnerStartPos &&
+            gameData.playerStartPos.length >= 2 && gameData.partnerStartPos.length >= 2) {
+
+            // Check if players are in the same position
+            if (gameData.playerStartPos[0] === gameData.partnerStartPos[0] &&
+                gameData.playerStartPos[1] === gameData.partnerStartPos[1]) {
+                // Draw overlapping circles
+                drawOverlappingCirclesHumanHuman(ctx, gameData.playerStartPos[1], gameData.playerStartPos[0]);
+            } else {
+                // Determine colors based on player order (with fallback)
+                let myColor, partnerColor;
+                const playerOrder = window.playerOrder || { isFirstPlayer: true }; // Fallback to first player
+
+                if (playerOrder.isFirstPlayer) {
+                    // I am the first player (red), partner is second (orange)
+                    myColor = COLORPOOL.player; // red
+                    partnerColor = "orange";
+                } else {
+                    // I am the second player (orange), partner is first (red)
+                    myColor = "orange";
+                    partnerColor = COLORPOOL.player; // red
+                }
+
+                // Draw my player
+                drawCircleHumanHuman(ctx, myColor, 1 / 3 * EXPSETTINGS.padding,
+                    gameData.playerStartPos[1], gameData.playerStartPos[0], 0, 2 * Math.PI);
+
+                // Draw partner
+                drawCircleHumanHuman(ctx, partnerColor, 1 / 3 * EXPSETTINGS.padding,
+                    gameData.partnerStartPos[1], gameData.partnerStartPos[0], 0, 2 * Math.PI);
+            }
+        } else if (gameData && gameData.playerStartPos && gameData.playerStartPos.length >= 2) {
+            // Only draw player
+            const playerOrder = window.playerOrder || { isFirstPlayer: true }; // Fallback to first player
+            let myColor = playerOrder.isFirstPlayer ? COLORPOOL.player : "orange";
+            drawCircleHumanHuman(ctx, myColor, 1 / 3 * EXPSETTINGS.padding,
+                gameData.playerStartPos[1], gameData.playerStartPos[0], 0, 2 * Math.PI);
+        } else if (gameData && gameData.partnerStartPos && gameData.partnerStartPos.length >= 2) {
+            // Only draw partner
+            const playerOrder = window.playerOrder || { isFirstPlayer: true }; // Fallback to first player
+            let partnerColor = playerOrder.isFirstPlayer ? "orange" : COLORPOOL.player;
+            drawCircleHumanHuman(ctx, partnerColor, 1 / 3 * EXPSETTINGS.padding,
+                gameData.partnerStartPos[1], gameData.partnerStartPos[0], 0, 2 * Math.PI);
+        }
+    }
+
+    // Third pass: ALWAYS draw goals at their intended positions (matching human-AI version)
+    // This ensures goals are always shown even if they were overwritten in the matrix
+    if (gameData && gameData.currentGoals && Array.isArray(gameData.currentGoals) && gameData.currentGoals.length > 0) {
+        ctx.fillStyle = COLORPOOL.goal;
+        ctx.globalAlpha = 0.5; // Make it more transparent for overlay (matching human-AI)
+
+        // Draw all goals (supports 2 or 3 goals)
+        gameData.currentGoals.forEach((goal, index) => {
+            if (goal && goal.length >= 2) {
+                const x = goal[1] * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding;
+                const y = goal[0] * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding;
+
+                ctx.fillRect(x, y, EXPSETTINGS.cellSize, EXPSETTINGS.cellSize);
+            }
+        });
+
+        ctx.globalAlpha = 1.0; // Reset transparency
+    } else {
+        console.log('=== NO GOALS TO DRAW ===');
+        console.log('gameData exists:', !!gameData);
+        console.log('gameData.currentGoals:', gameData ? gameData.currentGoals : 'gameData is null');
+        console.log('Goals array is invalid or empty');
+    }
+}
+
+/**
+ * Generate randomized distance condition sequence for 2P3G trials
+ * Uses helper function from nodeGameHelpers.js
+ * @param {number} numTrials - Number of 2P3G trials
+ * @returns {Array} - Randomized array of distance conditions
+ */
+function generateRandomizedDistanceSequence(numTrials) {
+    return window.NodeGameHelpers.generateRandomizedDistanceSequence(numTrials);
+}
+
+/**
+ * Generate randomized distance condition sequence for 1P2G trials
+ * Uses helper function from nodeGameHelpers.js
+ * @param {number} numTrials - Number of 1P2G trials
+ * @returns {Array} - Randomized array of distance conditions
+ */
+function generateRandomized1P2GDistanceSequence(numTrials) {
+    return window.NodeGameHelpers.generateRandomized1P2GDistanceSequence(numTrials);
+}
+
+/**
+ * Get maps for a specific experiment type
+ * Uses helper function from nodeGameHelpers.js
+ * @param {string} experimentType - Type of experiment
+ * @returns {Array} - Array of maps for the experiment
+ */
+function getMapsForExperiment(experimentType) {
+    return window.NodeGameHelpers.getMapsForExperiment(experimentType);
+}
+
+/**
+ * Select random maps for trials
+ * Uses helper function from nodeGameHelpers.js
+ * @param {Object} mapData - Object containing available maps
+ * @param {number} nTrials - Number of trials
+ * @returns {Array} - Array of selected maps
+ */
+function selectRandomMaps(mapData, nTrials) {
+    return window.NodeGameHelpers.selectRandomMaps(mapData, nTrials);
+}
+
+/**
+ * Run next stage in timeline
+ */
+function runNextStage() {
+    if (timeline.currentStage >= timeline.stages.length) {
+        console.log('All stages completed');
+        return;
+    }
+
+    const stage = timeline.stages[timeline.currentStage];
+    console.log(`Running stage ${timeline.currentStage}: ${stage.name} (${stage.type})`);
+
+    // Update current experiment data if stage has experiment info
+    if (stage.experimentType) {
+        gameData.currentExperiment = stage.experimentType;
+        gameData.currentExperimentIndex = stage.experimentIndex;
+        gameData.currentTrial = stage.trialIndex;
+    }
+
+    // Run stage handler
+    if (stage.handler) {
+        stage.handler(stage);
+    } else {
+        console.warn(`No handler for stage: ${stage.name}`);
+        nextStage();
+    }
+}
+
+/**
+ * Proceed to next stage
+ */
+function nextStage() {
+    // Reset trial stage flag when moving to next stage
+    timeline.inTrialStage = false;
+    timeline.currentStage++;
+    runNextStage();
+}
+
+/**
+ * Proceed to next stage (alias for compatibility)
+ */
+function proceedToNextStage() {
+    nextStage();
 }
 
 /**
@@ -1329,253 +1540,178 @@ function updateWaitingStatus(message) {
 }
 
 /**
- * Show partner disconnected message
- */
-function showPartnerDisconnectedMessage() {
-    const container = document.getElementById('container');
-    container.innerHTML = `
-        <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
-            <div style="max-width: 600px; margin: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 40px; text-align: center;">
-                <h1 style="color: #dc3545; margin-bottom: 30px;">Partner Disconnected</h1>
-
-                <div style="font-size: 18px; color: #666; margin-bottom: 30px;">
-                    <p>Your partner has left the experiment.</p>
-                    <p>We're looking for a new partner for you...</p>
-                </div>
-
-                <div style="margin: 40px 0;">
-                    <div class="spinner" style="border: 4px solid #f3f3f3; border-top: 4px solid #007bff; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 0 auto;"></div>
-                </div>
-
-                <button onclick="location.reload()" style="background: #007bff; color: white; border: none; padding: 12px 24px; font-size: 16px; border-radius: 5px; cursor: pointer; margin-right: 10px;">
-                    Reconnect
-                </button>
-
-                <button onclick="window.close()" style="background: #6c757d; color: white; border: none; padding: 12px 24px; font-size: 16px; border-radius: 5px; cursor: pointer;">
-                    Exit Experiment
-                </button>
-            </div>
-        </div>
-
-        <style>
-            @keyframes spin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
-            }
-        </style>
-    `;
-}
-
-/**
- * Show disconnection message
- */
-function showDisconnectionMessage() {
-    const container = document.getElementById('container');
-    container.innerHTML = `
-        <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
-            <div style="max-width: 600px; margin: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 40px; text-align: center;">
-                <h1 style="color: #dc3545; margin-bottom: 30px;">Connection Lost</h1>
-
-                <div style="font-size: 18px; color: #666; margin-bottom: 30px;">
-                    <p>The connection to the server has been lost.</p>
-                    <p>Please check your internet connection and try again.</p>
-                </div>
-
-                <button onclick="location.reload()" style="background: #007bff; color: white; border: none; padding: 12px 24px; font-size: 16px; border-radius: 5px; cursor: pointer; margin-right: 10px;">
-                    Reconnect
-                </button>
-
-                <button onclick="window.close()" style="background: #6c757d; color: white; border: none; padding: 12px 24px; font-size: 16px; border-radius: 5px; cursor: pointer;">
-                    Exit Experiment
-                </button>
-            </div>
-        </div>
-    `;
-}
-
-/**
- * Show error message
- */
-function showErrorMessage(message) {
-    const container = document.getElementById('container');
-    container.innerHTML = `
-        <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
-            <div style="max-width: 600px; margin: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 40px; text-align: center;">
-                <h1 style="color: #dc3545; margin-bottom: 30px;">Error</h1>
-
-                <div style="font-size: 18px; color: #666; margin-bottom: 30px;">
-                    <p>${message}</p>
-                </div>
-
-                <button onclick="location.reload()" style="background: #007bff; color: white; border: none; padding: 12px 24px; font-size: 16px; border-radius: 5px; cursor: pointer; margin-right: 10px;">
-                    Retry
-                </button>
-
-                <button onclick="window.close()" style="background: #6c757d; color: white; border: none; padding: 12px 24px; font-size: 16px; border-radius: 5px; cursor: pointer;">
-                    Exit
-                </button>
-            </div>
-        </div>
-    `;
-}
-
-/**
- * Show server not running message
- */
-function showServerNotRunningMessage() {
-    const container = document.getElementById('container');
-    container.innerHTML = `
-        <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
-            <div style="max-width: 700px; margin: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 40px;">
-                <h1 style="color: #dc3545; text-align: center; margin-bottom: 30px;">🔌 Server Not Running</h1>
-
-                <div style="background: #f8d7da; border: 1px solid #f5c6cb; border-radius: 5px; padding: 20px; margin-bottom: 30px;">
-                    <h3 style="color: #721c24; margin-top: 0;">The Human-Human Experiment Server is Not Started</h3>
-                    <p style="color: #721c24; margin-bottom: 0;">
-                        The human-human version requires a Socket.io server for real-time multiplayer functionality.
-                    </p>
-                </div>
-
-                <div style="background: #d4edda; border: 1px solid #c3e6cb; border-radius: 5px; padding: 20px; margin-bottom: 30px;">
-                    <h3 style="color: #155724; margin-top: 0;">How to Start the Server:</h3>
-                    <ol style="color: #155724; margin-bottom: 10px;">
-                        <li>Open a terminal/command prompt</li>
-                        <li>Navigate to the project directory</li>
-                        <li>Run: <code style="background: #f8f9fa; padding: 2px 6px; border-radius: 3px;">npm start</code></li>
-                        <li>Wait for "Server running on port 3000" message</li>
-                        <li>Refresh this page</li>
-                    </ol>
-                    <p style="color: #155724; margin-bottom: 0; font-size: 14px;">
-                        <strong>Note:</strong> You'll need two browser windows/tabs to test the multiplayer functionality.
-                    </p>
-                </div>
-
-                <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 5px; padding: 15px; margin-bottom: 30px;">
-                    <h4 style="color: #856404; margin-top: 0;">Alternative: Try the Human-AI Version</h4>
-                    <p style="color: #856404; margin-bottom: 10px;">
-                        If you want to test the experiment without setting up multiplayer, you can use the human-AI version instead.
-                    </p>
-                    <button onclick="window.location.href='test_human-AI version.html'" style="background: #ffc107; color: #212529; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
-                        Go to Human-AI Version
-                    </button>
-                </div>
-
-                <div style="text-align: center;">
-                    <button onclick="location.reload()" style="background: #007bff; color: white; border: none; padding: 12px 24px; font-size: 16px; border-radius: 5px; cursor: pointer; margin-right: 10px;">
-                        Try Again
-                    </button>
-
-                    <button onclick="window.location.href='index.html'" style="background: #6c757d; color: white; border: none; padding: 12px 24px; font-size: 16px; border-radius: 5px; cursor: pointer;">
-                        Back to Main Page
-                    </button>
-                </div>
-
-                <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; font-size: 14px; color: #6c757d;">
-                    <h4>Technical Details:</h4>
-                    <ul>
-                        <li>Server file: <code>server.js</code></li>
-                        <li>Default port: <code>3000</code></li>
-                        <li>Required dependencies: <code>express</code>, <code>socket.io</code></li>
-                        <li>Install command: <code>npm install</code></li>
-                        <li>Start command: <code>npm start</code> or <code>node server.js</code></li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    `;
-}
-
-// =================================================================================================
-// TRIAL STAGES (continuing in next part due to length...)
-// =================================================================================================
-
-/**
- * Show pre-trial stage
- */
-function showPreTrialStage(stage) {
-    const experimentType = stage.experimentType;
-    const trialIndex = stage.trialIndex;
-    const maxTrials = NODEGAME_HUMAN_HUMAN_CONFIG.numTrials[experimentType];
-
-    const container = document.getElementById('container');
-    container.innerHTML = `
-        <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
-            <div style="max-width: 700px; margin: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 40px; text-align: center;">
-                <h1 style="color: #333; margin-bottom: 20px;">Trial ${trialIndex + 1} of ${maxTrials}</h1>
-                <h2 style="color: #007bff; margin-bottom: 30px;">${getExperimentDisplayName(experimentType)}</h2>
-
-                <div style="font-size: 18px; color: #666; margin-bottom: 30px;">
-                    <p>Get ready to work with your partner!</p>
-                    <p>Remember: ${getExperimentInstructions(experimentType)}</p>
-                </div>
-
-                <div style="background: #e9ecef; padding: 15px; border-radius: 5px; margin-bottom: 30px;">
-                    <p style="margin: 0; font-size: 16px; color: #495057;">
-                        Both players need to be ready. You'll automatically proceed when both are prepared.
-                    </p>
-                </div>
-
-                <div id="readyStatus" style="font-size: 16px; color: #007bff; margin-bottom: 20px;">
-                    Waiting for both players to be ready...
-                </div>
-            </div>
-        </div>
-    `;
-
-    // Auto-proceed after a short delay
-    setTimeout(() => {
-        nextStage();
-    }, NODEGAME_HUMAN_HUMAN_CONFIG.timing.preTrialDisplayDuration);
-}
-
-/**
- * Show fixation stage
- */
-function showFixationStage(stage) {
-    const container = document.getElementById('container');
-    container.innerHTML = `
-        <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
-            <div style="text-align: center;">
-                <div id="gameCanvas" style="margin-bottom: 20px;"></div>
-            </div>
-        </div>
-    `;
-
-    // Create and draw canvas with fixation display matching human-AI version
-    const canvas = createGameCanvas();
-    document.getElementById('gameCanvas').appendChild(canvas);
-    drawFixationDisplayHumanHuman(canvas);
-
-    setTimeout(() => {
-        nextStage();
-    }, NODEGAME_HUMAN_HUMAN_CONFIG.timing.fixationDuration);
-}
-
-/**
  * Run trial stage
  */
 function runTrialStage(stage) {
     const experimentType = stage.experimentType;
     const trialIndex = stage.trialIndex;
+    const experimentIndex = stage.experimentIndex;
 
     console.log(`Running trial ${trialIndex} for experiment ${experimentType}`);
+
+    // Set current experiment type
+    gameData.currentExperiment = experimentType;
+
+    // Setup the HTML container (matching human-AI version)
+    const container = document.getElementById('container');
+
+    // Determine player color for multiplayer games
+    let playerColor = 'red';
+    if (experimentType.includes('2P') && playerOrder && playerOrder.isFirstPlayer !== undefined) {
+        playerColor = playerOrder.isFirstPlayer ? 'red' : 'orange';
+    }
+
+    container.innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
+            <div style="text-align: center;">
+                <h3 style="margin-bottom: 10px;">Experiment: ${getExperimentDisplayName(experimentType)}</h3>
+                <h4 style="margin-bottom: 20px;">Trial ${trialIndex + 1}</h4>
+                <div id="gameCanvas" style="margin-bottom: 20px; position: relative;"></div>
+                <p style="font-size: 20px;">You are the player <span style="display: inline-block; width: 18px; height: 18px; background-color: ${playerColor}; border-radius: 50%; vertical-align: middle;"></span>. Press ↑ ↓ ← → to move.</p>
+            </div>
+        </div>
+    `;
+
+    // Create canvas for game visualization
+    const canvas = createGameCanvas();
+    document.getElementById('gameCanvas').appendChild(canvas);
 
     // Initialize client-side trial data tracking
     initializeTrialData(trialIndex, experimentType);
 
+    // Set game start time
+    gameData.gameStartTime = Date.now();
+
+    if (experimentType.includes('1P')) {
+        // Single-player experiments (1P1G, 1P2G) - run locally
+        console.log('Running single-player experiment locally');
+        runSinglePlayerTrial(experimentType, trialIndex);
+
+        // Show the full game board after trial setup is complete for single-player
+        // This ensures the game board is shown after fixation ends
+        updateGameVisualization();
+    } else if (experimentType.includes('2P')) {
+        // Multiplayer experiments (2P2G, 2P3G) - use server
+        console.log('Running multiplayer experiment with server');
+        runMultiplayerTrial(experimentType, trialIndex);
+
+        // For multiplayer, don't call updateGameVisualization here
+        // The visualization will be updated when the server sends the game state
+        // in the 'game_started' event
+    } else {
+        console.error('Unknown experiment type:', experimentType);
+    }
+}
+
+/**
+ * Run single-player trial (1P1G, 1P2G)
+ */
+function runSinglePlayerTrial(experimentType, trialIndex) {
+    // Get the map design for this trial
+    const mapDesign = timeline.mapData[experimentType][trialIndex];
+
+    if (!mapDesign) {
+        console.error('No map design found for trial', trialIndex, 'in experiment', experimentType);
+        return;
+    }
+
+    // Setup the game state for single-player
+    gameData.gridMatrix = Array(15).fill(0).map(() => Array(15).fill(0));
+    gameData.currentGoals = [];
+
+    // Setup goals based on experiment type
+    if (mapDesign.target1) {
+        gameData.currentGoals.push(mapDesign.target1);
+    }
+    if (mapDesign.target2) {
+        gameData.currentGoals.push(mapDesign.target2);
+    }
+    if (mapDesign.target3) {
+        gameData.currentGoals.push(mapDesign.target3);
+    }
+
+    // Set player position
+    gameData.playerStartPos = mapDesign.initPlayerGrid;
+    gameData.currentPlayerPos = [...mapDesign.initPlayerGrid];
+    gameData.currentExperiment = experimentType;
+
+    // Don't show game board immediately - wait for fixation to end
+    // The game board will be shown when the trial actually starts
+
+    // Enable keyboard controls for single-player
+    isGameActive = true;
+    setupKeyboardControls();
+    console.log('Single-player trial running, keyboard controls enabled.');
+    console.log('Game data:', {
+        currentExperiment: gameData.currentExperiment,
+        currentPlayerPos: gameData.currentPlayerPos,
+        currentGoals: gameData.currentGoals,
+        gridMatrix: gameData.gridMatrix
+    });
+}
+
+/**
+ * Run multiplayer trial (2P2G, 2P3G)
+ */
+function runMultiplayerTrial(experimentType, trialIndex) {
     // The game design and state are determined by the server and have already been
     // populated in the `game_started` event handler.
     // We just need to render it and enable controls.
+    updateGameVisualization();
 
-    // Setup trial visualization using the data from the server
-    setupTrialVisualization(experimentType);
+    // Don't show game board immediately - wait for fixation to end
+    // The game board will be shown when the trial actually starts
 
     // Game started - controls are already shown below the canvas
     // The game is already active from the `game_started` event.
     // We just need to enable keyboard controls for this client.
     isGameActive = true;
     setupKeyboardControls();
-    console.log('Trial running, keyboard controls enabled.');
+    console.log('Multiplayer trial running, keyboard controls enabled.');
+
+    // Initialize default values for multiplayer games to prevent undefined errors
+    if (experimentType && experimentType.includes('2P')) {
+        // Set default values that will be overridden by server data
+        // gameData.currentPlayerPos = [0, 0]; // Will be updated by server
+        // gameData.currentGoals = []; // Will be updated by server
+        // gameData.gridMatrix = Array(15).fill(0).map(() => Array(15).fill(0)); // Will be updated by server
+        console.log('Initialized default values for multiplayer trial');
+    }
+
+    // Generate distance condition sequence for 2P3G experiments (matching human-AI version)
+    if (experimentType === '2P3G') {
+        // Distance condition is now provided by the server
+        console.log(`=== 2P3G Trial ${trialIndex + 1} Setup ===`);
+        console.log(`Experiment type: ${experimentType}`);
+        console.log(`Trial index: ${trialIndex}`);
+        console.log(`Distance condition: Will be provided by server`);
+        console.log(`========================================`);
+
+        // Reset 2P3G specific variables for new trial (matching human-AI version)
+        newGoalPresented = false;
+        newGoalPosition = null;
+        isNewGoalCloserToPlayer2 = null;
+        player1InferredGoals = [];
+        player2InferredGoals = [];
+        isFrozen = false;
+        if (freezeTimeout) {
+            clearTimeout(freezeTimeout);
+            freezeTimeout = null;
+        }
+
+        // Initialize goal tracking arrays
+        gameData.currentTrialData.player1CurrentGoal = [];
+        gameData.currentTrialData.player2CurrentGoal = [];
+        gameData.currentTrialData.newGoalPresentedTime = null;
+        gameData.currentTrialData.newGoalPosition = null;
+        gameData.currentTrialData.isNewGoalCloserToPlayer2 = null;
+        gameData.currentTrialData.newGoalConditionType = null;
+        gameData.currentTrialData.newGoalDistanceToPlayer2 = null;
+        gameData.currentTrialData.newGoalDistanceToPlayer1 = null;
+        gameData.currentTrialData.newGoalDistanceSum = null;
+        gameData.currentTrialData.player2DistanceToOldGoal = null;
+        gameData.currentTrialData.player1DistanceToOldGoal = null;
+    }
 }
 
 /**
@@ -1584,21 +1720,35 @@ function runTrialStage(stage) {
 function setupTrialVisualization(experimentType) {
     const container = document.getElementById('container');
 
-    // Match the exact human-AI version layout
-    const playerColor = playerOrder.isFirstPlayer ? 'red' : 'orange';
-    container.innerHTML = `
-        <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
-            <div style="text-align: center;">
-                <h3 style="margin-bottom: 10px;">Experiment: ${getExperimentDisplayName(experimentType)}</h3>
-                <h4 style="margin-bottom: 20px;">Trial ${gameData.currentTrial + 1}</h4>
-                <div id="gameCanvas" style="margin-bottom: 20px; position: relative;"></div>
-                <p style="font-size: 20px;">You are the player <span style="display: inline-block; width: 18px; height: 18px; background-color: ${playerColor}; border-radius: 50%; vertical-align: middle;"></span>. Press ↑ ↓ ← → to move.</p>
+    if (experimentType.includes('1P')) {
+        // Single-player experiments (1P1G, 1P2G)
+        container.innerHTML = `
+            <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
+                <div style="text-align: center;">
+                    <h3 style="margin-bottom: 10px;">Experiment: ${getExperimentDisplayName(experimentType)}</h3>
+                    <h4 style="margin-bottom: 20px;">Trial ${gameData.currentTrial + 1}</h4>
+                    <div id="gameCanvas" style="margin-bottom: 20px; position: relative;"></div>
+                    <p style="font-size: 20px;">You are the player <span style="display: inline-block; width: 18px; height: 18px; background-color: red; border-radius: 50%; vertical-align: middle;"></span>. Press ↑ ↓ ← → to move.</p>
+                </div>
             </div>
-        </div>
-    `;
+        `;
+    } else if (experimentType.includes('2P')) {
+        // Multiplayer experiments (2P2G, 2P3G)
+        const playerColor = playerOrder.isFirstPlayer ? 'red' : 'orange';
+        container.innerHTML = `
+            <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
+                <div style="text-align: center;">
+                    <h3 style="margin-bottom: 10px;">Experiment: ${getExperimentDisplayName(experimentType)}</h3>
+                    <h4 style="margin-bottom: 20px;">Trial ${gameData.currentTrial + 1}</h4>
+                    <div id="gameCanvas" style="margin-bottom: 20px; position: relative;"></div>
+                    <p style="font-size: 20px;">You are the player <span style="display: inline-block; width: 18px; height: 18px; background-color: ${playerColor}; border-radius: 50%; vertical-align: middle;"></span>. Press ↑ ↓ ← → to move.</p>
+                </div>
+            </div>
+        `;
+    }
 
     // Setup canvas and game visualization
-    console.log('Setting up trial visualization...');
+    console.log('Setting up trial visualization for', experimentType);
     const canvasContainer = document.getElementById('gameCanvas');
     console.log('Canvas container found in setup:', !!canvasContainer);
 
@@ -1678,61 +1828,39 @@ function handleKeyPress(event) {
             return;
     }
 
-    // Check if player has already reached a goal (for 2P2G and 2P3G)
-    if (gameData.currentExperiment && (gameData.currentExperiment === '2P2G' || gameData.currentExperiment === '2P3G')) {
+    // Handle different experiment types
+    if (gameData.currentExperiment && gameData.currentExperiment.includes('1P')) {
+        // Single-player experiments (1P1G, 1P2G)
+        console.log('Processing single-player key press:', key, 'Action:', action);
+        makeSinglePlayerMove(action);
+        } else if (gameData.currentExperiment && gameData.currentExperiment.includes('2P')) {
+        // Multiplayer experiments (2P2G, 2P3G)
+        // Check if player has already reached a goal
         if (isGoalReached(gameData.playerStartPos, gameData.currentGoals)) {
             console.log('Player already reached goal, movement blocked');
             return;
         }
+        console.log('Processing multiplayer key press:', key, 'Action:', action);
+        makeMultiplayerMove(action);
+    } else {
+        console.log('Processing key press:', key, 'Action:', action);
+        makeMultiplayerMove(action); // Default fallback
     }
-
-    console.log('Processing key press:', key, 'Action:', action);
-    makeMultiplayerMove(action);
 }
 
 /**
- * Check if a player has reached any goal (matching human-AI version)
+ * Check if a position is valid (within grid bounds)
+ */
+function isValidPosition(position) {
+    return window.NodeGameHelpers.isValidPosition(position);
+}
+
+/**
+ * Check if a player has reached any goal
+ * Uses helper function from nodeGameHelpers.js
  */
 function isGoalReached(playerPos, goals) {
-    if (!playerPos || !goals || !Array.isArray(goals)) {
-        return false;
-    }
-
-    for (let i = 0; i < goals.length; i++) {
-        if (playerPos[0] === goals[i][0] && playerPos[1] === goals[i][1]) {
-            return true;
-        }
-    }
-    return false;
-}
-
-/**
- * Show connection lost message and provide reconnection option
- */
-function showConnectionLostMessage() {
-    const messagesEl = document.getElementById('trialMessages');
-    if (messagesEl) {
-        messagesEl.innerHTML = `
-            <div style="color: #dc3545; padding: 10px; background: #f8d7da; border: 1px solid #f5c6cb; border-radius: 4px;">
-                <strong>Connection Lost</strong><br>
-                Your connection to the server has been lost.
-                <div style="margin-top: 10px;">
-                    <button onclick="attemptReconnection()" style="background: #007bff; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin-right: 10px;">
-                        Reconnect
-                    </button>
-                    <button onclick="location.reload()" style="background: #6c757d; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">
-                        Refresh Page
-                    </button>
-                </div>
-            </div>
-        `;
-    } else {
-        // Fallback if trialMessages element doesn't exist
-        console.warn('Connection lost but no trialMessages element found');
-        if (confirm('Connection lost. Would you like to reconnect?')) {
-            attemptReconnection();
-        }
-    }
+    return window.NodeGameHelpers.isGoalReached(playerPos, goals);
 }
 
 /**
@@ -1775,475 +1903,9 @@ function removeGameBoard() {
  */
 function updateGameVisualization() {
     // For human-human multiplayer, always use our custom fallback rendering
-    // The vizWithAI.js functions don't work properly for real-time multiplayer
-    renderGameBoardFallback();
+    renderGameBoardFallback(); // see vizWithAI.js
 
-    // Pre-calculate RL policy only when a new goal is first displayed (after rendering)
-    if (window.RLAgent && window.RLAgent.precalculatePolicyForGoals && gameData.currentGoals && gameData.currentGoals.length > 0) {
-        // Check if this is a new goal presentation (3 goals instead of 2) and hasn't been pre-calculated yet
-        if (gameData.currentGoals.length === 3 && !window.newGoalPreCalculated) {
-            console.log('⚡ New goal rendered on map, pre-calculating 16-action policy (human-human):', gameData.currentGoals);
-            window.RLAgent.precalculatePolicyForGoals(gameData.currentGoals);
-            window.newGoalPreCalculated = true; // Mark as pre-calculated
-        }
-    }
 }
-
-/**
- * Create game canvas
- */
-function createGameCanvas() {
-    // Use the exact same parameters as the human-AI version
-    const canvas = document.createElement('canvas');
-    canvas.id = 'gameCanvas';
-
-    // Use WINSETTING dimensions like human-AI version
-    canvas.width = WINSETTING.w;
-    canvas.height = WINSETTING.h;
-
-    canvas.style.border = '2px solid #333';
-    canvas.style.display = 'block';
-    canvas.style.margin = '0 auto';
-    canvas.style.marginLeft = 0;
-    canvas.style.marginTop = 0;
-
-    console.log('Created canvas with ID:', canvas.id, 'Size:', canvas.width, 'x', canvas.height);
-    return canvas;
-}
-
-/**
- * Fallback rendering function using exact human-AI version parameters
- */
-function renderGameBoardFallback() {
-    // First try to find the canvas by ID
-    let canvas = document.getElementById('gameCanvas');
-
-    // If not found by ID, try to find canvas inside the gameCanvas container
-    if (!canvas || canvas.tagName !== 'CANVAS') {
-        const canvasContainer = document.getElementById('gameCanvas');
-        if (canvasContainer) {
-            canvas = canvasContainer.querySelector('canvas');
-        }
-    }
-
-    // If still not found, try to find any canvas
-    if (!canvas || canvas.tagName !== 'CANVAS') {
-        canvas = document.querySelector('canvas');
-    }
-
-    if (!canvas || canvas.tagName !== 'CANVAS') {
-        // If still no canvas, create one in the game container
-        const canvasContainer = document.getElementById('gameCanvas');
-
-        if (canvasContainer) {
-            canvas = createGameCanvas();
-            canvasContainer.appendChild(canvas);
-        } else {
-            console.error('No canvas container found for rendering');
-            return;
-        }
-    }
-
-    // Ensure we have a valid canvas element
-    if (!canvas || typeof canvas.getContext !== 'function') {
-        console.error('Invalid canvas element');
-        return;
-    }
-
-    const ctx = canvas.getContext('2d');
-
-    // Use exact same parameters as human-AI version
-    canvas.width = WINSETTING.w;
-    canvas.height = WINSETTING.h;
-    canvas.style.marginLeft = 0;
-    canvas.style.marginTop = 0;
-
-    // Draw background using COLORPOOL.line like human-AI version
-    ctx.fillStyle = COLORPOOL.line;
-    ctx.fillRect(0 - EXPSETTINGS.padding,
-        0 - EXPSETTINGS.padding,
-        WINSETTING.w + EXPSETTINGS.padding,
-        WINSETTING.h + EXPSETTINGS.padding);
-
-    // Draw grid background using exact human-AI parameters (first pass: everything except goals and players)
-    const gridSize = EXPSETTINGS.matrixsize;
-    for (let row = 0; row < gridSize; row++) {
-        for (let col = 0; col < gridSize; col++) {
-            const x = col * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding;
-            const y = row * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding;
-
-            // Check if this cell is an obstacle
-            let cellValue = 0; // Default to empty
-            if (gameData.gridMatrix && gameData.gridMatrix[row] && gameData.gridMatrix[row][col] !== undefined) {
-                cellValue = gameData.gridMatrix[row][col];
-            }
-
-            // Use COLORPOOL colors like human-AI version
-            if (cellValue === 1) { // OBJECT.obstacle
-                ctx.fillStyle = COLORPOOL.obstacle; // black
-            } else {
-                ctx.fillStyle = COLORPOOL.map; // white
-            }
-
-            ctx.fillRect(x, y, EXPSETTINGS.cellSize, EXPSETTINGS.cellSize);
-        }
-    }
-
-    // Second pass: draw players with overlap detection (like human-AI version)
-    if (gameData.playerStartPos && gameData.partnerStartPos &&
-        gameData.playerStartPos.length >= 2 && gameData.partnerStartPos.length >= 2) {
-
-        // Check if players are in the same position
-        if (gameData.playerStartPos[0] === gameData.partnerStartPos[0] &&
-            gameData.playerStartPos[1] === gameData.partnerStartPos[1]) {
-            // Draw overlapping circles
-            drawOverlappingCirclesHumanHuman(ctx, gameData.playerStartPos[1], gameData.playerStartPos[0]);
-        } else {
-                        // Determine colors based on player order
-            let myColor, partnerColor;
-            if (playerOrder.isFirstPlayer) {
-                // I am the first player (red), partner is second (orange)
-                myColor = COLORPOOL.player; // red
-                partnerColor = "orange";
-            } else {
-                // I am the second player (orange), partner is first (red)
-                myColor = "orange";
-                partnerColor = COLORPOOL.player; // red
-            }
-
-            // Draw my player
-            drawCircleHumanHuman(ctx, myColor, 1/3 * EXPSETTINGS.padding,
-                gameData.playerStartPos[1], gameData.playerStartPos[0], 0, 2 * Math.PI);
-
-            // Draw partner
-            drawCircleHumanHuman(ctx, partnerColor, 1/3 * EXPSETTINGS.padding,
-                gameData.partnerStartPos[1], gameData.partnerStartPos[0], 0, 2 * Math.PI);
-        }
-    } else if (gameData.playerStartPos && gameData.playerStartPos.length >= 2) {
-        // Only draw player
-        let myColor = playerOrder.isFirstPlayer ? COLORPOOL.player : "orange";
-        drawCircleHumanHuman(ctx, myColor, 1/3 * EXPSETTINGS.padding,
-            gameData.playerStartPos[1], gameData.playerStartPos[0], 0, 2 * Math.PI);
-    } else if (gameData.partnerStartPos && gameData.partnerStartPos.length >= 2) {
-        // Only draw partner
-        let partnerColor = playerOrder.isFirstPlayer ? "orange" : COLORPOOL.player;
-        drawCircleHumanHuman(ctx, partnerColor, 1/3 * EXPSETTINGS.padding,
-            gameData.partnerStartPos[1], gameData.partnerStartPos[0], 0, 2 * Math.PI);
-    }
-
-    // Third pass: ALWAYS draw goals at their intended positions (matching human-AI version)
-    // This ensures goals are always shown even if they were overwritten in the matrix
-    if (gameData.currentGoals && Array.isArray(gameData.currentGoals)) {
-        ctx.fillStyle = COLORPOOL.goal;
-        ctx.globalAlpha = 0.5; // Make it more transparent for overlay (matching human-AI)
-
-        // Draw all goals (supports 2 or 3 goals)
-        gameData.currentGoals.forEach((goal, index) => {
-            if (goal && goal.length >= 2) {
-                const x = goal[1] * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding;
-                const y = goal[0] * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding;
-
-                ctx.fillRect(x, y, EXPSETTINGS.cellSize, EXPSETTINGS.cellSize);
-            }
-        });
-
-        ctx.globalAlpha = 1.0; // Reset transparency
-    } else {
-        console.log('=== NO GOALS TO DRAW ===');
-        console.log('Goals array is invalid:', gameData.currentGoals);
-    }
-}
-
-/**
- * Draw fixation display matching exact human-AI version parameters
- */
-function drawFixationDisplayHumanHuman(canvas) {
-    const context = canvas.getContext("2d");
-    canvas.width = WINSETTING.w;
-    canvas.height = WINSETTING.h;
-
-    canvas.style.marginLeft = 0;
-    canvas.style.marginTop = 0;
-
-    // Draw background using COLORPOOL.line like human-AI version
-    context.fillStyle = COLORPOOL.line;
-    context.fillRect(0 - EXPSETTINGS.padding,
-        0 - EXPSETTINGS.padding,
-        WINSETTING.w + EXPSETTINGS.padding,
-        WINSETTING.h + EXPSETTINGS.padding);
-
-    // Draw empty grid (all cells as map color) like human-AI version
-    for (let row = 0; row < EXPSETTINGS.matrixsize; row++) {
-        for (let col = 0; col < EXPSETTINGS.matrixsize; col++) {
-            context.fillStyle = COLORPOOL.map;
-            context.fillRect(col * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding,
-                row * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding,
-                EXPSETTINGS.cellSize, EXPSETTINGS.cellSize);
-        }
-    }
-
-    // Draw fixation cross in center like human-AI version
-    drawFixationCrossHumanHuman(context, [Math.floor(EXPSETTINGS.matrixsize/2), Math.floor(EXPSETTINGS.matrixsize/2)], 1/5, 2 * EXPSETTINGS.padding);
-}
-
-/**
- * Draw fixation cross matching exact human-AI version parameters
- */
-function drawFixationCrossHumanHuman(context, fixationPos, posScale, lineWidth) {
-    let col = fixationPos[1];
-    let row = fixationPos[0];
-    context.lineWidth = lineWidth;
-    context.strokeStyle = COLORPOOL.fixation;
-
-    context.beginPath();
-    // Horizontal line
-    context.moveTo(col * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding + posScale * EXPSETTINGS.cellSize,
-        row * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding + 1/2 * EXPSETTINGS.cellSize);
-    context.lineTo(col * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding + (1-posScale) * EXPSETTINGS.cellSize,
-        row * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding + 1/2 * EXPSETTINGS.cellSize);
-
-    // Vertical line
-    context.moveTo(col * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + 1/2 * EXPSETTINGS.cellSize + EXPSETTINGS.padding,
-        row * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + posScale * EXPSETTINGS.cellSize + EXPSETTINGS.padding);
-    context.lineTo(col * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + 1/2 * EXPSETTINGS.cellSize + EXPSETTINGS.padding,
-        row * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + (1-posScale) * EXPSETTINGS.cellSize + EXPSETTINGS.padding);
-    context.stroke();
-}
-
-/**
- * Draw circle function matching exact human-AI version parameters
- */
-function drawCircleHumanHuman(context, color, lineWidth, colPos, rowPos, startAngle, tmpAngle) {
-    // First draw white background (like human-AI version)
-    context.fillStyle = COLORPOOL.map;
-    context.fillRect(colPos * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding,
-        rowPos * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding,
-        EXPSETTINGS.cellSize, EXPSETTINGS.cellSize);
-
-    // Use exact same circle radius as human-AI version
-    const circleRadius = EXPSETTINGS.cellSize * 0.4;
-
-    // Then draw circle with exact human-AI parameters
-    context.beginPath();
-    context.lineWidth = lineWidth;
-    context.strokeStyle = color;
-    context.fillStyle = color;
-    context.arc(colPos * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding + EXPSETTINGS.cellSize/2,
-        rowPos * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding + EXPSETTINGS.cellSize/2,
-        circleRadius,
-        startAngle, tmpAngle);
-    context.fill();
-    context.stroke();
-}
-
-
-
-/**
- * Show new goal message (matching human-AI version)
- */
-function showNewGoalMessage() {
-    // Find the game canvas container
-    var gameCanvas = document.querySelector('#gameCanvas');
-
-    if (!gameCanvas) {
-        console.warn('Game canvas container not found for new goal message');
-        // Try alternative selectors
-        var alternativeCanvas = document.querySelector('.game-container') || document.querySelector('.trial-container');
-        if (alternativeCanvas) {
-            gameCanvas = alternativeCanvas;
-        } else {
-            return;
-        }
-    }
-
-    // Create message element
-    var messageElement = document.createElement('div');
-    messageElement.id = 'newGoalMessage';
-    messageElement.style.cssText = `
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background: rgba(255, 0, 0, 0.95);
-        border: 4px solid #000000;
-        border-radius: 15px;
-        padding: 20px 30px;
-        font-size: 32px;
-        font-weight: bold;
-        color: #ffffff;
-        text-align: center;
-        box-shadow: 0 8px 16px rgba(0,0,0,0.5);
-        z-index: 9999;
-        animation: fadeInOut 3s ease-in-out;
-    `;
-    messageElement.textContent = '🎯 NEW GOAL APPEARED! 🎯';
-
-    // Add CSS animation for fade in/out effect
-    var style = document.createElement('style');
-    style.textContent = `
-        @keyframes fadeInOut {
-            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
-            10% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
-            80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
-        }
-    `;
-    document.head.appendChild(style);
-
-    // Add message to the body instead of canvas container for better visibility
-    document.body.appendChild(messageElement);
-
-    // Remove message after duration
-    setTimeout(() => {
-        if (messageElement && messageElement.parentNode) {
-            messageElement.parentNode.removeChild(messageElement);
-        }
-        // Remove the style element as well
-        if (style && style.parentNode) {
-            style.parentNode.removeChild(style);
-        }
-    }, TWOP3G_CONFIG.newGoalMessageDuration);
-}
-
-/**
- * Show collaboration feedback directly on the game board
- */
-function showCollaborationFeedbackOnGameBoard(success) {
-    const canvasContainer = document.getElementById('gameCanvas');
-    if (!canvasContainer) {
-        console.error('Game canvas container not found for collaboration feedback');
-        return;
-    }
-
-    // Determine collaboration success
-    const collaborationSucceeded = success;
-
-    // Create overlay div positioned absolutely over the canvas
-    const overlay = document.createElement('div');
-    overlay.innerHTML = `
-        <div style="
-            text-align: center;
-            background: rgba(255, 255, 255, 0.95);
-            border: 3px solid ${collaborationSucceeded ? '#28a745' : '#dc3545'};
-            border-radius: 15px;
-            padding: 30px 40px;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(5px);
-        ">
-            <div style="font-size: 32px; font-weight: bold; margin-bottom: 20px; color: ${collaborationSucceeded ? '#28a745' : '#dc3545'};">
-                ${collaborationSucceeded ? 'Collaboration succeeded!' : 'Collaboration failed!'}
-            </div>
-            <div style="display: flex; justify-content: center; margin: 30px 0;">
-                <div style="
-                    width: 120px;
-                    height: 120px;
-                    background-color: ${collaborationSucceeded ? '#28a745' : '#dc3545'};
-                    border-radius: 50%;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-                ">
-                    <svg width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        ${collaborationSucceeded ?
-                            '<path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" fill="white"/>' :
-                            '<path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" fill="white"/>'
-                        }
-                    </svg>
-                </div>
-            </div>
-        </div>
-    `;
-    overlay.style.cssText = `
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        z-index: 1000;
-        pointer-events: none;
-        width: auto;
-        height: auto;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    `;
-
-    // Add overlay to the canvas container
-    canvasContainer.appendChild(overlay);
-
-    console.log(`Collaboration feedback shown on game board: ${collaborationSucceeded ? 'success' : 'failure'}`);
-}
-
-/**
- * Show post-trial stage
- */
-function showPostTrialStage(stage) {
-    const trialData = gameData.currentTrialData;
-    const success = trialData ? trialData.success : false;
-    const experimentType = stage.experimentType;
-    const trialIndex = stage.trialIndex;
-    const experimentIndex = stage.experimentIndex;
-
-    // For collaboration games, show dynamic trial count
-    let trialCountDisplay = '';
-    if (experimentType.includes('2P') && NODEGAME_HUMAN_HUMAN_CONFIG.successThreshold.enabled) {
-        trialCountDisplay = `Trial ${trialIndex + 1} (${gameData.successThreshold.totalTrialsCompleted + 1} total)`;
-    } else {
-        trialCountDisplay = `Trial ${trialIndex + 1} of ${NODEGAME_HUMAN_HUMAN_CONFIG.numTrials[experimentType]}`;
-    }
-
-    const message = success ? 'Goal reached!' : 'Time up!';
-    const color = success ? 'green' : 'orange';
-
-    // Match exact human-AI version layout
-    const container = document.getElementById('container');
-    container.innerHTML = `
-        <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
-            <div style="text-align: center; max-width: 600px; width: 100%;">
-                <h3 style="margin-bottom: 10px;">Experiment ${experimentIndex + 1}: ${experimentType}</h3>
-                <h4 style="margin-bottom: 20px;">${trialCountDisplay} Results</h4>
-                <div id="gameCanvas" style="margin: 0 auto 20px auto; position: relative; display: flex; justify-content: center;"></div>
-                <h3 style="color: ${color}; margin-bottom: 20px;">${message}</h3>
-            </div>
-        </div>
-    `;
-
-    // Create and draw canvas with final state (matching human-AI version)
-    const canvas = createGameCanvas();
-    const canvasContainer = document.getElementById('gameCanvas');
-    canvasContainer.appendChild(canvas);
-
-    // Ensure the canvas shows the final game state
-    // Use a small delay to ensure the canvas is properly created
-    setTimeout(() => {
-        // Render the final game state
-        updateGameVisualization();
-    }, 200); // Increased delay to ensure canvas is fully rendered
-
-    // Auto-advance after configurable duration (matching human-AI version exactly)
-    setTimeout(() => {
-        // Check if we should end the experiment early due to success threshold
-        if (shouldEndExperimentDueToSuccessThreshold()) {
-            // Skip to the end of this experiment by finding the next experiment or completion stage
-            skipToNextExperimentOrCompletion();
-        } else {
-            // For collaboration games, check if we should continue to next trial
-            if (experimentType.includes('2P') && NODEGAME_HUMAN_HUMAN_CONFIG.successThreshold.enabled) {
-                if (shouldContinueToNextTrial(experimentType, trialIndex)) {
-                    // Continue to next trial
-                    nextStage();
-                } else {
-                    // End this experiment and move to next
-                    skipToNextExperimentOrCompletion();
-                }
-            } else {
-                nextStage();
-            }
-        }
-    }, NODEGAME_HUMAN_HUMAN_CONFIG.timing.feedbackDisplayDuration);
-}
-
-
 
 /**
  * Skip to next fixation stage (skip post-trial stage)
@@ -2348,321 +2010,30 @@ function skipToCompletion() {
     }
 }
 
-// =================================================================================================
-// QUESTIONNAIRE AND COMPLETION STAGES
-// =================================================================================================
 
-/**
- * Show questionnaire stage
- */
-function showQuestionnaireStage(stage) {
-    const container = document.getElementById('container');
-
-    container.innerHTML = `
-        <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
-            <div style="background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 800px; width: 100%;">
-                <h2 style="color: #333; margin-bottom: 30px; text-align: center;">Post-Experiment Questionnaire</h2>
-
-                <form id="questionnaireForm">
-                    <div id="questionnairePage1">
-                        <h3 style="color: #666; margin-bottom: 20px;">Page 1 of 2</h3>
-
-                        <div style="margin-bottom: 25px;">
-                            <label style="display: block; font-weight: bold; margin-bottom: 10px; color: #333;">
-                                Do you think the other player is a person or an AI?
-                            </label>
-                            <div style="display: flex; flex-direction: column; gap: 8px;">
-                                <label style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="radio" name="ai_detection" value="Definitely a person" required style="margin-right: 10px;">
-                                    Definitely a person
-                                </label>
-                                <label style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="radio" name="ai_detection" value="Probably a person" required style="margin-right: 10px;">
-                                    Probably a person
-                                </label>
-                                <label style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="radio" name="ai_detection" value="Not sure" required style="margin-right: 10px;">
-                                    Not sure
-                                </label>
-                                <label style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="radio" name="ai_detection" value="Probably an AI" required style="margin-right: 10px;">
-                                    Probably an AI
-                                </label>
-                                <label style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="radio" name="ai_detection" value="Definitely an AI" required style="margin-right: 10px;">
-                                    Definitely an AI
-                                </label>
-                            </div>
-                        </div>
-
-                        <div style="margin-bottom: 25px;">
-                            <label style="display: block; font-weight: bold; margin-bottom: 10px; color: #333;">
-                                To what extent do you think the other player was a good collaborator?
-                            </label>
-                            <div style="display: flex; flex-direction: column; gap: 8px;">
-                                <label style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="radio" name="collaboration_rating" value="Very poor collaborator" required style="margin-right: 10px;">
-                                    Very poor collaborator
-                                </label>
-                                <label style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="radio" name="collaboration_rating" value="Poor collaborator" required style="margin-right: 10px;">
-                                    Poor collaborator
-                                </label>
-                                <label style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="radio" name="collaboration_rating" value="Neutral" required style="margin-right: 10px;">
-                                    Neutral
-                                </label>
-                                <label style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="radio" name="collaboration_rating" value="Good collaborator" required style="margin-right: 10px;">
-                                    Good collaborator
-                                </label>
-                                <label style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="radio" name="collaboration_rating" value="Very good collaborator" required style="margin-right: 10px;">
-                                    Very good collaborator
-                                </label>
-                            </div>
-                        </div>
-
-                        <div style="margin-bottom: 25px;">
-                            <label style="display: block; font-weight: bold; margin-bottom: 10px; color: #333;">
-                                Will you play with the other player again?
-                            </label>
-                            <div style="display: flex; flex-direction: column; gap: 8px;">
-                                <label style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="radio" name="play_again" value="Definitely not play again" required style="margin-right: 10px;">
-                                    Definitely not
-                                </label>
-                                <label style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="radio" name="play_again" value="Probably not play again" required style="margin-right: 10px;">
-                                    Probably not play again
-                                </label>
-                                <label style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="radio" name="play_again" value="Not sure" required style="margin-right: 10px;">
-                                    Not sure
-                                </label>
-                                <label style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="radio" name="play_again" value="Probably play again" required style="margin-right: 10px;">
-                                    Probably play again
-                                </label>
-                                <label style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="radio" name="play_again" value="Definitely play again" required style="margin-right: 10px;">
-                                    Definitely play again
-                                </label>
-                            </div>
-                        </div>
-
-                        <div style="text-align: center; margin-top: 30px;">
-                            <button type="button" id="nextPageBtn" style="
-                                background: #007bff;
-                                color: white;
-                                border: none;
-                                padding: 12px 24px;
-                                font-size: 16px;
-                                border-radius: 5px;
-                                cursor: pointer;
-                            ">Next Page</button>
-                        </div>
-                    </div>
-
-                    <div id="questionnairePage2" style="display: none;">
-                        <h3 style="color: #666; margin-bottom: 20px;">Page 2 of 2</h3>
-
-                        <div style="margin-bottom: 25px;">
-                            <label style="display: block; font-weight: bold; margin-bottom: 10px; color: #333;">
-                                Did you use any strategy in the game? If yes, what was it?
-                            </label>
-                            <textarea name="strategy" rows="4" style="
-                                width: 100%;
-                                padding: 10px;
-                                border: 1px solid #ddd;
-                                border-radius: 5px;
-                                font-family: inherit;
-                                resize: vertical;
-                            " placeholder="Please describe your strategy..."></textarea>
-                        </div>
-
-                        <div style="margin-bottom: 25px;">
-                            <label style="display: block; font-weight: bold; margin-bottom: 10px; color: #333;">
-                                What do you think the purpose of this experiment is?
-                            </label>
-                            <textarea name="purpose" rows="4" style="
-                                width: 100%;
-                                padding: 10px;
-                                border: 1px solid #ddd;
-                                border-radius: 5px;
-                                font-family: inherit;
-                                resize: vertical;
-                            " placeholder="Please share your thoughts..."></textarea>
-                        </div>
-
-                        <div style="margin-bottom: 25px;">
-                            <label style="display: block; font-weight: bold; margin-bottom: 10px; color: #333;">
-                                Do you have any questions or comments?
-                            </label>
-                            <textarea name="comments" rows="4" style="
-                                width: 100%;
-                                padding: 10px;
-                                border: 1px solid #ddd;
-                                border-radius: 5px;
-                                font-family: inherit;
-                                resize: vertical;
-                            " placeholder="Any additional feedback..."></textarea>
-                        </div>
-
-                        <div style="text-align: center; margin-top: 30px;">
-                            <button type="button" id="prevPageBtn" style="
-                                background: #6c757d;
-                                color: white;
-                                border: none;
-                                padding: 12px 24px;
-                                font-size: 16px;
-                                border-radius: 5px;
-                                cursor: pointer;
-                                margin-right: 10px;
-                            ">Previous Page</button>
-                            <button type="submit" id="submitBtn" style="
-                                background: #28a745;
-                                color: white;
-                                border: none;
-                                padding: 12px 24px;
-                                font-size: 16px;
-                                border-radius: 5px;
-                                cursor: pointer;
-                            ">Submit</button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-    `;
-
-    // Handle page navigation
-    document.getElementById('nextPageBtn').addEventListener('click', function() {
-        // Validate required fields on page 1
-        var requiredFields = ['ai_detection', 'collaboration_rating', 'play_again'];
-        var isValid = true;
-
-        requiredFields.forEach(function(field) {
-            var element = document.querySelector('input[name="' + field + '"]:checked');
-            if (!element) {
-                isValid = false;
-                // Highlight missing field
-                var fieldGroup = document.querySelector('input[name="' + field + '"]').closest('div').parentElement;
-                fieldGroup.style.border = '2px solid #dc3545';
-                fieldGroup.style.borderRadius = '5px';
-                fieldGroup.style.padding = '10px';
-            }
-        });
-
-        if (isValid) {
-            document.getElementById('questionnairePage1').style.display = 'none';
-            document.getElementById('questionnairePage2').style.display = 'block';
-        } else {
-            alert('Please answer all required questions before proceeding.');
-        }
-    });
-
-    document.getElementById('prevPageBtn').addEventListener('click', function() {
-        document.getElementById('questionnairePage2').style.display = 'none';
-        document.getElementById('questionnairePage1').style.display = 'block';
-    });
-
-    // Handle form submission
-    document.getElementById('questionnaireForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-
-        var formData = new FormData(this);
-        var questionnaireData = {};
-
-        for (var [key, value] of formData.entries()) {
-            questionnaireData[key] = value;
-        }
-
-        // Store questionnaire data
-        gameData.questionnaireData = questionnaireData;
-
-        // Proceed to next stage
-        nextStage();
-    });
-}
-
-/**
- * Show completion stage
- */
-function showCompletionStage(stage) {
-    // Save all data before showing completion
-    saveExperimentData();
-
-    const container = document.getElementById('container');
-    container.innerHTML = `
-        <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
-            <div style="max-width: 700px; margin: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 40px; text-align: center;">
-                <h1 style="color: #28a745; margin-bottom: 30px;">🎉 Experiment Complete!</h1>
-
-                <div style="font-size: 18px; color: #666; margin-bottom: 30px;">
-                    <p>Thank you for participating in our human-human collaboration study!</p>
-                    <p>Your data has been saved and will contribute to important research on human coordination and teamwork.</p>
-                </div>
-
-                <div style="background: #d4edda; border: 1px solid #c3e6cb; border-radius: 5px; padding: 20px; margin-bottom: 30px;">
-                    <h3 style="color: #155724; margin-top: 0;">Completion Code</h3>
-                    <p style="color: #155724; font-size: 24px; font-weight: bold; margin: 10px 0;">
-                        ${NODEGAME_HUMAN_HUMAN_CONFIG.prolificCompletionCode}
-                    </p>
-                    <p style="color: #155724; margin-bottom: 0; font-size: 14px;">
-                        Please copy this code and paste it in the Prolific completion page.
-                    </p>
-                </div>
-
-                <div style="background: #f8f9fa; padding: 20px; border-radius: 5px; margin-bottom: 30px;">
-                    <h3 style="margin-top: 0; color: #333;">Experiment Summary</h3>
-                    <p><strong>Experiments completed:</strong> ${NODEGAME_HUMAN_HUMAN_CONFIG.experimentOrder.join(', ')}</p>
-                    <p><strong>Total trials:</strong> ${gameData.allTrialsData.length}</p>
-                    <p><strong>Successful trials:</strong> ${gameData.allTrialsData.filter(t => t.success).length}</p>
-                    <p><strong>Success rate:</strong> ${gameData.allTrialsData.length > 0 ? Math.round((gameData.allTrialsData.filter(t => t.success).length / gameData.allTrialsData.length) * 100) : 0}%</p>
-                </div>
-
-                <div style="margin-bottom: 30px;">
-                    <button onclick="downloadExperimentData()" style="background: #007bff; color: white; border: none; padding: 12px 24px; font-size: 16px; border-radius: 5px; cursor: pointer; margin-right: 10px;">
-                        Download Your Data
-                    </button>
-
-                    ${NODEGAME_HUMAN_HUMAN_CONFIG.enableProlificRedirect ? `
-                        <button onclick="redirectToProlific()" style="background: #28a745; color: white; border: none; padding: 12px 24px; font-size: 16px; border-radius: 5px; cursor: pointer;">
-                            Return to Prolific
-                        </button>
-                    ` : ''}
-                </div>
-
-                <div style="color: #6c757d; font-size: 14px;">
-                    <p>You may now close this window.</p>
-                    <p>If you have any questions about this research, please contact the research team.</p>
-                </div>
-            </div>
-        </div>
-    `;
-
-    // Make functions globally available
-    window.downloadExperimentData = downloadExperimentData;
-    window.redirectToProlific = redirectToProlific;
-}
-
-// =================================================================================================
-// DATA MANAGEMENT AND UTILITIES
-// =================================================================================================
 
 /**
  * Initialize trial data
  */
 function initializeTrialData(trialIndex, experimentType) {
+    gameData.currentTrial = trialIndex;
+    gameData.stepCount = 0;
+
+    // Ensure current experiment is set
+    if (experimentType) {
+        gameData.currentExperiment = experimentType;
+    }
+
     gameData.currentTrialData = {
         trialIndex: trialIndex,
         experimentType: experimentType,
-        startTime: Date.now(),
-        playerMoves: [],
-        partnerMoves: [],
-        success: false,
-        completionTime: null,
+        trajectory: [],
+        partnerTrajectory: [],
+        aimAction: [],
+        partnerAction: [],
+        RT: [],
+        trialStartTime: Date.now(),
+        completed: false,
         stepCount: 0,
         gridMatrix: null,
         goals: null,
@@ -2671,9 +2042,14 @@ function initializeTrialData(trialIndex, experimentType) {
         movementMode: movementMode
     };
 
-    // Ensure arrays are properly initialized
-    gameData.currentTrialData.playerMoves = [];
-    gameData.currentTrialData.partnerMoves = [];
+    // Initialize default values for multiplayer games to prevent undefined errors
+    if (experimentType && experimentType.includes('2P')) {
+        // Set default values that will be overridden by server data
+        // gameData.currentPlayerPos = [0, 0]; // Will be updated by server
+        // gameData.currentGoals = []; // Will be updated by server
+        // gameData.gridMatrix = Array(15).fill(0).map(() => Array(15).fill(0)); // Will be updated by server
+        console.log('Initialized default values for multiplayer trial');
+    }
 
     // Generate distance condition sequence for 2P3G experiments (matching human-AI version)
     if (experimentType === '2P3G') {
@@ -2717,18 +2093,46 @@ function initializeTrialData(trialIndex, experimentType) {
  * Record player move
  */
 function recordPlayerMove(action, reactionTime) {
-    if (gameData.currentTrialData) {
-        // Initialize playerMoves array if it doesn't exist
-        if (!gameData.currentTrialData.playerMoves) {
-            gameData.currentTrialData.playerMoves = [];
-        }
+    // Safety check: ensure currentTrialData exists and has required arrays
+    if (!gameData.currentTrialData) {
+        console.error('currentTrialData is not initialized - cannot record player move');
+        return;
+    }
 
-        gameData.currentTrialData.playerMoves.push({
-            action: action,
-            reactionTime: reactionTime,
-            timestamp: Date.now(),
-            stepCount: gameData.stepCount
-        });
+    // Ensure required arrays exist
+    if (!gameData.currentTrialData.aimAction) {
+        console.warn('aimAction array not initialized, creating it');
+        gameData.currentTrialData.aimAction = [];
+    }
+    if (!gameData.currentTrialData.RT) {
+        console.warn('RT array not initialized, creating it');
+        gameData.currentTrialData.RT = [];
+    }
+    if (!gameData.currentTrialData.trajectory) {
+        console.warn('trajectory array not initialized, creating it');
+        gameData.currentTrialData.trajectory = [];
+    }
+
+    // Record the move
+    gameData.currentTrialData.aimAction.push(action);
+    gameData.currentTrialData.RT.push(reactionTime);
+
+    // Safety check: ensure currentPlayerPos is defined and is an array
+    if (gameData.currentPlayerPos && Array.isArray(gameData.currentPlayerPos)) {
+        gameData.currentTrialData.trajectory.push([...gameData.currentPlayerPos]);
+    } else {
+        console.warn('currentPlayerPos is not properly initialized:', gameData.currentPlayerPos);
+        console.log('Available fallbacks:');
+        console.log('  - playerStartPos:', gameData.playerStartPos);
+        console.log('  - gameData.currentPlayerPos:', gameData.currentPlayerPos);
+        console.log('  - gameData:', gameData);
+
+        // Use playerStartPos as fallback if available
+        if (gameData.playerStartPos && Array.isArray(gameData.playerStartPos)) {
+            gameData.currentTrialData.trajectory.push([...gameData.playerStartPos]);
+        } else {
+            gameData.currentTrialData.trajectory.push([0, 0]); // Default fallback
+        }
     }
 }
 
@@ -2736,18 +2140,31 @@ function recordPlayerMove(action, reactionTime) {
  * Record partner move
  */
 function recordPartnerMove(action, reactionTime) {
-    if (gameData.currentTrialData) {
-        // Initialize partnerMoves array if it doesn't exist
-        if (!gameData.currentTrialData.partnerMoves) {
-            gameData.currentTrialData.partnerMoves = [];
-        }
+    // Safety check: ensure currentTrialData exists and has required arrays
+    if (!gameData.currentTrialData) {
+        console.error('currentTrialData is not initialized - cannot record partner move');
+        return;
+    }
 
-        gameData.currentTrialData.partnerMoves.push({
-            action: action,
-            reactionTime: reactionTime,
-            timestamp: Date.now(),
-            stepCount: gameData.stepCount
-        });
+    // Ensure required arrays exist
+    if (!gameData.currentTrialData.partnerAction) {
+        console.warn('partnerAction array not initialized, creating it');
+        gameData.currentTrialData.partnerAction = [];
+    }
+    if (!gameData.currentTrialData.partnerTrajectory) {
+        console.warn('partnerTrajectory array not initialized, creating it');
+        gameData.currentTrialData.partnerTrajectory = [];
+    }
+
+    // Record the move
+    gameData.currentTrialData.partnerAction.push(action);
+
+    // Safety check: ensure partnerStartPos is defined and is an array
+    if (gameData.partnerStartPos && Array.isArray(gameData.partnerStartPos)) {
+        gameData.currentTrialData.partnerTrajectory.push([...gameData.partnerStartPos]);
+    } else {
+        console.warn('partnerStartPos is not properly initialized:', gameData.partnerStartPos);
+        gameData.currentTrialData.partnerTrajectory.push([0, 0]); // Default fallback
     }
 }
 
@@ -2756,19 +2173,78 @@ function recordPartnerMove(action, reactionTime) {
  */
 function finalizeTrial(success) {
     if (gameData.currentTrialData) {
-        gameData.currentTrialData.success = success;
-        gameData.currentTrialData.completionTime = Date.now();
+        gameData.currentTrialData.trialEndTime = Date.now();
+        gameData.currentTrialData.trialDuration = gameData.currentTrialData.trialEndTime - gameData.currentTrialData.trialStartTime;
+        gameData.currentTrialData.completed = success;
         gameData.currentTrialData.stepCount = gameData.stepCount;
-        gameData.currentTrialData.gridMatrix = gameData.gridMatrix;
-        gameData.currentTrialData.goals = gameData.currentGoals;
 
-        // Add to all trials data
+        // Determine if trial was successful for collaboration games
+        var trialSuccess = false;
+        if (gameData.currentExperiment && gameData.currentExperiment.includes('2P')) {
+            // For collaboration games, success is based on collaboration
+            trialSuccess = gameData.currentTrialData.collaborationSucceeded === true;
+        } else {
+            // For single player games, success is based on completion
+            trialSuccess = success;
+        }
+
+        // Update success threshold tracking for collaboration games
+        updateSuccessThresholdTracking(trialSuccess, gameData.currentTrial);
+
         gameData.allTrialsData.push({...gameData.currentTrialData});
 
-        // Update success threshold tracking
-        updateSuccessThresholdTracking(success, gameData.currentTrial);
+        // Reset movement flags to prevent issues in next trial
+        timeline.isMoving = false;
+        timeline.keyListenerActive = false;
 
-        console.log(`Trial ${gameData.currentTrial} finalized. Success: ${success}`);
+        console.log('Trial finalized:', gameData.currentTrialData);
+        console.log(`Trial success: ${trialSuccess} (${gameData.currentExperiment})`);
+    }
+}
+
+/**
+ * Get random distance condition for 2P3G after trial 12
+ * @param {number} trialIndex - Current trial index
+ * @returns {string} - Distance condition
+ */
+function getRandomDistanceConditionFor2P3G(trialIndex) {
+    // If we're past the random sampling threshold, use random sampling
+    if (trialIndex >= NODEGAME_HUMAN_HUMAN_CONFIG.successThreshold.randomSamplingAfterTrial) {
+        var allConditions = [
+            TWOP3G_CONFIG.distanceConditions.CLOSER_TO_AI,
+            TWOP3G_CONFIG.distanceConditions.CLOSER_TO_HUMAN,
+            TWOP3G_CONFIG.distanceConditions.EQUAL_TO_BOTH,
+            TWOP3G_CONFIG.distanceConditions.NO_NEW_GOAL
+        ];
+        var randomCondition = allConditions[Math.floor(Math.random() * allConditions.length)];
+        console.log(`Using random distance condition for 2P3G trial ${trialIndex + 1}: ${randomCondition}`);
+        return randomCondition;
+    } else {
+        // Use the pre-selected condition from sequence
+        return TWOP3G_CONFIG.distanceConditionSequence[trialIndex];
+    }
+}
+
+/**
+ * Get random distance condition for 1P2G after trial 12
+ * @param {number} trialIndex - Current trial index
+ * @returns {string} - Distance condition
+ */
+function getRandomDistanceConditionFor1P2G(trialIndex) {
+    // If we're past the random sampling threshold, use random sampling
+    if (trialIndex >= NODEGAME_HUMAN_HUMAN_CONFIG.successThreshold.randomSamplingAfterTrial) {
+        var allConditions = [
+            ONEP2G_CONFIG.distanceConditions.CLOSER_TO_HUMAN,
+            ONEP2G_CONFIG.distanceConditions.FARTHER_TO_HUMAN,
+            ONEP2G_CONFIG.distanceConditions.EQUAL_TO_HUMAN,
+            ONEP2G_CONFIG.distanceConditions.NO_NEW_GOAL
+        ];
+        var randomCondition = allConditions[Math.floor(Math.random() * allConditions.length)];
+        console.log(`Using random distance condition for 1P2G trial ${trialIndex + 1}: ${randomCondition}`);
+        return randomCondition;
+    } else {
+        // Use the pre-selected condition from sequence
+        return ONEP2G_CONFIG.distanceConditionSequence[trialIndex];
     }
 }
 
@@ -2785,68 +2261,85 @@ function initializeSuccessThresholdTracking() {
     };
 }
 
+
+// =================================================================================================
+// SUCCESS THRESHOLD HELPER FUNCTIONS - FOR COLLABORATION GAMES
+// =================================================================================================
+
 /**
- * Update success threshold tracking
+ * Initialize success threshold tracking for a new experiment
  */
-function updateSuccessThresholdTracking(success, trialIndex) {
-    const threshold = gameData.successThreshold;
+function initializeSuccessThresholdTracking() {
+    gameData.successThreshold.consecutiveSuccesses = 0;
+    gameData.successThreshold.totalTrialsCompleted = 0;
+    gameData.successThreshold.experimentEndedEarly = false;
+    gameData.successThreshold.lastSuccessTrial = -1;
+    gameData.successThreshold.successHistory = [];
 
-    if (success) {
-        threshold.consecutiveSuccesses++;
-        threshold.lastSuccessTrial = trialIndex;
-    } else {
-        threshold.consecutiveSuccesses = 0;
-    }
-
-    threshold.totalTrialsCompleted++;
-    threshold.successHistory.push(success);
-
-    console.log(`Success threshold: consecutive=${threshold.consecutiveSuccesses}, total=${threshold.totalTrialsCompleted}`);
+    console.log('Success threshold tracking initialized');
 }
 
 /**
- * Check if should continue to next trial
+ * Update success threshold tracking after a trial
+ * @param {boolean} success - Whether the trial was successful
+ * @param {number} trialIndex - Current trial index
  */
-function shouldContinueToNextTrial(experimentType, trialIndex) {
-    const config = NODEGAME_HUMAN_HUMAN_CONFIG;
-    const maxTrials = config.numTrials[experimentType];
-
-    console.log(`shouldContinueToNextTrial: experimentType=${experimentType}, trialIndex=${trialIndex}, maxTrials=${maxTrials}`);
-
-    // Check if we've reached max trials
-    if (trialIndex >= maxTrials - 1) {
-        console.log(`Reached max trials: ${trialIndex} >= ${maxTrials - 1}`);
-        return false;
+function updateSuccessThresholdTracking(success, trialIndex) {
+    // Only track for collaboration games
+    if (!gameData.currentExperiment || !gameData.currentExperiment.includes('2P')) {
+        return;
     }
 
-    // Check success threshold if enabled
-    if (config.successThreshold.enabled &&
-        trialIndex >= config.successThreshold.minTrialsBeforeCheck) {
-        const shouldEnd = shouldEndExperimentDueToSuccessThreshold();
-        console.log(`Success threshold check: trialIndex=${trialIndex}, minTrialsBeforeCheck=${config.successThreshold.minTrialsBeforeCheck}, shouldEnd=${shouldEnd}`);
-        return !shouldEnd;
+    gameData.successThreshold.totalTrialsCompleted++;
+    gameData.successThreshold.successHistory.push(success);
+
+    if (success) {
+        gameData.successThreshold.consecutiveSuccesses++;
+        gameData.successThreshold.lastSuccessTrial = trialIndex;
+    } else {
+        gameData.successThreshold.consecutiveSuccesses = 0;
     }
 
-    console.log(`Continuing to next trial: trialIndex=${trialIndex}, minTrialsBeforeCheck=${config.successThreshold.minTrialsBeforeCheck}`);
-    return true;
+    console.log(`Success threshold update - Trial ${trialIndex + 1}: ${success ? 'SUCCESS' : 'FAILURE'}`);
+    console.log(`  Consecutive successes: ${gameData.successThreshold.consecutiveSuccesses}/${NODEGAME_HUMAN_HUMAN_CONFIG.successThreshold.consecutiveSuccessesRequired}`);
+    console.log(`  Total trials: ${gameData.successThreshold.totalTrialsCompleted}/${NODEGAME_CONFIG.successThreshold.maxTrials}`);
 }
 
 /**
  * Check if experiment should end due to success threshold
+ * @returns {boolean} - True if experiment should end
  */
-function shouldEndExperimentDueToSuccessThreshold() {
-    const config = NODEGAME_HUMAN_HUMAN_CONFIG.successThreshold;
-    const threshold = gameData.successThreshold;
 
-    if (threshold.consecutiveSuccesses >= config.consecutiveSuccessesRequired) {
-        console.log('Experiment ending due to success threshold');
-        threshold.experimentEndedEarly = true;
+function shouldEndExperimentDueToSuccessThreshold() {
+    // Only apply to collaboration games
+    if (!gameData.currentExperiment || !gameData.currentExperiment.includes('2P')) {
+        return false;
+    }
+
+    // Check if success threshold is enabled
+    if (!NODEGAME_HUMAN_HUMAN_CONFIG.successThreshold.enabled) {
+        return false;
+    }
+
+    var config = NODEGAME_HUMAN_HUMAN_CONFIG.successThreshold;  // Fixed: Use correct config
+    var tracking = gameData.successThreshold;
+
+    // Check if we've reached the maximum trials
+    if (tracking.totalTrialsCompleted >= config.maxTrials) {
+        console.log(`Experiment ending: Reached maximum trials (${config.maxTrials})`);
+        return true;
+    }
+
+    // Check if we have enough trials and consecutive successes
+    if (tracking.totalTrialsCompleted >= config.minTrialsBeforeCheck &&
+        tracking.consecutiveSuccesses >= config.consecutiveSuccessesRequired) {
+        console.log(`Experiment ending: Success threshold met (${tracking.consecutiveSuccesses} consecutive successes after ${tracking.totalTrialsCompleted} trials)`);
+        gameData.successThreshold.experimentEndedEarly = true;
         return true;
     }
 
     return false;
 }
-
 /**
  * Reset experiment data
  */
@@ -2867,56 +2360,128 @@ function resetExperimentData() {
  * Save experiment data
  */
 function saveExperimentData() {
-    const experimentData = {
-        participantId: myPlayerId,
-        partnerId: partnerPlayerId,
-        roomId: roomId,
-        experimentOrder: NODEGAME_HUMAN_HUMAN_CONFIG.experimentOrder,
-        allTrialsData: gameData.allTrialsData,
-        questionnaireData: gameData.questionnaireData,
-        successThreshold: gameData.successThreshold,
-        timestamp: Date.now(),
-        completionCode: NODEGAME_HUMAN_HUMAN_CONFIG.prolificCompletionCode,
-        version: NODEGAME_HUMAN_HUMAN_CONFIG.version,
-        experimentType: 'human-human',
-        multiplayer: {
-            movementMode: movementMode,
-            totalPlayers: 2
+    try {
+        // Generate a fallback participant ID if myPlayerId is null
+        const participantId = myPlayerId || `participant_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+        const experimentData = {
+            participantId: participantId,
+            partnerId: partnerPlayerId || 'unknown',
+            roomId: roomId || 'unknown',
+            experimentOrder: NODEGAME_HUMAN_HUMAN_CONFIG.experimentOrder,
+            allTrialsData: gameData.allTrialsData || [],
+            questionnaireData: gameData.questionnaireData || null,
+            successThreshold: gameData.successThreshold || {},
+            timestamp: Date.now(),
+            completionCode: NODEGAME_HUMAN_HUMAN_CONFIG.prolificCompletionCode,
+            version: NODEGAME_HUMAN_HUMAN_CONFIG.version,
+            experimentType: 'human-human',
+            multiplayer: {
+                movementMode: movementMode || 'simultaneous',
+                totalPlayers: 2
+            }
+        };
+
+        // Save to localStorage with error handling
+        try {
+            const dataKey = `human_human_experiment_${participantId}_${Date.now()}`;
+            const jsonData = JSON.stringify(experimentData);
+
+            // Check if data is too large for localStorage (usually 5-10MB limit)
+            if (jsonData.length > 5000000) { // 5MB limit
+                console.warn('Data too large for localStorage, truncating...');
+                // Create a simplified version for localStorage
+                const simplifiedData = {
+                    participantId: experimentData.participantId,
+                    timestamp: experimentData.timestamp,
+                    completionCode: experimentData.completionCode,
+                    version: experimentData.version,
+                    experimentType: experimentData.experimentType,
+                    totalTrials: experimentData.allTrialsData.length,
+                    note: 'Full data available in download'
+                };
+                localStorage.setItem(dataKey, JSON.stringify(simplifiedData));
+            } else {
+                localStorage.setItem(dataKey, jsonData);
+            }
+
+            console.log('Experiment data saved successfully:', experimentData);
+        } catch (localStorageError) {
+            console.error('Error saving to localStorage:', localStorageError);
+            // Continue without localStorage - data will still be returned for download
         }
-    };
 
-    // Save to localStorage
-    const dataKey = `human_human_experiment_${myPlayerId}_${Date.now()}`;
-    localStorage.setItem(dataKey, JSON.stringify(experimentData));
+        return experimentData;
+    } catch (error) {
+        console.error('Error in saveExperimentData:', error);
 
-    console.log('Experiment data saved:', experimentData);
-    return experimentData;
+        // Return a minimal data structure even if there's an error
+        return {
+            participantId: myPlayerId || 'unknown',
+            timestamp: Date.now(),
+            error: error.message,
+            note: 'Data saving failed, but experiment may have completed successfully'
+        };
+    }
 }
 
 /**
  * Download experiment data
  */
 function downloadExperimentData() {
-    const data = saveExperimentData();
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
+    try {
+        const data = saveExperimentData();
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
 
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `human_human_experiment_data_${myPlayerId}_${new Date().toISOString().slice(0, 10)}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+        // Generate a safe filename
+        const participantId = myPlayerId || `participant_${Date.now()}`;
+        const safeParticipantId = participantId.replace(/[^a-zA-Z0-9_-]/g, '_');
+        const filename = `human_human_experiment_data_${safeParticipantId}_${new Date().toISOString().slice(0, 10)}.json`;
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        console.log('Experiment data downloaded successfully:', filename);
+    } catch (error) {
+        console.error('Error downloading experiment data:', error);
+        alert('Error downloading data: ' + error.message);
+    }
 }
 
+// Note: redirectToProlific() is already defined in nodeGameHelpers.js
+
 /**
- * Redirect to Prolific
+ * Test data saving functionality
  */
-function redirectToProlific() {
-    const completionCode = NODEGAME_HUMAN_HUMAN_CONFIG.prolificCompletionCode;
-    const prolificUrl = `https://app.prolific.co/submissions/complete?cc=${completionCode}`;
-    window.location.href = prolificUrl;
+function testDataSaving() {
+    console.log('Testing data saving functionality...');
+
+    // Test with null myPlayerId
+    const originalPlayerId = myPlayerId;
+    myPlayerId = null;
+
+    try {
+        const testData = saveExperimentData();
+        console.log('Test data saving successful:', testData);
+
+        // Test download
+        downloadExperimentData();
+        console.log('Test download successful');
+
+        return true;
+    } catch (error) {
+        console.error('Test data saving failed:', error);
+        return false;
+    } finally {
+        // Restore original player ID
+        myPlayerId = originalPlayerId;
+    }
 }
 
 // =================================================================================================
@@ -2949,97 +2514,21 @@ function getExperimentInstructions(experimentType) {
     }
 }
 
-/**
- * Get maps for experiment
- */
-function getMapsForExperiment(experimentType) {
-    let mapData = null;
+// Note: getMapsForExperiment() is already defined in nodeGameHelpers.js
 
-    switch (experimentType) {
-        case '2P2G':
-            mapData = window.MapsFor2P2G;
-            break;
-        case '2P3G':
-            mapData = window.MapsFor2P3G;
-            break;
-        default:
-            console.warn('Unknown experiment type:', experimentType);
-            return [];
-    }
+// Note: selectRandomMaps() is already defined in nodeGameHelpers.js
 
-    if (!mapData) {
-        console.warn(`No map data available for ${experimentType}`);
-        return [];
-    }
-
-    // Convert object to array of map entries
-    const mapEntries = Object.entries(mapData).map(([mapId, mapArray]) => ({
-        mapId: mapId,
-        ...mapArray[0] // Extract the first (and only) map from the array
-    }));
-
-    console.log(`Loaded ${mapEntries.length} maps for ${experimentType}`);
-    return mapEntries;
-}
-
-/**
- * Select random maps from map data
- */
-function selectRandomMaps(mapData, nTrials) {
-    if (!mapData || !Array.isArray(mapData) || mapData.length === 0) {
-        console.warn('No map data available or invalid format');
-        return [];
-    }
-
-    const shuffled = [...mapData].sort(() => 0.5 - Math.random());
-    return shuffled.slice(0, nTrials);
-}
-
-/**
- * Create empty grid matrix
- */
-function createEmptyGridMatrix() {
-    // Create grid using EXPSETTINGS.matrixsize (matching human-AI version)
-    const gridSize = EXPSETTINGS.matrixsize;
-    const gridMatrix = Array(gridSize).fill(0).map(() => Array(gridSize).fill(0));
-    return gridMatrix;
-}
+// Note: createEmptyGridMatrix() is already defined in nodeGameHelpers.js
 
 // =================================================================================================
 // CONFIGURATION HELPERS
 // =================================================================================================
 
-/**
- * Set experiment to 2P2G only
- */
-function setExperiment2P2G() {
-    NODEGAME_HUMAN_HUMAN_CONFIG.experimentOrder = ['2P2G'];
-    console.log('Experiment set to 2P2G only');
-}
-
-/**
- * Set experiment to 2P3G only
- */
-function setExperiment2P3G() {
-    NODEGAME_HUMAN_HUMAN_CONFIG.experimentOrder = ['2P3G'];
-    console.log('Experiment set to 2P3G only');
-}
-
-/**
- * Set experiment to collaboration games
- */
-function setExperimentCollaboration() {
-    NODEGAME_HUMAN_HUMAN_CONFIG.experimentOrder = ['2P2G', '2P3G'];
-    console.log('Experiment set to collaboration games (2P2G + 2P3G)');
-}
-
-/**
- * Set custom experiment order
- */
-function setCustomExperimentOrder(experimentOrder) {
-    NODEGAME_HUMAN_HUMAN_CONFIG.experimentOrder = experimentOrder;
-    console.log('Custom experiment order set:', experimentOrder);
-}
+// Note: The following experiment configuration functions are already defined in nodeGameHelpers.js:
+// - setExperiment2P2G()
+// - setExperiment2P3G()
+// - setExperimentCollaboration()
+// - setCustomExperimentOrder()
 
 /**
  * Draw overlapping circles function matching exact human-AI version parameters
@@ -3082,9 +2571,7 @@ function drawOverlappingCirclesHumanHuman(context, colPos, rowPos) {
  * Transition function (matching human-AI version)
  */
 function transition(state, action) {
-    let [x, y] = state;
-    let nextState = [x+action[0],y+action[1]]
-    return nextState
+    return window.NodeGameHelpers.transition(state, action);
 }
 
 /**
@@ -3094,89 +2581,17 @@ function detectPlayerGoal(playerPos, action, goals, goalHistory) {
     console.log('=== DETECT PLAYER GOAL DEBUG ===');
     console.log('playerPos:', playerPos, 'action:', action, 'goals:', goals, 'goalHistory:', goalHistory);
 
-    if (!action) {
-        console.log('No action - returning null');
-        return null;
-    }
-
-    // Convert string action to array format (matching human-AI version)
-    let actionArray;
-    if (typeof action === 'string') {
-        switch (action) {
-            case 'up':
-                actionArray = [-1, 0];
-                break;
-            case 'down':
-                actionArray = [1, 0];
-                break;
-            case 'left':
-                actionArray = [0, -1];
-                break;
-            case 'right':
-                actionArray = [0, 1];
-                break;
-            default:
-                console.log('Unknown action:', action, '- returning null');
-                return null;
-        }
-    } else if (Array.isArray(action)) {
-        actionArray = action;
-    } else {
-        console.log('Invalid action format:', action, '- returning null');
-        return null;
-    }
-
-    if (actionArray[0] === 0 && actionArray[1] === 0) {
-        console.log('No movement - returning null');
-        return null; // No movement, can't determine goal
-    }
-
-    var nextPos = transition(playerPos, actionArray);
-    console.log('nextPos:', nextPos);
-
-    var minDistance = Infinity;
-    var closestGoal = null;
-    var equidistantGoals = [];
-
-    for (var i = 0; i < goals.length; i++) {
-        var distance = calculatetGirdDistance(nextPos, goals[i]);
-        console.log(`Goal ${i}:`, goals[i], 'distance:', distance);
-
-        if (distance < minDistance) {
-            minDistance = distance;
-            closestGoal = i;
-            equidistantGoals = [i]; // Reset equidistant goals
-        } else if (distance === minDistance) {
-            equidistantGoals.push(i); // Add to equidistant goals
-        }
-    }
-
-    console.log('closestGoal:', closestGoal, 'equidistantGoals:', equidistantGoals);
-
-    // If there are multiple equidistant goals, return last step's inferred goal
-    if (equidistantGoals.length > 1) {
-        if (goalHistory && goalHistory.length > 0) {
-            console.log('Multiple equidistant goals, using history:', goalHistory[goalHistory.length - 1]);
-            return goalHistory[goalHistory.length - 1]; // Return last step's inferred goal
-        } else {
-            console.log('Multiple equidistant goals, no history - returning null');
-            return null; // No prior goal history
-        }
-    }
-
-    console.log('Returning closest goal:', closestGoal);
-    return closestGoal;
+    const result = window.NodeGameHelpers.detectPlayerGoal(playerPos, action, goals, goalHistory);
+    console.log('Returning closest goal:', result);
+    return result;
 }
 
 /**
- * Calculate grid distance between two positions (matching human-AI version)
+ * Calculate grid distance between two positions
+ * Uses helper function from nodeGameHelpers.js
  */
 function calculatetGirdDistance(pos1, pos2) {
-    if (!pos1 || !pos2 || !Array.isArray(pos1) || !Array.isArray(pos2) ||
-        pos1.length < 2 || pos2.length < 2) {
-        return Infinity; // Return large distance for invalid positions
-    }
-    return Math.abs(pos1[0] - pos2[0]) + Math.abs(pos1[1] - pos2[1]);
+    return window.NodeGameHelpers.calculatetGirdDistance(pos1, pos2);
 }
 
 /**
@@ -3247,6 +2662,23 @@ function checkNewGoalPresentation2P3G() {
 
 
 /**
+ * Check trial end for 2P2G (matching human-AI version)
+ */
+function checkTrialEnd2P2G() {
+    var player1AtGoal = isGoalReached(gameData.playerStartPos, gameData.currentGoals);
+    var player2AtGoal = isGoalReached(gameData.partnerStartPos, gameData.currentGoals);
+
+    if (player1AtGoal && player2AtGoal) {
+        var player1Goal = whichGoalReached(gameData.playerStartPos, gameData.currentGoals);
+        var player2Goal = whichGoalReached(gameData.partnerStartPos, gameData.currentGoals);
+        var collaboration = (player1Goal === player2Goal && player1Goal !== 0);
+
+        gameData.currentTrialData.collaborationSucceeded = collaboration;
+        finalizeTrial(true);
+    }
+}
+
+/**
  * Check trial end for 2P3G (matching human-AI version)
  */
 function checkTrialEnd2P3G() {
@@ -3272,14 +2704,10 @@ function checkTrialEnd2P3G() {
 
 /**
  * Check which goal a player has reached
+ * Uses helper function from nodeGameHelpers.js
  */
 function whichGoalReached(playerPos, goals) {
-    for (var i = 0; i < goals.length; i++) {
-        if (isGoalReached(playerPos, [goals[i]])) {
-            return i;
-        }
-    }
-    return null;
+    return window.NodeGameHelpers.whichGoalReached(playerPos, goals);
 }
 
 /**
@@ -3299,6 +2727,113 @@ function startFreezePeriod() {
     }, TWOP3G_CONFIG.newGoalMessageDuration);
 }
 
+
+/**
+ * Show server not running message
+ */
+function showServerNotRunningMessage() {
+    const container = document.getElementById('container');
+    if (!container) return;
+
+    container.innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
+            <div style="max-width: 600px; margin: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 40px; text-align: center;">
+                <h1 style="color: #dc3545; margin-bottom: 30px;">⚠️ Server Not Running</h1>
+                <p style="font-size: 18px; color: #666; margin-bottom: 20px;">
+                    The experiment server is not currently running. Please ensure the server is started before continuing.
+                </p>
+                <div style="background: #f8d7da; border: 1px solid #f5c6cb; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+                    <p style="margin: 0; font-size: 16px; color: #721c24;">
+                        <strong>To start the server:</strong><br>
+                        1. Open a terminal in the project directory<br>
+                        2. Run: <code>node server.js</code><br>
+                        3. Refresh this page
+                    </p>
+                </div>
+                <button class="btn" onclick="location.reload()">Try Again</button>
+                <button class="btn secondary" onclick="window.location.href='index.html'">Back to Main</button>
+            </div>
+        </div>
+    `;
+}
+
+/**
+ * Show error message
+ */
+function showErrorMessage(message) {
+    const container = document.getElementById('container');
+    if (!container) return;
+
+    container.innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
+            <div style="max-width: 600px; margin: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 40px; text-align: center;">
+                <h1 style="color: #dc3545; margin-bottom: 30px;">❌ Error</h1>
+                <p style="font-size: 18px; color: #666; margin-bottom: 30px;">
+                    ${message}
+                </p>
+                <button class="btn" onclick="location.reload()">Try Again</button>
+                <button class="btn secondary" onclick="window.location.href='index.html'">Back to Main</button>
+            </div>
+        </div>
+    `;
+}
+
+/**
+ * Show partner disconnected message
+ */
+function showPartnerDisconnectedMessage() {
+    const container = document.getElementById('container');
+    if (!container) return;
+
+    container.innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
+            <div style="max-width: 600px; margin: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 40px; text-align: center;">
+                <h1 style="color: #ffc107; margin-bottom: 30px;">⚠️ Partner Disconnected</h1>
+                <p style="font-size: 18px; color: #666; margin-bottom: 20px;">
+                    Your partner has disconnected from the experiment. Please wait while we attempt to reconnect or find a new partner.
+                </p>
+                <div style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+                    <p style="margin: 0; font-size: 16px; color: #856404;">
+                        <strong>Attempting to reconnect...</strong><br>
+                        If reconnection fails, you will be matched with a new partner.
+                    </p>
+                </div>
+                <button class="btn" onclick="attemptReconnection()">Try Reconnect</button>
+                <button class="btn secondary" onclick="window.location.href='index.html'">Back to Main</button>
+            </div>
+        </div>
+    `;
+}
+
+/**
+ * Show disconnection message
+ */
+function showDisconnectionMessage() {
+    const container = document.getElementById('container');
+    if (!container) return;
+
+    container.innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
+            <div style="max-width: 600px; margin: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 40px; text-align: center;">
+                <h1 style="color: #dc3545; margin-bottom: 30px;">❌ Connection Lost</h1>
+                <p style="font-size: 18px; color: #666; margin-bottom: 20px;">
+                    Your connection to the server has been lost. Please check your internet connection and try again.
+                </p>
+                <div style="background: #f8d7da; border: 1px solid #f5c6cb; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+                    <p style="margin: 0; font-size: 16px; color: #721c24;">
+                        <strong>Possible causes:</strong><br>
+                        • Internet connection issues<br>
+                        • Server is down<br>
+                        • Browser compatibility issues
+                    </p>
+                </div>
+                <button class="btn" onclick="attemptReconnection()">Try Reconnect</button>
+                <button class="btn secondary" onclick="window.location.href='index.html'">Back to Main</button>
+            </div>
+        </div>
+    `;
+}
+
 // =================================================================================================
 // GLOBAL EXPORTS
 // =================================================================================================
@@ -3307,11 +2842,9 @@ function startFreezePeriod() {
 window.NodeGameHumanHumanFull = {
     initialize: initializeNodeGameHumanHumanFullExperiments,
     start: startNodeGameHumanHumanExperiment,
-    setExperiment2P2G: setExperiment2P2G,
-    setExperiment2P3G: setExperiment2P3G,
-    setExperimentCollaboration: setExperimentCollaboration,
-    setCustomExperimentOrder: setCustomExperimentOrder,
-    downloadExperimentData: downloadExperimentData
+    // Note: Experiment configuration functions are available from nodeGameHelpers.js
+    downloadExperimentData: downloadExperimentData,
+    testDataSaving: testDataSaving
 };
 
 // Don't auto-initialize - let the HTML file handle initialization

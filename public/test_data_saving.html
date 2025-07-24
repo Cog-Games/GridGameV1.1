@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Saving Test - Human-Human Version</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .success {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .error {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 10px;
+            margin-top: 10px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Data Saving Test - Human-Human Version</h1>
+
+    <div class="test-container">
+        <h2>Test Data Saving Functionality</h2>
+        <p>This page tests the data saving functionality in the human-human version to ensure it works correctly even when there are connection issues.</p>
+
+        <button class="test-button" onclick="testBasicDataSaving()">Test Basic Data Saving</button>
+        <button class="test-button" onclick="testNullPlayerId()">Test with Null Player ID</button>
+        <button class="test-button" onclick="testLargeData()">Test Large Data</button>
+        <button class="test-button" onclick="clearLog()">Clear Log</button>
+
+        <div id="log" class="log"></div>
+    </div>
+
+    <!-- Load dependencies -->
+    <script src="js/setup.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/mdp.js"></script>
+    <script src="js/vizWithAI.js"></script>
+    <script src="js/rlAgent.js"></script>
+    <script src="config/MapsFor1P1G.js"></script>
+    <script src="config/MapsFor1P2G.js"></script>
+    <script src="config/MapsFor2P2G.js"></script>
+    <script src="config/MapsFor2P3G.js"></script>
+    <script src="js/nodeGameHelpers.js"></script>
+    <script src="js/experimentConfig.js"></script>
+    <script src="js/expTimeline.js"></script>
+    <script src="js/nodeGameHumanHumanVersion.js"></script>
+
+    <script>
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const prefix = type === 'error' ? '❌' : type === 'success' ? '✅' : 'ℹ️';
+            logDiv.textContent += `[${timestamp}] ${prefix} ${message}\n`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+
+        function clearLog() {
+            document.getElementById('log').textContent = '';
+        }
+
+        function testBasicDataSaving() {
+            log('Starting basic data saving test...');
+
+            try {
+                // Initialize the experiment system
+                const initialized = window.NodeGameHumanHumanFull.initialize();
+                log(`Initialization result: ${initialized}`, initialized ? 'success' : 'error');
+
+                if (initialized) {
+                    // Test the data saving function
+                    const result = window.NodeGameHumanHumanFull.testDataSaving();
+                    log(`Data saving test result: ${result}`, result ? 'success' : 'error');
+                }
+            } catch (error) {
+                log(`Error in basic test: ${error.message}`, 'error');
+            }
+        }
+
+        function testNullPlayerId() {
+            log('Testing data saving with null player ID...');
+
+            try {
+                // Set player ID to null
+                if (window.gameData && window.gameData.multiplayer) {
+                    window.gameData.multiplayer.myPlayerId = null;
+                }
+
+                // Test data saving
+                const result = window.NodeGameHumanHumanFull.testDataSaving();
+                log(`Null player ID test result: ${result}`, result ? 'success' : 'error');
+            } catch (error) {
+                log(`Error in null player ID test: ${error.message}`, 'error');
+            }
+        }
+
+        function testLargeData() {
+            log('Testing data saving with large data...');
+
+            try {
+                // Create large trial data
+                const largeData = [];
+                for (let i = 0; i < 1000; i++) {
+                    largeData.push({
+                        trialIndex: i,
+                        moves: Array(100).fill().map(() => ({ action: 'up', timestamp: Date.now() })),
+                        playerPositions: Array(100).fill().map(() => [Math.floor(Math.random() * 15), Math.floor(Math.random() * 15)]),
+                        goals: [[1, 1], [2, 2], [3, 3]],
+                        success: Math.random() > 0.5
+                    });
+                }
+
+                // Temporarily set large data
+                if (window.gameData) {
+                    const originalData = window.gameData.allTrialsData;
+                    window.gameData.allTrialsData = largeData;
+
+                    // Test saving
+                    const result = window.NodeGameHumanHumanFull.testDataSaving();
+                    log(`Large data test result: ${result}`, result ? 'success' : 'error');
+
+                    // Restore original data
+                    window.gameData.allTrialsData = originalData;
+                }
+            } catch (error) {
+                log(`Error in large data test: ${error.message}`, 'error');
+            }
+        }
+
+        // Auto-run basic test on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            log('Page loaded, running basic test...');
+            setTimeout(testBasicDataSaving, 1000);
+        });
+    </script>
+</body>
+</html>

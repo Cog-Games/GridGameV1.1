@@ -9,7 +9,7 @@ function hashGoals(goals) {
 }
 
 // RL Agent Configuration
-var RL_AGENT_TYPE = 'joint'; // Default agent type
+var RL_AGENT_TYPE = 'individual'; // Default agent type individual or joint
 var RL_AGENT_CONFIG = {
     gridSize: 15,
     noise: 0.0,
@@ -24,8 +24,8 @@ var RL_AGENT_CONFIG = {
     policyBuildTimeout: 10,  // Max time (ms) for initial policy build
     debugMode: false,  // Disable debug logging for performance
     useFastOptimalPolicy: false,  // Use optimized fast version (true) or original version (false)
-    enablePolicyPrecalculation: true,  // Enable pre-calculation of policies for instant response
-    jointRLImplementation: '4action',  // Choose joint RL implementation: '4action', 'original', or 'fast'
+    enablePolicyPrecalculation: false,  // Enable pre-calculation of policies for instant response
+    jointRLImplementation: 'original',  // Choose joint RL implementation: '4action', 'original', or 'fast'
 };
 
 // ===============================================================================================

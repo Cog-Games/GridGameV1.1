@@ -9,21 +9,21 @@ const NODEGAME_CONFIG = {
     // =================================================================================================
 
     // Current test configuration (2P3G only)
-    experimentOrder: ['2P3G'],
+    // experimentOrder: ['2P3G'],
 
     // Alternative configurations (uncomment to use):
     // experimentOrder: ['1P1G'],           // Test 1P1G only
     // experimentOrder: ['1P2G'],           // Test 1P2G only
     // experimentOrder: ['2P2G'],           // Test 2P2G only
     // experimentOrder: ['1P1G', '1P2G'],   // Test 1P1G and 1P2G
-    // experimentOrder: ['2P2G', '2P3G'],   // Test 2P2G and 2P3G
+    experimentOrder: ['2P2G', '2P3G'],   // Test 2P2G and 2P3G
     // experimentOrder: ['1P1G', '1P2G', '2P2G', '2P3G'], // Test all experiments
 
     // =================================================================================================
     // TRIAL COUNTS - ADJUST FOR TESTING
     // =================================================================================================
     numTrials: {
-        '1P1G': 3,    // Number of 1P1G trials
+        '1P1G': 2,    // Number of 1P1G trials
         '1P2G': 4,    // Number of 1P2G trials, formal=12
         '2P2G': 4,    // Number of 2P2G trials, formal=12
         '2P3G': 4     // Number of 2P3G trials, formal=12
@@ -34,10 +34,10 @@ const NODEGAME_CONFIG = {
     // =================================================================================================
     successThreshold: {
         enabled: true,                    // Enable success threshold for collaboration games
-        consecutiveSuccessesRequired: 4,  // Number of consecutive successes required
-        minTrialsBeforeCheck: 4,         // Minimum trials before checking for success threshold
+        consecutiveSuccessesRequired: 2,  // Number of consecutive successes required
+        minTrialsBeforeCheck: 2,         // Minimum trials before checking for success threshold
         maxTrials: 30,                    // Maximum trials regardless of success
-        randomSamplingAfterTrial: 4      // After this trial, use random sampling for maps and conditions
+        randomSamplingAfterTrial: 2      // After this trial, use random sampling for maps and conditions
     },
 
     // =================================================================================================
@@ -56,6 +56,61 @@ const NODEGAME_CONFIG = {
         preTrialDisplayDuration: 2000, // How long to show pre-trial map (ms)
         fixationDuration: 1000,         // Fixation cross duration (ms)
         newGoalMessageDuration: 0    // New goal message and freeze duration (ms)
+    }
+};
+
+// Experiment configuration
+const NODEGAME_HUMAN_HUMAN_CONFIG = {
+    name: 'GridWorldHumanHumanExperiment',
+    version: '1.0.0',
+
+    // EXPERIMENT SELECTION (modify this to test different combinations)
+    // Default: Test all experiments (1P1G, 1P2G, 2P2G, 2P3G)
+    // experimentOrder: ['1P1G', '1P2G', '2P2G', '2P3G'], // Test all experiments
+    // experimentOrder: ['1P2G'],           // Test 2P2G only
+    experimentOrder: ['2P2G'],           // Test 2P2G only
+    // experimentOrder: ['2P3G'],           // Test 2P3G only
+    // experimentOrder: ['2P2G', '2P3G'],      // Test collaboration experiments
+
+    // Trial counts
+    numTrials: {
+        '1P1G': 3,    // Number of 1P1G trials
+        '1P2G': 4,    // Number of 1P2G trials, formal=12
+        '2P2G': 4,    // Number of 2P2G trials, formal=12
+        '2P3G': 4     // Number of 2P3G trials, formal=12
+    },
+
+    // Success threshold configuration
+    // Set enabled: false to disable early termination and run all trials
+    successThreshold: {
+        enabled: true,                    // Enable success threshold for collaboration games
+        consecutiveSuccessesRequired: 4,  // Number of consecutive successes required
+        minTrialsBeforeCheck: 4,         // Minimum trials before checking for success threshold
+        maxTrials: 30,                    // Maximum trials regardless of success
+        randomSamplingAfterTrial: 4      // After this trial, use random sampling for maps and conditions
+    },
+
+    // Game settings
+    maxGameLength: 50,
+    enableProlificRedirect: true,
+    prolificCompletionCode: 'C19EH5X9',
+
+    // Timing configurations (same as human-AI version)
+    timing: {
+        trialToFeedbackDelay: 500,    // Delay from trial completion to feedback (ms)
+        feedbackDisplayDuration: 2000, // How long to show feedback (ms)
+        preTrialDisplayDuration: 2000, // How long to show pre-trial map (ms)
+        fixationDuration: 2000,         // Fixation cross duration (ms)
+        newGoalMessageDuration: 0    // New goal message and freeze duration (ms)
+    },
+
+    // Multiplayer settings
+    multiplayer: {
+        maxWaitTime: 60000,      // 60 seconds to wait for partner
+        roomTimeout: 300000,     // 5 minutes room timeout
+        reconnectAttempts: 3,
+        syncInterval: 100,
+        moveTimeout: 10000       // 10 seconds for move timeout
     }
 };
 

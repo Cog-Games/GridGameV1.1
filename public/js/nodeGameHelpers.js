@@ -113,6 +113,10 @@ function setCustomExperimentOrder(experimentOrder) {
     }
 }
 
+// =================================================================================================
+// GAME LOGIC HELPER FUNCTIONS
+// =================================================================================================
+
 /**
  * Setup grid matrix for a trial
  */
@@ -166,15 +170,278 @@ function setupGridMatrixForTrial(design, experimentType) {
         gameData.currentGoals.push(design.target2);
     }
 
-    // Pre-calculate joint-RL policy for initial goals to eliminate first-move lag
+    // Pre-calculate joint-RL policy for human-AI initial goals to eliminate first-move lag
+    // Note: This is only needed for human-AI experiments, not human-human experiments
     if (experimentType.includes('2P') && window.RLAgent && window.RLAgent.precalculatePolicyForGoals) {
-        console.log('⚡ Pre-calculating joint-RL policy for initial goals:', gameData.currentGoals.map(g => `[${g}]`).join(', '));
+        console.log('⚡ Pre-calculating joint-RL policy for human-AI initial goals:', gameData.currentGoals.map(g => `[${g}]`).join(', '));
 
         // Pre-calculate in background immediately after grid setup
         setTimeout(() => {
             window.RLAgent.precalculatePolicyForGoals(gameData.currentGoals, experimentType);
         }, 0);
     }
+}
+
+/**
+ * State transition function for grid movement
+ * @param {Array} state - Current position [row, col]
+ * @param {Array} action - Action to take [deltaRow, deltaCol]
+ * @returns {Array} - New position [row, col]
+ */
+function transition(state, action) {
+    let [x, y] = state;
+    let nextState = [x+action[0],y+action[1]]
+    return nextState
+}
+
+/**
+ * Calculate grid distance between two positions (Manhattan distance)
+ * @param {Array} pos1 - First position [row, col]
+ * @param {Array} pos2 - Second position [row, col]
+ * @returns {number} - Manhattan distance between positions
+ */
+function calculatetGirdDistance(pos1, pos2) {
+    if (!pos1 || !pos2 || !Array.isArray(pos1) || !Array.isArray(pos2) ||
+        pos1.length < 2 || pos2.length < 2) {
+        return Infinity; // Return large distance for invalid positions
+    }
+    return Math.abs(pos1[0] - pos2[0]) + Math.abs(pos1[1] - pos2[1]);
+}
+
+/**
+ * Check if a position is valid within the grid bounds
+ * @param {Array} position - Position to check [row, col]
+ * @returns {boolean} - True if position is valid
+ */
+function isValidPosition(position) {
+    if (!position || !Array.isArray(position) || position.length < 2) {
+        return false;
+    }
+    const [row, col] = position;
+    return row >= 0 && row < EXPSETTINGS.matrixsize && col >= 0 && col < EXPSETTINGS.matrixsize;
+}
+
+/**
+ * Check if a player has reached any goal
+ * @param {Array} playerPos - Player position [row, col]
+ * @param {Array} goals - Array of goal positions [[row, col], ...]
+ * @returns {boolean} - True if player is at any goal
+ */
+function isGoalReached(playerPos, goals) {
+    if (!playerPos || !goals || !Array.isArray(goals)) {
+        return false;
+    }
+
+    for (let i = 0; i < goals.length; i++) {
+        if (playerPos[0] === goals[i][0] && playerPos[1] === goals[i][1]) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * Check which goal a player has reached
+ * @param {Array} playerPos - Player position [row, col]
+ * @param {Array} goals - Array of goal positions [[row, col], ...]
+ * @returns {number|null} - Index of reached goal, or null if none reached
+ */
+function whichGoalReached(playerPos, goals) {
+    for (var i = 0; i < goals.length; i++) {
+        if (isGoalReached(playerPos, [goals[i]])) {
+            return i;
+        }
+    }
+    return null;
+}
+
+/**
+ * Detect which goal a player is heading towards
+ * @param {Array} playerPos - Current player position [row, col]
+ * @param {Array|string} action - Action being taken (array or string)
+ * @param {Array} goals - Array of goal positions [[row, col], ...]
+ * @param {Array} goalHistory - History of previously inferred goals
+ * @returns {number|null} - Index of goal being approached, or null if unclear
+ */
+function detectPlayerGoal(playerPos, action, goals, goalHistory) {
+    if (!action) {
+        return null;
+    }
+
+    // Convert string action to array format
+    let actionArray;
+    if (typeof action === 'string') {
+        switch (action) {
+            case 'up':
+                actionArray = [-1, 0];
+                break;
+            case 'down':
+                actionArray = [1, 0];
+                break;
+            case 'left':
+                actionArray = [0, -1];
+                break;
+            case 'right':
+                actionArray = [0, 1];
+                break;
+            default:
+                return null;
+        }
+    } else if (Array.isArray(action)) {
+        actionArray = action;
+    } else {
+        return null;
+    }
+
+    if (actionArray[0] === 0 && actionArray[1] === 0) {
+        return null; // No movement, can't determine goal
+    }
+
+    var nextPos = transition(playerPos, actionArray);
+    var minDistance = Infinity;
+    var closestGoal = null;
+    var equidistantGoals = [];
+
+    for (var i = 0; i < goals.length; i++) {
+        var distance = calculatetGirdDistance(nextPos, goals[i]);
+        if (distance < minDistance) {
+            minDistance = distance;
+            closestGoal = i;
+            equidistantGoals = [i]; // Reset equidistant goals
+        } else if (distance === minDistance) {
+            equidistantGoals.push(i); // Add to equidistant goals
+        }
+    }
+
+    // If there are multiple equidistant goals, return last step's inferred goal
+    if (equidistantGoals.length > 1) {
+        if (goalHistory && goalHistory.length > 0) {
+            return goalHistory[goalHistory.length - 1]; // Return last step's inferred goal
+        } else {
+            return null; // No prior goal history
+        }
+    }
+
+    return closestGoal;
+}
+
+// =================================================================================================
+// MAP AND DISTANCE CONDITION HELPER FUNCTIONS
+// =================================================================================================
+
+/**
+ * Get maps for a specific experiment type
+ * @param {string} experimentType - Type of experiment
+ * @returns {Object} - Map data for the experiment
+ */
+function getMapsForExperiment(experimentType) {
+    var mapData;
+    switch (experimentType) {
+        case '1P1G':
+            mapData = window.MapsFor1P1G || MapsFor1P1G;
+            break;
+        case '1P2G':
+            mapData = window.MapsFor1P2G || MapsFor1P2G;
+            break;
+        case '2P2G':
+            mapData = window.MapsFor2P2G || MapsFor2P2G;
+            break;
+        case '2P3G':
+            mapData = window.MapsFor2P3G || MapsFor2P3G;
+            break;
+        default:
+            mapData = window.MapsFor1P1G || MapsFor1P1G;
+            break;
+    }
+
+    return mapData;
+}
+
+/**
+ * Generate randomized distance condition sequence for 2P3G trials
+ * Ensures equal representation of each condition in random order
+ * @param {number} numTrials - Number of 2P3G trials
+ * @returns {Array} - Randomized array of distance conditions
+ */
+function generateRandomizedDistanceSequence(numTrials) {
+    var allConditions = [
+        TWOP3G_CONFIG.distanceConditions.CLOSER_TO_AI,
+        TWOP3G_CONFIG.distanceConditions.CLOSER_TO_HUMAN,
+        TWOP3G_CONFIG.distanceConditions.EQUAL_TO_BOTH,
+        TWOP3G_CONFIG.distanceConditions.NO_NEW_GOAL
+    ];
+
+    var numConditions = allConditions.length;
+    var trialsPerCondition = Math.floor(numTrials / numConditions);
+    var remainingTrials = numTrials % numConditions;
+
+    // Create array with equal representation of each condition
+    var sequence = [];
+    for (var i = 0; i < numConditions; i++) {
+        for (var j = 0; j < trialsPerCondition; j++) {
+            sequence.push(allConditions[i]);
+        }
+    }
+
+    // Add remaining trials (if any) by cycling through conditions
+    for (var k = 0; k < remainingTrials; k++) {
+        sequence.push(allConditions[k]);
+    }
+
+    // Shuffle the sequence using Fisher-Yates algorithm
+    for (var m = sequence.length - 1; m > 0; m--) {
+        var randomIndex = Math.floor(Math.random() * (m + 1));
+        var temp = sequence[m];
+        sequence[m] = sequence[randomIndex];
+        sequence[randomIndex] = temp;
+    }
+
+    console.log('Generated randomized distance condition sequence for', numTrials, 'trials:');
+    console.log('Trials per condition:', trialsPerCondition, 'Remaining trials:', remainingTrials);
+    console.log('Sequence:', sequence);
+
+    return sequence;
+}
+
+/**
+ * Generate randomized distance condition sequence for 1P2G trials
+ * Ensures equal representation of each condition in random order
+ * @param {number} numTrials - Number of 1P2G trials
+ * @returns {Array} - Randomized array of distance conditions
+ */
+function generateRandomized1P2GDistanceSequence(numTrials) {
+    var allConditions = [
+        ONEP2G_CONFIG.distanceConditions.CLOSER_TO_HUMAN,
+        ONEP2G_CONFIG.distanceConditions.FARTHER_TO_HUMAN,
+        ONEP2G_CONFIG.distanceConditions.EQUAL_TO_HUMAN,
+        ONEP2G_CONFIG.distanceConditions.NO_NEW_GOAL
+    ];
+
+    var numConditions = allConditions.length;
+    var trialsPerCondition = Math.floor(numTrials / numConditions);
+    var remainingTrials = numTrials % numConditions;
+
+    // Create array with equal representation of each condition
+    var sequence = [];
+    for (var i = 0; i < numConditions; i++) {
+        for (var j = 0; j < trialsPerCondition; j++) {
+            sequence.push(allConditions[i]);
+        }
+    }
+
+    // Add remaining trials (if any) by cycling through conditions
+    for (var k = 0; k < remainingTrials; k++) {
+        sequence.push(allConditions[k]);
+    }
+
+    // Shuffle the sequence using Fisher-Yates algorithm
+    for (var m = sequence.length - 1; m > 0; m--) {
+        var randomIndex = Math.floor(Math.random() * (m + 1));
+        var temp = sequence[m];
+        sequence[m] = sequence[randomIndex];
+        sequence[randomIndex] = temp;
+    }
+    return sequence;
 }
 
 // =================================================================================================
@@ -625,6 +892,53 @@ function redirectToProlific() {
     }
 }
 
+/**
+ * Get random map for collaboration games after trial 12
+ * @param {string} experimentType - Type of experiment (2P2G or 2P3G)
+ * @param {number} trialIndex - Current trial index
+ * @returns {Object} - Random map design
+ */
+function getRandomMapForCollaborationGame(experimentType, trialIndex) {
+    // If we're past the random sampling threshold, use random sampling
+    if (trialIndex >= NODEGAME_CONFIG.successThreshold.randomSamplingAfterTrial) {
+        var mapData = getMapsForExperiment(experimentType);
+        console.log(`Getting random map for ${experimentType} trial ${trialIndex + 1}, mapData:`, mapData);
+
+        if (!mapData || Object.keys(mapData).length === 0) {
+            console.error(`No map data available for ${experimentType}`);
+            // Fallback to timeline map data if available
+            if (timeline.mapData[experimentType] && timeline.mapData[experimentType].length > 0) {
+                console.log(`Falling back to timeline map data for ${experimentType}`);
+                return timeline.mapData[experimentType][0];
+            }
+            // If no fallback available, return null
+            return null;
+        }
+
+        var randomMaps = selectRandomMaps(mapData, 1);
+        console.log(`Selected random maps:`, randomMaps);
+
+        if (!randomMaps || randomMaps.length === 0) {
+            console.error(`No random maps selected for ${experimentType}`);
+            return null;
+        }
+
+        console.log(`Using random map for ${experimentType} trial ${trialIndex + 1} (after trial ${NODEGAME_CONFIG.successThreshold.randomSamplingAfterTrial})`);
+        console.log('Selected random map structure:', randomMaps[0]);
+        return randomMaps[0];
+    } else {
+        // Use the pre-selected map from timeline
+        if (!timeline.mapData[experimentType] || !timeline.mapData[experimentType][trialIndex]) {
+            console.error(`No timeline map data available for ${experimentType} trial ${trialIndex}`);
+            return null;
+        }
+        return timeline.mapData[experimentType][trialIndex];
+    }
+}
+
+
+
+
 // =================================================================================================
 // GLOBAL EXPORTS
 // =================================================================================================
@@ -641,6 +955,21 @@ if (typeof module !== 'undefined' && module.exports) {
         setExperimentCollaboration,
         setExperimentSinglePlayer,
         setCustomExperimentOrder,
+
+        // Game logic helpers
+        setupGridMatrixForTrial,
+        transition,
+        calculatetGirdDistance,
+        isValidPosition,
+        isGoalReached,
+        whichGoalReached,
+        detectPlayerGoal,
+
+        // Map and distance condition helpers
+        getMapsForExperiment,
+        generateRandomizedDistanceSequence,
+        generateRandomized1P2GDistanceSequence,
+        selectRandomMaps,
 
         // Data export functions
         saveDataToGoogleDrive,
@@ -666,6 +995,21 @@ window.NodeGameHelpers = {
     setExperimentCollaboration,
     setExperimentSinglePlayer,
     setCustomExperimentOrder,
+
+    // Game logic helpers
+    setupGridMatrixForTrial,
+    transition,
+    calculatetGirdDistance,
+    isValidPosition,
+    isGoalReached,
+    whichGoalReached,
+    detectPlayerGoal,
+
+    // Map and distance condition helpers
+    getMapsForExperiment,
+    generateRandomizedDistanceSequence,
+    generateRandomized1P2GDistanceSequence,
+    selectRandomMaps,
 
     // Data saving functions
     saveDataToGoogleDrive,

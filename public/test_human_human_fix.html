@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Human-Human Fix Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #f8f9fa;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        #gameCanvas {
+            border: 2px solid #333;
+            margin: 10px 0;
+        }
+        .console-output {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Human-Human Visualization Fix Test</h1>
+
+        <div class="test-section">
+            <h3>Test 1: Initialization</h3>
+            <p>Test if the game data is properly initialized:</p>
+            <button class="btn" onclick="testInitialization()">Test Initialization</button>
+            <div id="test1Results"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Test 2: Visualization with Mock Data</h3>
+            <p>Test if the visualization works with mock server data:</p>
+            <button class="btn" onclick="testMockData()">Test Mock Data</button>
+            <div id="test2Canvas"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Test 3: Move Recording</h3>
+            <p>Test if move recording works without errors:</p>
+            <button class="btn" onclick="testMoveRecording()">Test Move Recording</button>
+            <div id="test3Results"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Console Output</h3>
+            <div id="consoleOutput" class="console-output"></div>
+        </div>
+    </div>
+
+    <!-- Load dependencies -->
+    <script>
+        // Mock global variables
+        window.OBJECT = {
+            obstacle: 1,
+            goal: 2,
+            player: 3,
+            ai_player: 4
+        };
+
+        window.COLORPOOL = {
+            line: '#333',
+            obstacle: '#333',
+            map: '#fff',
+            player: '#dc3545',
+            goal: '#007bff',
+            fixation: '#666'
+        };
+
+        window.WINSETTING = { w: 480, h: 480 };
+
+        window.EXPSETTINGS = {
+            padding: 2,
+            cellSize: 30,
+            matrixsize: 15
+        };
+
+        // Mock configurations
+        window.NODEGAME_HUMAN_HUMAN_CONFIG = {
+            experimentOrder: ['2P2G'],
+            numTrials: { '2P2G': 5 },
+            successThreshold: {
+                enabled: false,
+                consecutiveSuccessesRequired: 4,
+                minTrialsBeforeCheck: 4,
+                randomSamplingAfterTrial: 12
+            },
+            timing: {
+                feedbackDisplayDuration: 2000
+            },
+            prolificCompletionCode: 'TEST123',
+            version: '1.0',
+            enableProlificRedirect: false
+        };
+
+        window.TWOP3G_CONFIG = {
+            distanceConditions: {
+                CLOSER_TO_AI: 'closer_to_ai',
+                CLOSER_TO_HUMAN: 'closer_to_human',
+                EQUAL_TO_BOTH: 'equal_to_both',
+                NO_NEW_GOAL: 'no_new_goal'
+            },
+            minStepsBeforeNewGoal: 3,
+            newGoalMessageDuration: 2000,
+            distanceConditionSequence: []
+        };
+
+        window.ONEP2G_CONFIG = {
+            distanceConditions: {
+                CLOSER_TO_HUMAN: 'closer_to_human',
+                FARTHER_TO_HUMAN: 'farther_to_human',
+                EQUAL_TO_HUMAN: 'equal_to_human',
+                NO_NEW_GOAL: 'no_new_goal'
+            },
+            distanceConditionSequence: []
+        };
+
+        // Mock gameData
+        window.gameData = {
+            currentExperiment: '2P2G',
+            currentGoals: [[2, 7], [12, 7]],
+            gridMatrix: Array(15).fill(0).map(() => Array(15).fill(0)),
+            playerStartPos: [7, 2],
+            partnerStartPos: [7, 12],
+            currentPlayerPos: [7, 2],
+            currentTrial: 0,
+            stepCount: 0,
+            gameStartTime: Date.now()
+        };
+
+        // Mock playerOrder
+        window.playerOrder = {
+            isFirstPlayer: true
+        };
+
+        // Mock timeline
+        window.timeline = {
+            currentStage: 0,
+            stages: [],
+            isMoving: false,
+            keyListenerActive: false,
+            inTrialStage: false
+        };
+
+        // Mock socket
+        window.socket = {
+            emit: function() { console.log('Mock socket emit:', arguments); }
+        };
+    </script>
+
+    <script src="js/setup.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/vizWithAI.js"></script>
+    <script src="js/nodeGameHelpers.js"></script>
+    <script src="js/experimentConfig.js"></script>
+    <script src="js/expTimeline.js"></script>
+    <script src="js/nodeGameHumanHumanVersion.js"></script>
+
+    <script>
+        function log(message) {
+            console.log(message);
+            const output = document.getElementById('consoleOutput');
+            output.innerHTML += message + '<br>';
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function testInitialization() {
+            log('=== Testing Initialization ===');
+
+            try {
+                // Test if gameData is properly initialized
+                log('gameData exists: ' + !!window.gameData);
+                log('gameData.currentPlayerPos: ' + JSON.stringify(window.gameData.currentPlayerPos));
+                log('gameData.currentGoals: ' + JSON.stringify(window.gameData.currentGoals));
+                log('gameData.gridMatrix: ' + (window.gameData.gridMatrix ? 'exists' : 'null'));
+
+                // Test if playerOrder is accessible
+                log('playerOrder exists: ' + !!window.playerOrder);
+                log('playerOrder.isFirstPlayer: ' + window.playerOrder.isFirstPlayer);
+
+                // Test if required functions exist
+                log('renderGameBoardFallback exists: ' + (typeof renderGameBoardFallback === 'function'));
+                log('drawCircleHumanHuman exists: ' + (typeof drawCircleHumanHuman === 'function'));
+                log('drawOverlappingCirclesHumanHuman exists: ' + (typeof drawOverlappingCirclesHumanHuman === 'function'));
+
+                log('✅ Initialization test passed');
+            } catch (error) {
+                log('❌ Initialization test failed: ' + error.message);
+            }
+        }
+
+        function testMockData() {
+            log('=== Testing Mock Data Visualization ===');
+
+            try {
+                // Create canvas container
+                const container = document.getElementById('test2Canvas');
+                container.innerHTML = '<div id="gameCanvas"></div>';
+
+                // Call renderGameBoardFallback
+                renderGameBoardFallback();
+
+                log('✅ Mock data visualization test passed');
+            } catch (error) {
+                log('❌ Mock data visualization test failed: ' + error.message);
+            }
+        }
+
+        function testMoveRecording() {
+            log('=== Testing Move Recording ===');
+
+            try {
+                // Initialize trial data
+                initializeTrialData(0, '2P2G');
+
+                // Test recording a move
+                recordPlayerMove('left', 100);
+
+                log('✅ Move recording test passed');
+                log('Trajectory length: ' + gameData.currentTrialData.trajectory.length);
+                log('Last trajectory point: ' + JSON.stringify(gameData.currentTrialData.trajectory[gameData.currentTrialData.trajectory.length - 1]));
+            } catch (error) {
+                log('❌ Move recording test failed: ' + error.message);
+            }
+        }
+
+        // Run tests on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            log('Page loaded, running initialization test...');
+            setTimeout(() => {
+                testInitialization();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

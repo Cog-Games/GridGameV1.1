@@ -1018,16 +1018,12 @@ function updateAIPosition(oldPos, newPos) {
 
 /**
  * Calculate success rate for stats
+ * Uses helper function from nodeGameHelpers.js
  */
 function calculateSuccessRate() {
-    if (gameData.allTrialsData.length === 0) return 0;
-
-    var successful = gameData.allTrialsData.filter(trial =>
-        trial.collaborationSucceeded === true || trial.completed === true
-    ).length;
-
-    return Math.round((successful / gameData.allTrialsData.length) * 100);
+    return window.NodeGameHelpers.calculateSuccessRate();
 }
+
 
 // =================================================================================================
 // SUCCESS THRESHOLD HELPER FUNCTIONS - FOR COLLABORATION GAMES
@@ -1106,51 +1102,6 @@ function shouldEndExperimentDueToSuccessThreshold() {
 
     return false;
 }
-
-/**
- * Get random map for collaboration games after trial 12
- * @param {string} experimentType - Type of experiment (2P2G or 2P3G)
- * @param {number} trialIndex - Current trial index
- * @returns {Object} - Random map design
- */
-function getRandomMapForCollaborationGame(experimentType, trialIndex) {
-    // If we're past the random sampling threshold, use random sampling
-    if (trialIndex >= NODEGAME_CONFIG.successThreshold.randomSamplingAfterTrial) {
-        var mapData = getMapsForExperiment(experimentType);
-        console.log(`Getting random map for ${experimentType} trial ${trialIndex + 1}, mapData:`, mapData);
-
-        if (!mapData || Object.keys(mapData).length === 0) {
-            console.error(`No map data available for ${experimentType}`);
-            // Fallback to timeline map data if available
-            if (timeline.mapData[experimentType] && timeline.mapData[experimentType].length > 0) {
-                console.log(`Falling back to timeline map data for ${experimentType}`);
-                return timeline.mapData[experimentType][0];
-            }
-            // If no fallback available, return null
-            return null;
-        }
-
-        var randomMaps = selectRandomMaps(mapData, 1);
-        console.log(`Selected random maps:`, randomMaps);
-
-        if (!randomMaps || randomMaps.length === 0) {
-            console.error(`No random maps selected for ${experimentType}`);
-            return null;
-        }
-
-        console.log(`Using random map for ${experimentType} trial ${trialIndex + 1} (after trial ${NODEGAME_CONFIG.successThreshold.randomSamplingAfterTrial})`);
-        console.log('Selected random map structure:', randomMaps[0]);
-        return randomMaps[0];
-    } else {
-        // Use the pre-selected map from timeline
-        if (!timeline.mapData[experimentType] || !timeline.mapData[experimentType][trialIndex]) {
-            console.error(`No timeline map data available for ${experimentType} trial ${trialIndex}`);
-            return null;
-        }
-        return timeline.mapData[experimentType][trialIndex];
-    }
-}
-
 /**
  * Get random distance condition for 2P3G after trial 12
  * @param {number} trialIndex - Current trial index
@@ -1309,40 +1260,6 @@ function addCollaborationExperimentStages(experimentType, experimentIndex, trial
  * @param {number} experimentIndex - Index of experiment
  * @param {number} trialIndex - Index of trial
  */
-function addNextTrialStages(experimentType, experimentIndex, trialIndex) {
-    // Find the current post-trial stage index
-    var currentStageIndex = timeline.currentStage;
-
-    // Insert the next trial stages after the current post-trial stage
-    var stagesToInsert = [
-        {
-            type: 'fixation',
-            experimentType: experimentType,
-            experimentIndex: experimentIndex,
-            trialIndex: trialIndex,
-            handler: showFixationStage
-        },
-        {
-            type: 'trial',
-            experimentType: experimentType,
-            experimentIndex: experimentIndex,
-            trialIndex: trialIndex,
-            handler: runTrialStage
-        },
-        {
-            type: 'post-trial',
-            experimentType: experimentType,
-            experimentIndex: experimentIndex,
-            trialIndex: trialIndex,
-            handler: showPostTrialStage
-        }
-    ];
-
-    // Insert stages after current stage
-    timeline.stages.splice(currentStageIndex + 1, 0, ...stagesToInsert);
-
-    console.log(`Added next trial stages for ${experimentType} trial ${trialIndex + 1}`);
-}
 
 // =================================================================================================
 // NodeGame Event Handlers
@@ -1548,123 +1465,27 @@ var isNewGoalCloserToAI = null;
  * Detect which goal a player is heading towards based on their action (matching original)
  */
 function detectPlayerGoal(playerPos, action, goals, goalHistory) {
-    if (!action || (action[0] === 0 && action[1] === 0)) {
-        return null; // No movement, can't determine goal
-    }
-
-    var nextPos = transition(playerPos, action);
-    var minDistance = Infinity;
-    var closestGoal = null;
-    var equidistantGoals = [];
-
-    for (var i = 0; i < goals.length; i++) {
-        var distance = calculatetGirdDistance(nextPos, goals[i]);
-        if (distance < minDistance) {
-            minDistance = distance;
-            closestGoal = i;
-            equidistantGoals = [i]; // Reset equidistant goals
-        } else if (distance === minDistance) {
-            equidistantGoals.push(i); // Add to equidistant goals
-        }
-    }
-
-    // If there are multiple equidistant goals, return last step's inferred goal
-    if (equidistantGoals.length > 1) {
-        if (goalHistory && goalHistory.length > 0) {
-            return goalHistory[goalHistory.length - 1]; // Return last step's inferred goal
-        } else {
-            return null; // No prior goal history
-        }
-    }
-
-    return closestGoal;
+    return window.NodeGameHelpers.detectPlayerGoal(playerPos, action, goals, goalHistory);
 }
 
 /**
  * Generate randomized distance condition sequence for 2P3G trials
- * Ensures equal representation of each condition in random order
+ * Uses helper function from nodeGameHelpers.js
  * @param {number} numTrials - Number of 2P3G trials
  * @returns {Array} - Randomized array of distance conditions
  */
 function generateRandomizedDistanceSequence(numTrials) {
-    var allConditions = [
-        TWOP3G_CONFIG.distanceConditions.CLOSER_TO_AI,
-        TWOP3G_CONFIG.distanceConditions.CLOSER_TO_HUMAN,
-        TWOP3G_CONFIG.distanceConditions.EQUAL_TO_BOTH,
-        TWOP3G_CONFIG.distanceConditions.NO_NEW_GOAL
-    ];
-
-    var numConditions = allConditions.length;
-    var trialsPerCondition = Math.floor(numTrials / numConditions);
-    var remainingTrials = numTrials % numConditions;
-
-    // Create array with equal representation of each condition
-    var sequence = [];
-    for (var i = 0; i < numConditions; i++) {
-        for (var j = 0; j < trialsPerCondition; j++) {
-            sequence.push(allConditions[i]);
-        }
-    }
-
-    // Add remaining trials (if any) by cycling through conditions
-    for (var k = 0; k < remainingTrials; k++) {
-        sequence.push(allConditions[k]);
-    }
-
-    // Shuffle the sequence using Fisher-Yates algorithm
-    for (var m = sequence.length - 1; m > 0; m--) {
-        var randomIndex = Math.floor(Math.random() * (m + 1));
-        var temp = sequence[m];
-        sequence[m] = sequence[randomIndex];
-        sequence[randomIndex] = temp;
-    }
-
-    console.log('Generated randomized distance condition sequence for', numTrials, 'trials:');
-    console.log('Trials per condition:', trialsPerCondition, 'Remaining trials:', remainingTrials);
-    console.log('Sequence:', sequence);
-
-    return sequence;
+    return window.NodeGameHelpers.generateRandomizedDistanceSequence(numTrials);
 }
 
 /**
  * Generate randomized distance condition sequence for 1P2G trials
- * Ensures equal representation of each condition in random order
+ * Uses helper function from nodeGameHelpers.js
  * @param {number} numTrials - Number of 1P2G trials
  * @returns {Array} - Randomized array of distance conditions
  */
 function generateRandomized1P2GDistanceSequence(numTrials) {
-    var allConditions = [
-        ONEP2G_CONFIG.distanceConditions.CLOSER_TO_HUMAN,
-        ONEP2G_CONFIG.distanceConditions.FARTHER_TO_HUMAN,
-        ONEP2G_CONFIG.distanceConditions.EQUAL_TO_HUMAN,
-        ONEP2G_CONFIG.distanceConditions.NO_NEW_GOAL
-    ];
-
-    var numConditions = allConditions.length;
-    var trialsPerCondition = Math.floor(numTrials / numConditions);
-    var remainingTrials = numTrials % numConditions;
-
-    // Create array with equal representation of each condition
-    var sequence = [];
-    for (var i = 0; i < numConditions; i++) {
-        for (var j = 0; j < trialsPerCondition; j++) {
-            sequence.push(allConditions[i]);
-        }
-    }
-
-    // Add remaining trials (if any) by cycling through conditions
-    for (var k = 0; k < remainingTrials; k++) {
-        sequence.push(allConditions[k]);
-    }
-
-    // Shuffle the sequence using Fisher-Yates algorithm
-    for (var m = sequence.length - 1; m > 0; m--) {
-        var randomIndex = Math.floor(Math.random() * (m + 1));
-        var temp = sequence[m];
-        sequence[m] = sequence[randomIndex];
-        sequence[randomIndex] = temp;
-    }
-    return sequence;
+    return window.NodeGameHelpers.generateRandomized1P2GDistanceSequence(numTrials);
 }
 
 /**
@@ -2414,30 +2235,7 @@ function createFallbackDesign(experimentType) {
  * Get maps for experiment type
  */
 function getMapsForExperiment(experimentType) {
-
-    var mapData;
-    switch (experimentType) {
-        case '1P1G':
-            mapData = window.MapsFor1P1G || MapsFor1P1G;
-            break;
-        case '1P2G':
-            mapData = window.MapsFor1P2G || MapsFor1P2G;
-            break;
-        case '2P2G':
-            mapData = window.MapsFor2P2G || MapsFor2P2G;
-            break;
-        case '2P3G':
-            mapData = window.MapsFor2P3G || MapsFor2P3G;
-            break;
-        default:
-            mapData = window.MapsFor1P1G || MapsFor1P1G;
-            break;
-    }
-
-    // console.log('Map data for', experimentType, ':', mapData);
-    // console.log('Map data keys:', mapData ? Object.keys(mapData) : 'undefined');
-
-    return mapData;
+    return window.NodeGameHelpers.getMapsForExperiment(experimentType);
 }
 
 // Export for use in other files
@@ -2675,67 +2473,67 @@ function debugNewGoalGeneration(aiPos, humanPos, oldGoals, aiCurrentGoalIndex, d
 
 /**
  * Set experiment to 1P1G only
+ * Uses helper function from nodeGameHelpers.js
  */
 function setExperiment1P1G() {
-    NODEGAME_CONFIG.experimentOrder = ['1P1G'];
-    console.log('Experiment set to 1P1G only');
+    return window.NodeGameHelpers.setExperiment1P1G();
 }
 
 /**
  * Set experiment to 1P2G only
+ * Uses helper function from nodeGameHelpers.js
  */
 function setExperiment1P2G() {
-    NODEGAME_CONFIG.experimentOrder = ['1P2G'];
-    console.log('Experiment set to 1P2G only');
+    return window.NodeGameHelpers.setExperiment1P2G();
 }
 
 /**
  * Set experiment to 2P2G only
+ * Uses helper function from nodeGameHelpers.js
  */
 function setExperiment2P2G() {
-    NODEGAME_CONFIG.experimentOrder = ['2P2G'];
-    console.log('Experiment set to 2P2G only');
+    return window.NodeGameHelpers.setExperiment2P2G();
 }
 
 /**
  * Set experiment to 2P3G only
+ * Uses helper function from nodeGameHelpers.js
  */
 function setExperiment2P3G() {
-    NODEGAME_CONFIG.experimentOrder = ['2P3G'];
-    console.log('Experiment set to 2P3G only');
+    return window.NodeGameHelpers.setExperiment2P3G();
 }
 
 /**
  * Set experiment to all experiments
+ * Uses helper function from nodeGameHelpers.js
  */
 function setExperimentAll() {
-    NODEGAME_CONFIG.experimentOrder = ['1P1G', '1P2G', '2P2G', '2P3G'];
-    console.log('Experiment set to all experiments');
+    return window.NodeGameHelpers.setExperimentAll();
 }
 
 /**
  * Set experiment to collaboration games only
+ * Uses helper function from nodeGameHelpers.js
  */
 function setExperimentCollaboration() {
-    NODEGAME_CONFIG.experimentOrder = ['2P2G', '2P3G'];
-    console.log('Experiment set to collaboration games only');
+    return window.NodeGameHelpers.setExperimentCollaboration();
 }
 
 /**
  * Set experiment to single player games only
+ * Uses helper function from nodeGameHelpers.js
  */
 function setExperimentSinglePlayer() {
-    NODEGAME_CONFIG.experimentOrder = ['1P1G', '1P2G'];
-    console.log('Experiment set to single player games only');
+    return window.NodeGameHelpers.setExperimentSinglePlayer();
 }
 
 /**
  * Set custom experiment order
+ * Uses helper function from nodeGameHelpers.js
  * @param {Array} experimentOrder - Array of experiment types
  */
 function setCustomExperimentOrder(experimentOrder) {
-    NODEGAME_CONFIG.experimentOrder = experimentOrder;
-    console.log('Experiment set to custom order:', experimentOrder);
+    return window.NodeGameHelpers.setCustomExperimentOrder(experimentOrder);
 }
 
 
@@ -2748,3 +2546,4 @@ function setCustomExperimentOrder(experimentOrder) {
 // - updateRLAgentConfig
 // - getRLAgentType
 // - getRLAgentConfig
+

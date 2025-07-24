@@ -458,6 +458,124 @@ function nodeGameDrawCircle(context, color, lineWidth, colPos, rowPos, startAngl
     context.stroke();
 }
 
+
+/**
+ * Create game canvas
+ */
+function createGameCanvas() {
+    // Use the exact same parameters as the human-AI version
+    const canvas = document.createElement('canvas');
+    canvas.id = 'gameCanvas';
+
+    // Use WINSETTING dimensions like human-AI version
+    canvas.width = WINSETTING.w;
+    canvas.height = WINSETTING.h;
+
+    canvas.style.border = '2px solid #333';
+    canvas.style.display = 'block';
+    canvas.style.margin = '0 auto';
+    canvas.style.marginLeft = 0;
+    canvas.style.marginTop = 0;
+
+    console.log('Created canvas with ID:', canvas.id, 'Size:', canvas.width, 'x', canvas.height);
+    return canvas;
+}
+
+// =================================================================================================
+// Human-Human Version Drawing Functions
+// =================================================================================================
+
+
+/**
+ * Draw fixation display matching exact human-AI version parameters
+ */
+function drawFixationDisplayHumanHuman(canvas) {
+    const context = canvas.getContext("2d");
+    canvas.width = WINSETTING.w;
+    canvas.height = WINSETTING.h;
+
+    canvas.style.marginLeft = 0;
+    canvas.style.marginTop = 0;
+
+    // Draw background using COLORPOOL.line like human-AI version
+    context.fillStyle = COLORPOOL.line;
+    context.fillRect(0 - EXPSETTINGS.padding,
+        0 - EXPSETTINGS.padding,
+        WINSETTING.w + EXPSETTINGS.padding,
+        WINSETTING.h + EXPSETTINGS.padding);
+
+    // Draw empty grid (all cells as map color) like human-AI version
+    for (let row = 0; row < EXPSETTINGS.matrixsize; row++) {
+        for (let col = 0; col < EXPSETTINGS.matrixsize; col++) {
+            context.fillStyle = COLORPOOL.map;
+            context.fillRect(col * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding,
+                row * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding,
+                EXPSETTINGS.cellSize, EXPSETTINGS.cellSize);
+        }
+    }
+
+    // Draw fixation cross in center like human-AI version
+    drawFixationCrossHumanHuman(context, [Math.floor(EXPSETTINGS.matrixsize / 2), Math.floor(EXPSETTINGS.matrixsize / 2)], 1 / 5, 2 * EXPSETTINGS.padding);
+}
+
+/**
+ * Draw fixation cross matching exact human-AI version parameters
+ */
+function drawFixationCrossHumanHuman(context, fixationPos, posScale, lineWidth) {
+    let col = fixationPos[1];
+    let row = fixationPos[0];
+    context.lineWidth = lineWidth;
+    context.strokeStyle = COLORPOOL.fixation;
+
+    context.beginPath();
+    // Horizontal line
+    context.moveTo(col * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding + posScale * EXPSETTINGS.cellSize,
+        row * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding + 1 / 2 * EXPSETTINGS.cellSize);
+    context.lineTo(col * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding + (1 - posScale) * EXPSETTINGS.cellSize,
+        row * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding + 1 / 2 * EXPSETTINGS.cellSize);
+
+    // Vertical line
+    context.moveTo(col * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + 1 / 2 * EXPSETTINGS.cellSize + EXPSETTINGS.padding,
+        row * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + posScale * EXPSETTINGS.cellSize + EXPSETTINGS.padding);
+    context.lineTo(col * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + 1 / 2 * EXPSETTINGS.cellSize + EXPSETTINGS.padding,
+        row * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + (1 - posScale) * EXPSETTINGS.cellSize + EXPSETTINGS.padding);
+    context.stroke();
+}
+
+
+/**
+ * Draw overlapping circles function for human-human version
+ */
+function drawOverlappingCirclesHumanHuman(context, colPos, rowPos) {
+    // First draw white background
+    context.fillStyle = COLORPOOL.map;
+    context.fillRect(colPos * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding,
+        rowPos * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding,
+        EXPSETTINGS.cellSize, EXPSETTINGS.cellSize);
+
+    const circleRadius = EXPSETTINGS.cellSize * 0.35; // Slightly smaller for overlap
+    const centerX = colPos * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding + EXPSETTINGS.cellSize/2;
+    const centerY = rowPos * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding + EXPSETTINGS.cellSize/2;
+    const offset = EXPSETTINGS.cellSize * 0.15; // Offset for overlap
+
+    // Draw human player circle (red) on the left
+    context.beginPath();
+    context.lineWidth = 1/3 * EXPSETTINGS.padding;
+    context.strokeStyle = COLORPOOL.player;
+    context.fillStyle = COLORPOOL.player;
+    context.arc(centerX - offset, centerY, circleRadius, 0, 2 * Math.PI);
+    context.fill();
+    context.stroke();
+
+    // Draw partner player circle (orange) on the right
+    context.beginPath();
+    context.strokeStyle = "orange";
+    context.fillStyle = "orange";
+    context.arc(centerX + offset, centerY, circleRadius, 0, 2 * Math.PI);
+    context.fill();
+    context.stroke();
+}
+
 /**
  * Draw fixation cross in center (nodeGame version)
  */
@@ -479,5 +597,31 @@ function nodeGameDrawFixationCross(context, fixationPos, posScale, lineWidth) {
         row * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + posScale * EXPSETTINGS.cellSize + EXPSETTINGS.padding);
     context.lineTo(col * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + 1/2 * EXPSETTINGS.cellSize + EXPSETTINGS.padding,
         row * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + (1-posScale) * EXPSETTINGS.cellSize + EXPSETTINGS.padding);
+    context.stroke();
+}
+
+/**
+ * Draw circle function matching exact human-AI version parameters
+ */
+function drawCircleHumanHuman(context, color, lineWidth, colPos, rowPos, startAngle, tmpAngle) {
+    // First draw white background (like human-AI version)
+    context.fillStyle = COLORPOOL.map;
+    context.fillRect(colPos * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding,
+        rowPos * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding,
+        EXPSETTINGS.cellSize, EXPSETTINGS.cellSize);
+
+    // Use exact same circle radius as human-AI version
+    const circleRadius = EXPSETTINGS.cellSize * 0.4;
+
+    // Then draw circle with exact human-AI parameters
+    context.beginPath();
+    context.lineWidth = lineWidth;
+    context.strokeStyle = color;
+    context.fillStyle = color;
+    context.arc(colPos * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding + EXPSETTINGS.cellSize / 2,
+        rowPos * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding + EXPSETTINGS.cellSize / 2,
+        circleRadius,
+        startAngle, tmpAngle);
+    context.fill();
     context.stroke();
 }

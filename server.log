@@ -1,0 +1,2461 @@
+Loaded 2P2G maps: 99 maps
+Loaded 2P3G maps: 99 maps
+Human-Human Multiplayer Server running on port 4000
+Access the experiment at: http://localhost:4000
+Test interface at: http://localhost:4000/test
+Debug mode: OFF
+Player connected: PB8h1u3f0_AthX4zAAAB
+Player connected: kypgUChrwncoZxkjAAAE
+Player connected: Nm4FrwA7I07Z4O9fAAAF
+Player connected: FAe-_Inj81PpVV52AAAH
+Player connected: SYESH6v22E2CzmafAAAJ
+Player disconnected: SYESH6v22E2CzmafAAAJ
+Player connected: 6upY5ZvjNYeI3lCfAAAL
+Player disconnected: 6upY5ZvjNYeI3lCfAAAL
+Player connected: 8ceYvmqyWNz3o8BFAAAN
+Player disconnected: 8ceYvmqyWNz3o8BFAAAN
+Player connected: PbaC-jlqkXeo2nfLAAAP
+Player disconnected: kypgUChrwncoZxkjAAAE
+Player disconnected: FAe-_Inj81PpVV52AAAH
+Player disconnected: PB8h1u3f0_AthX4zAAAB
+Player connected: myuk3OJJwnnG7gRRAAAR
+Player myuk3OJJwnnG7gRRAAAR wants to join 2P2G game
+Created game room room_vjdqkhjcu for 2P2G
+Player myuk3OJJwnnG7gRRAAAR joined room room_vjdqkhjcu
+🔍 Broadcasting player_joined to 1 players in room room_vjdqkhjcu
+🔍 Sending player_joined to player myuk3OJJwnnG7gRRAAAR
+🔍 Broadcast complete for player_joined
+Player PbaC-jlqkXeo2nfLAAAP wants to join 2P2G game
+Player PbaC-jlqkXeo2nfLAAAP joined room room_vjdqkhjcu
+🔍 Broadcasting player_joined to 2 players in room room_vjdqkhjcu
+🔍 Sending player_joined to player myuk3OJJwnnG7gRRAAAR
+🔍 Sending player_joined to player PbaC-jlqkXeo2nfLAAAP
+🔍 Broadcast complete for player_joined
+🔍 Broadcasting room_full to 2 players in room room_vjdqkhjcu
+🔍 Sending room_full to player myuk3OJJwnnG7gRRAAAR
+🔍 Sending room_full to player PbaC-jlqkXeo2nfLAAAP
+🔍 Broadcast complete for room_full
+Player PbaC-jlqkXeo2nfLAAAP is ready in room room_vjdqkhjcu
+Player PbaC-jlqkXeo2nfLAAAP is ready in room room_vjdqkhjcu
+Player myuk3OJJwnnG7gRRAAAR is ready in room room_vjdqkhjcu
+Starting game in room room_vjdqkhjcu
+=== INITIALIZED GAME STATE ===
+Selected map: {
+  gridMatrix: null,
+  player1Pos: [ 7, 14 ],
+  player2Pos: [ 7, 0 ],
+  goals: [ [ 2, 7 ], [ 12, 7 ] ],
+  mapId: '256'
+}
+Goals set: [ [ 2, 7 ], [ 12, 7 ] ]
+Player positions: {
+  myuk3OJJwnnG7gRRAAAR: { position: [ 7, 14 ], goalHistory: [] },
+  'PbaC-jlqkXeo2nfLAAAP': { position: [ 7, 0 ], goalHistory: [] }
+}
+Trial: 1
+Player positions: {
+  myuk3OJJwnnG7gRRAAAR: { position: [ 7, 14 ], goalHistory: [] },
+  'PbaC-jlqkXeo2nfLAAAP': { position: [ 7, 0 ], goalHistory: [] }
+}
+Goals: [ [ 2, 7 ], [ 12, 7 ] ]
+=== SENDING GAME_STARTED EVENT ===
+Game type: 2P2G
+Goals in game state: [ [ 2, 7 ], [ 12, 7 ] ]
+Player states: {
+  myuk3OJJwnnG7gRRAAAR: { position: [ 7, 14 ], goalHistory: [] },
+  'PbaC-jlqkXeo2nfLAAAP': { position: [ 7, 0 ], goalHistory: [] }
+}
+Grid matrix exists: true
+🔍 Broadcasting game_started to 2 players in room room_vjdqkhjcu
+🔍 Sending game_started to player myuk3OJJwnnG7gRRAAAR
+🔍 Sending game_started to player PbaC-jlqkXeo2nfLAAAP
+🔍 Broadcast complete for game_started
+Player myuk3OJJwnnG7gRRAAAR is ready in room room_vjdqkhjcu
+Starting game in room room_vjdqkhjcu
+=== INITIALIZED GAME STATE ===
+Selected map: {
+  gridMatrix: null,
+  player1Pos: [ 7, 12 ],
+  player2Pos: [ 7, 2 ],
+  goals: [ [ 2, 7 ], [ 12, 7 ] ],
+  mapId: '288'
+}
+Goals set: [ [ 2, 7 ], [ 12, 7 ] ]
+Player positions: {
+  myuk3OJJwnnG7gRRAAAR: { position: [ 7, 12 ], goalHistory: [] },
+  'PbaC-jlqkXeo2nfLAAAP': { position: [ 7, 2 ], goalHistory: [] }
+}
+Trial: 1
+Player positions: {
+  myuk3OJJwnnG7gRRAAAR: { position: [ 7, 12 ], goalHistory: [] },
+  'PbaC-jlqkXeo2nfLAAAP': { position: [ 7, 2 ], goalHistory: [] }
+}
+Goals: [ [ 2, 7 ], [ 12, 7 ] ]
+=== SENDING GAME_STARTED EVENT ===
+Game type: 2P2G
+Goals in game state: [ [ 2, 7 ], [ 12, 7 ] ]
+Player states: {
+  myuk3OJJwnnG7gRRAAAR: { position: [ 7, 12 ], goalHistory: [] },
+  'PbaC-jlqkXeo2nfLAAAP': { position: [ 7, 2 ], goalHistory: [] }
+}
+Grid matrix exists: true
+🔍 Broadcasting game_started to 2 players in room room_vjdqkhjcu
+🔍 Sending game_started to player myuk3OJJwnnG7gRRAAAR
+🔍 Sending game_started to player PbaC-jlqkXeo2nfLAAAP
+🔍 Broadcast complete for game_started
+🔍 Broadcasting move_made to 2 players in room room_vjdqkhjcu
+🔍 Sending move_made to player myuk3OJJwnnG7gRRAAAR
+🔍 Sending move_made to player PbaC-jlqkXeo2nfLAAAP
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_vjdqkhjcu
+🔍 Sending move_made to player myuk3OJJwnnG7gRRAAAR
+🔍 Sending move_made to player PbaC-jlqkXeo2nfLAAAP
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_vjdqkhjcu
+🔍 Sending move_made to player myuk3OJJwnnG7gRRAAAR
+🔍 Sending move_made to player PbaC-jlqkXeo2nfLAAAP
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_vjdqkhjcu
+🔍 Sending move_made to player myuk3OJJwnnG7gRRAAAR
+🔍 Sending move_made to player PbaC-jlqkXeo2nfLAAAP
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_vjdqkhjcu
+🔍 Sending move_made to player myuk3OJJwnnG7gRRAAAR
+🔍 Sending move_made to player PbaC-jlqkXeo2nfLAAAP
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_vjdqkhjcu
+🔍 Sending move_made to player myuk3OJJwnnG7gRRAAAR
+🔍 Sending move_made to player PbaC-jlqkXeo2nfLAAAP
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_vjdqkhjcu
+🔍 Sending move_made to player myuk3OJJwnnG7gRRAAAR
+🔍 Sending move_made to player PbaC-jlqkXeo2nfLAAAP
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_vjdqkhjcu
+🔍 Sending move_made to player myuk3OJJwnnG7gRRAAAR
+🔍 Sending move_made to player PbaC-jlqkXeo2nfLAAAP
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_vjdqkhjcu
+🔍 Sending move_made to player myuk3OJJwnnG7gRRAAAR
+🔍 Sending move_made to player PbaC-jlqkXeo2nfLAAAP
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_vjdqkhjcu
+🔍 Sending move_made to player myuk3OJJwnnG7gRRAAAR
+🔍 Sending move_made to player PbaC-jlqkXeo2nfLAAAP
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_vjdqkhjcu
+🔍 Sending move_made to player myuk3OJJwnnG7gRRAAAR
+🔍 Sending move_made to player PbaC-jlqkXeo2nfLAAAP
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_vjdqkhjcu
+🔍 Sending move_made to player myuk3OJJwnnG7gRRAAAR
+🔍 Sending move_made to player PbaC-jlqkXeo2nfLAAAP
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_vjdqkhjcu
+🔍 Sending move_made to player myuk3OJJwnnG7gRRAAAR
+🔍 Sending move_made to player PbaC-jlqkXeo2nfLAAAP
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_vjdqkhjcu
+🔍 Sending move_made to player myuk3OJJwnnG7gRRAAAR
+🔍 Sending move_made to player PbaC-jlqkXeo2nfLAAAP
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_vjdqkhjcu
+🔍 Sending move_made to player myuk3OJJwnnG7gRRAAAR
+🔍 Sending move_made to player PbaC-jlqkXeo2nfLAAAP
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_vjdqkhjcu
+🔍 Sending move_made to player myuk3OJJwnnG7gRRAAAR
+🔍 Sending move_made to player PbaC-jlqkXeo2nfLAAAP
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_vjdqkhjcu
+🔍 Sending move_made to player myuk3OJJwnnG7gRRAAAR
+🔍 Sending move_made to player PbaC-jlqkXeo2nfLAAAP
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_vjdqkhjcu
+🔍 Sending move_made to player myuk3OJJwnnG7gRRAAAR
+🔍 Sending move_made to player PbaC-jlqkXeo2nfLAAAP
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_vjdqkhjcu
+🔍 Sending move_made to player myuk3OJJwnnG7gRRAAAR
+🔍 Sending move_made to player PbaC-jlqkXeo2nfLAAAP
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_vjdqkhjcu
+🔍 Sending move_made to player myuk3OJJwnnG7gRRAAAR
+🔍 Sending move_made to player PbaC-jlqkXeo2nfLAAAP
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_vjdqkhjcu
+🔍 Sending move_made to player myuk3OJJwnnG7gRRAAAR
+🔍 Sending move_made to player PbaC-jlqkXeo2nfLAAAP
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_vjdqkhjcu
+🔍 Sending move_made to player myuk3OJJwnnG7gRRAAAR
+🔍 Sending move_made to player PbaC-jlqkXeo2nfLAAAP
+🔍 Broadcast complete for move_made
+Completing trial 1 in room room_vjdqkhjcu
+🔍 Broadcasting trial_complete to 2 players in room room_vjdqkhjcu
+🔍 Sending trial_complete to player myuk3OJJwnnG7gRRAAAR
+🔍 Sending trial_complete to player PbaC-jlqkXeo2nfLAAAP
+🔍 Broadcast complete for trial_complete
+Starting trial 2 in room room_vjdqkhjcu
+=== INITIALIZED GAME STATE ===
+Selected map: {
+  gridMatrix: null,
+  player1Pos: [ 7, 14 ],
+  player2Pos: [ 7, 2 ],
+  goals: [ [ 2, 8 ], [ 12, 8 ] ],
+  mapId: '294'
+}
+Goals set: [ [ 2, 8 ], [ 12, 8 ] ]
+Player positions: {
+  myuk3OJJwnnG7gRRAAAR: { position: [ 7, 14 ], goalHistory: [] },
+  'PbaC-jlqkXeo2nfLAAAP': { position: [ 7, 2 ], goalHistory: [] }
+}
+Trial: 2
+Player positions: {
+  myuk3OJJwnnG7gRRAAAR: { position: [ 7, 14 ], goalHistory: [] },
+  'PbaC-jlqkXeo2nfLAAAP': { position: [ 7, 2 ], goalHistory: [] }
+}
+Goals: [ [ 2, 8 ], [ 12, 8 ] ]
+🔍 Broadcasting trial_started to 2 players in room room_vjdqkhjcu
+🔍 Sending trial_started to player myuk3OJJwnnG7gRRAAAR
+🔍 Sending trial_started to player PbaC-jlqkXeo2nfLAAAP
+🔍 Broadcast complete for trial_started
+Player disconnected: myuk3OJJwnnG7gRRAAAR
+Player myuk3OJJwnnG7gRRAAAR left room room_vjdqkhjcu
+🔍 Broadcasting player_left to 1 players in room room_vjdqkhjcu
+🔍 Sending player_left to player PbaC-jlqkXeo2nfLAAAP
+🔍 Broadcast complete for player_left
+Ending game in room room_vjdqkhjcu
+🔍 Broadcasting game_ended to 1 players in room room_vjdqkhjcu
+🔍 Sending game_ended to player PbaC-jlqkXeo2nfLAAAP
+🔍 Broadcast complete for game_ended
+Player connected: cbE0byMhPcM9Mm9KAAAT
+Player cbE0byMhPcM9Mm9KAAAT wants to join 2P2G game
+Player cbE0byMhPcM9Mm9KAAAT joined room room_vjdqkhjcu
+🔍 Broadcasting player_joined to 2 players in room room_vjdqkhjcu
+🔍 Sending player_joined to player PbaC-jlqkXeo2nfLAAAP
+🔍 Sending player_joined to player cbE0byMhPcM9Mm9KAAAT
+🔍 Broadcast complete for player_joined
+🔍 Broadcasting room_full to 2 players in room room_vjdqkhjcu
+🔍 Sending room_full to player PbaC-jlqkXeo2nfLAAAP
+🔍 Sending room_full to player cbE0byMhPcM9Mm9KAAAT
+🔍 Broadcast complete for room_full
+Player cbE0byMhPcM9Mm9KAAAT is ready in room room_vjdqkhjcu
+Starting game in room room_vjdqkhjcu
+=== INITIALIZED GAME STATE ===
+Selected map: {
+  gridMatrix: null,
+  player1Pos: [ 7, 14 ],
+  player2Pos: [ 7, 0 ],
+  goals: [ [ 2, 7 ], [ 12, 7 ] ],
+  mapId: '256'
+}
+Goals set: [ [ 2, 7 ], [ 12, 7 ] ]
+Player positions: {
+  'PbaC-jlqkXeo2nfLAAAP': { position: [ 7, 14 ], goalHistory: [] },
+  cbE0byMhPcM9Mm9KAAAT: { position: [ 7, 0 ], goalHistory: [] }
+}
+Trial: 2
+Player positions: {
+  'PbaC-jlqkXeo2nfLAAAP': { position: [ 7, 14 ], goalHistory: [] },
+  cbE0byMhPcM9Mm9KAAAT: { position: [ 7, 0 ], goalHistory: [] }
+}
+Goals: [ [ 2, 7 ], [ 12, 7 ] ]
+=== SENDING GAME_STARTED EVENT ===
+Game type: 2P2G
+Goals in game state: [ [ 2, 7 ], [ 12, 7 ] ]
+Player states: {
+  'PbaC-jlqkXeo2nfLAAAP': { position: [ 7, 14 ], goalHistory: [] },
+  cbE0byMhPcM9Mm9KAAAT: { position: [ 7, 0 ], goalHistory: [] }
+}
+Grid matrix exists: true
+🔍 Broadcasting game_started to 2 players in room room_vjdqkhjcu
+🔍 Sending game_started to player PbaC-jlqkXeo2nfLAAAP
+🔍 Sending game_started to player cbE0byMhPcM9Mm9KAAAT
+🔍 Broadcast complete for game_started
+🔍 Broadcasting move_made to 2 players in room room_vjdqkhjcu
+🔍 Sending move_made to player PbaC-jlqkXeo2nfLAAAP
+🔍 Sending move_made to player cbE0byMhPcM9Mm9KAAAT
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_vjdqkhjcu
+🔍 Sending move_made to player PbaC-jlqkXeo2nfLAAAP
+🔍 Sending move_made to player cbE0byMhPcM9Mm9KAAAT
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_vjdqkhjcu
+🔍 Sending move_made to player PbaC-jlqkXeo2nfLAAAP
+🔍 Sending move_made to player cbE0byMhPcM9Mm9KAAAT
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_vjdqkhjcu
+🔍 Sending move_made to player PbaC-jlqkXeo2nfLAAAP
+🔍 Sending move_made to player cbE0byMhPcM9Mm9KAAAT
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_vjdqkhjcu
+🔍 Sending move_made to player PbaC-jlqkXeo2nfLAAAP
+🔍 Sending move_made to player cbE0byMhPcM9Mm9KAAAT
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_vjdqkhjcu
+🔍 Sending move_made to player PbaC-jlqkXeo2nfLAAAP
+🔍 Sending move_made to player cbE0byMhPcM9Mm9KAAAT
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_vjdqkhjcu
+🔍 Sending move_made to player PbaC-jlqkXeo2nfLAAAP
+🔍 Sending move_made to player cbE0byMhPcM9Mm9KAAAT
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_vjdqkhjcu
+🔍 Sending move_made to player PbaC-jlqkXeo2nfLAAAP
+🔍 Sending move_made to player cbE0byMhPcM9Mm9KAAAT
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_vjdqkhjcu
+🔍 Sending move_made to player PbaC-jlqkXeo2nfLAAAP
+🔍 Sending move_made to player cbE0byMhPcM9Mm9KAAAT
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_vjdqkhjcu
+🔍 Sending move_made to player PbaC-jlqkXeo2nfLAAAP
+🔍 Sending move_made to player cbE0byMhPcM9Mm9KAAAT
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_vjdqkhjcu
+🔍 Sending move_made to player PbaC-jlqkXeo2nfLAAAP
+🔍 Sending move_made to player cbE0byMhPcM9Mm9KAAAT
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_vjdqkhjcu
+🔍 Sending move_made to player PbaC-jlqkXeo2nfLAAAP
+🔍 Sending move_made to player cbE0byMhPcM9Mm9KAAAT
+🔍 Broadcast complete for move_made
+Cleaned up room room_vjdqkhjcu
+Player disconnected: PbaC-jlqkXeo2nfLAAAP
+Player PbaC-jlqkXeo2nfLAAAP left room room_vjdqkhjcu
+🔍 Broadcasting player_left to 1 players in room room_vjdqkhjcu
+🔍 Sending player_left to player cbE0byMhPcM9Mm9KAAAT
+🔍 Broadcast complete for player_left
+Ending game in room room_vjdqkhjcu
+🔍 Broadcasting game_ended to 1 players in room room_vjdqkhjcu
+🔍 Sending game_ended to player cbE0byMhPcM9Mm9KAAAT
+🔍 Broadcast complete for game_ended
+Player connected: imVYbEkMoZvX4vV2AAAV
+Player imVYbEkMoZvX4vV2AAAV wants to join 2P2G game
+Created game room room_jt2j3cq8j for 2P2G
+Player imVYbEkMoZvX4vV2AAAV joined room room_jt2j3cq8j
+🔍 Broadcasting player_joined to 1 players in room room_jt2j3cq8j
+🔍 Sending player_joined to player imVYbEkMoZvX4vV2AAAV
+🔍 Broadcast complete for player_joined
+Player imVYbEkMoZvX4vV2AAAV is ready in room room_jt2j3cq8j
+Starting game in room room_jt2j3cq8j
+Added dummy player for single-player testing
+=== INITIALIZED GAME STATE ===
+Selected map: {
+  gridMatrix: null,
+  player1Pos: [ 7, 1 ],
+  player2Pos: [ 7, 13 ],
+  goals: [ [ 1, 7 ], [ 13, 7 ] ],
+  mapId: '233'
+}
+Goals set: [ [ 1, 7 ], [ 13, 7 ] ]
+Player positions: {
+  imVYbEkMoZvX4vV2AAAV: { position: [ 7, 1 ], goalHistory: [] },
+  dummy_player_test: { position: [ 7, 13 ], goalHistory: [] }
+}
+Trial: 1
+Player positions: {
+  imVYbEkMoZvX4vV2AAAV: { position: [ 7, 1 ], goalHistory: [] },
+  dummy_player_test: { position: [ 7, 13 ], goalHistory: [] }
+}
+Goals: [ [ 1, 7 ], [ 13, 7 ] ]
+=== SENDING GAME_STARTED EVENT ===
+Game type: 2P2G
+Goals in game state: [ [ 1, 7 ], [ 13, 7 ] ]
+Player states: {
+  imVYbEkMoZvX4vV2AAAV: { position: [ 7, 1 ], goalHistory: [] },
+  dummy_player_test: { position: [ 7, 13 ], goalHistory: [] }
+}
+Grid matrix exists: true
+🔍 Broadcasting game_started to 1 players in room room_jt2j3cq8j
+🔍 Sending game_started to player imVYbEkMoZvX4vV2AAAV
+🔍 Broadcast complete for game_started
+Cleaned up room room_vjdqkhjcu
+🔍 Broadcasting move_made to 1 players in room room_jt2j3cq8j
+🔍 Sending move_made to player imVYbEkMoZvX4vV2AAAV
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 1 players in room room_jt2j3cq8j
+🔍 Sending move_made to player imVYbEkMoZvX4vV2AAAV
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 1 players in room room_jt2j3cq8j
+🔍 Sending move_made to player imVYbEkMoZvX4vV2AAAV
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 1 players in room room_jt2j3cq8j
+🔍 Sending move_made to player imVYbEkMoZvX4vV2AAAV
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 1 players in room room_jt2j3cq8j
+🔍 Sending move_made to player imVYbEkMoZvX4vV2AAAV
+🔍 Broadcast complete for move_made
+Player disconnected: cbE0byMhPcM9Mm9KAAAT
+Player cbE0byMhPcM9Mm9KAAAT left room room_vjdqkhjcu
+🔍 Broadcasting player_left to 0 players in room room_vjdqkhjcu
+🔍 Broadcast complete for player_left
+Removed empty room room_vjdqkhjcu
+Player connected: 4K80EH6coh4CXkIwAAAX
+Player disconnected: imVYbEkMoZvX4vV2AAAV
+Player imVYbEkMoZvX4vV2AAAV left room room_jt2j3cq8j
+🔍 Broadcasting player_left to 0 players in room room_jt2j3cq8j
+🔍 Broadcast complete for player_left
+Ending game in room room_jt2j3cq8j
+🔍 Broadcasting game_ended to 0 players in room room_jt2j3cq8j
+🔍 Broadcast complete for game_ended
+Removed empty room room_jt2j3cq8j
+Player connected: DWdFrr_89kJRmAimAAAZ
+Player DWdFrr_89kJRmAimAAAZ wants to join 2P2G game
+Created game room room_qq9p9ger6 for 2P2G
+Player DWdFrr_89kJRmAimAAAZ joined room room_qq9p9ger6
+🔍 Broadcasting player_joined to 1 players in room room_qq9p9ger6
+🔍 Sending player_joined to player DWdFrr_89kJRmAimAAAZ
+🔍 Broadcast complete for player_joined
+Player 4K80EH6coh4CXkIwAAAX wants to join 2P2G game
+Player 4K80EH6coh4CXkIwAAAX joined room room_qq9p9ger6
+🔍 Broadcasting player_joined to 2 players in room room_qq9p9ger6
+🔍 Sending player_joined to player DWdFrr_89kJRmAimAAAZ
+🔍 Sending player_joined to player 4K80EH6coh4CXkIwAAAX
+🔍 Broadcast complete for player_joined
+🔍 Broadcasting room_full to 2 players in room room_qq9p9ger6
+🔍 Sending room_full to player DWdFrr_89kJRmAimAAAZ
+🔍 Sending room_full to player 4K80EH6coh4CXkIwAAAX
+🔍 Broadcast complete for room_full
+Player 4K80EH6coh4CXkIwAAAX is ready in room room_qq9p9ger6
+Player 4K80EH6coh4CXkIwAAAX is ready in room room_qq9p9ger6
+Player DWdFrr_89kJRmAimAAAZ is ready in room room_qq9p9ger6
+Starting game in room room_qq9p9ger6
+=== INITIALIZED GAME STATE ===
+Selected map: {
+  gridMatrix: null,
+  player1Pos: [ 13, 7 ],
+  player2Pos: [ 1, 7 ],
+  goals: [ [ 7, 2 ], [ 7, 12 ] ],
+  mapId: '287'
+}
+Goals set: [ [ 7, 2 ], [ 7, 12 ] ]
+Player positions: {
+  DWdFrr_89kJRmAimAAAZ: { position: [ 13, 7 ], goalHistory: [] },
+  '4K80EH6coh4CXkIwAAAX': { position: [ 1, 7 ], goalHistory: [] }
+}
+Trial: 1
+Player positions: {
+  DWdFrr_89kJRmAimAAAZ: { position: [ 13, 7 ], goalHistory: [] },
+  '4K80EH6coh4CXkIwAAAX': { position: [ 1, 7 ], goalHistory: [] }
+}
+Goals: [ [ 7, 2 ], [ 7, 12 ] ]
+=== SENDING GAME_STARTED EVENT ===
+Game type: 2P2G
+Goals in game state: [ [ 7, 2 ], [ 7, 12 ] ]
+Player states: {
+  DWdFrr_89kJRmAimAAAZ: { position: [ 13, 7 ], goalHistory: [] },
+  '4K80EH6coh4CXkIwAAAX': { position: [ 1, 7 ], goalHistory: [] }
+}
+Grid matrix exists: true
+🔍 Broadcasting game_started to 2 players in room room_qq9p9ger6
+🔍 Sending game_started to player DWdFrr_89kJRmAimAAAZ
+🔍 Sending game_started to player 4K80EH6coh4CXkIwAAAX
+🔍 Broadcast complete for game_started
+Player DWdFrr_89kJRmAimAAAZ is ready in room room_qq9p9ger6
+Starting game in room room_qq9p9ger6
+=== INITIALIZED GAME STATE ===
+Selected map: {
+  gridMatrix: null,
+  player1Pos: [ 7, 1 ],
+  player2Pos: [ 7, 13 ],
+  goals: [ [ 2, 7 ], [ 12, 7 ] ],
+  mapId: '260'
+}
+Goals set: [ [ 2, 7 ], [ 12, 7 ] ]
+Player positions: {
+  DWdFrr_89kJRmAimAAAZ: { position: [ 7, 1 ], goalHistory: [] },
+  '4K80EH6coh4CXkIwAAAX': { position: [ 7, 13 ], goalHistory: [] }
+}
+Trial: 1
+Player positions: {
+  DWdFrr_89kJRmAimAAAZ: { position: [ 7, 1 ], goalHistory: [] },
+  '4K80EH6coh4CXkIwAAAX': { position: [ 7, 13 ], goalHistory: [] }
+}
+Goals: [ [ 2, 7 ], [ 12, 7 ] ]
+=== SENDING GAME_STARTED EVENT ===
+Game type: 2P2G
+Goals in game state: [ [ 2, 7 ], [ 12, 7 ] ]
+Player states: {
+  DWdFrr_89kJRmAimAAAZ: { position: [ 7, 1 ], goalHistory: [] },
+  '4K80EH6coh4CXkIwAAAX': { position: [ 7, 13 ], goalHistory: [] }
+}
+Grid matrix exists: true
+🔍 Broadcasting game_started to 2 players in room room_qq9p9ger6
+🔍 Sending game_started to player DWdFrr_89kJRmAimAAAZ
+🔍 Sending game_started to player 4K80EH6coh4CXkIwAAAX
+🔍 Broadcast complete for game_started
+Cleaned up room room_jt2j3cq8j
+🔍 Broadcasting move_made to 2 players in room room_qq9p9ger6
+🔍 Sending move_made to player DWdFrr_89kJRmAimAAAZ
+🔍 Sending move_made to player 4K80EH6coh4CXkIwAAAX
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_qq9p9ger6
+🔍 Sending move_made to player DWdFrr_89kJRmAimAAAZ
+🔍 Sending move_made to player 4K80EH6coh4CXkIwAAAX
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_qq9p9ger6
+🔍 Sending move_made to player DWdFrr_89kJRmAimAAAZ
+🔍 Sending move_made to player 4K80EH6coh4CXkIwAAAX
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_qq9p9ger6
+🔍 Sending move_made to player DWdFrr_89kJRmAimAAAZ
+🔍 Sending move_made to player 4K80EH6coh4CXkIwAAAX
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_qq9p9ger6
+🔍 Sending move_made to player DWdFrr_89kJRmAimAAAZ
+🔍 Sending move_made to player 4K80EH6coh4CXkIwAAAX
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_qq9p9ger6
+🔍 Sending move_made to player DWdFrr_89kJRmAimAAAZ
+🔍 Sending move_made to player 4K80EH6coh4CXkIwAAAX
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_qq9p9ger6
+🔍 Sending move_made to player DWdFrr_89kJRmAimAAAZ
+🔍 Sending move_made to player 4K80EH6coh4CXkIwAAAX
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_qq9p9ger6
+🔍 Sending move_made to player DWdFrr_89kJRmAimAAAZ
+🔍 Sending move_made to player 4K80EH6coh4CXkIwAAAX
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_qq9p9ger6
+🔍 Sending move_made to player DWdFrr_89kJRmAimAAAZ
+🔍 Sending move_made to player 4K80EH6coh4CXkIwAAAX
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_qq9p9ger6
+🔍 Sending move_made to player DWdFrr_89kJRmAimAAAZ
+🔍 Sending move_made to player 4K80EH6coh4CXkIwAAAX
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_qq9p9ger6
+🔍 Sending move_made to player DWdFrr_89kJRmAimAAAZ
+🔍 Sending move_made to player 4K80EH6coh4CXkIwAAAX
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_qq9p9ger6
+🔍 Sending move_made to player DWdFrr_89kJRmAimAAAZ
+🔍 Sending move_made to player 4K80EH6coh4CXkIwAAAX
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_qq9p9ger6
+🔍 Sending move_made to player DWdFrr_89kJRmAimAAAZ
+🔍 Sending move_made to player 4K80EH6coh4CXkIwAAAX
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_qq9p9ger6
+🔍 Sending move_made to player DWdFrr_89kJRmAimAAAZ
+🔍 Sending move_made to player 4K80EH6coh4CXkIwAAAX
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_qq9p9ger6
+🔍 Sending move_made to player DWdFrr_89kJRmAimAAAZ
+🔍 Sending move_made to player 4K80EH6coh4CXkIwAAAX
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_qq9p9ger6
+🔍 Sending move_made to player DWdFrr_89kJRmAimAAAZ
+🔍 Sending move_made to player 4K80EH6coh4CXkIwAAAX
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_qq9p9ger6
+🔍 Sending move_made to player DWdFrr_89kJRmAimAAAZ
+🔍 Sending move_made to player 4K80EH6coh4CXkIwAAAX
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_qq9p9ger6
+🔍 Sending move_made to player DWdFrr_89kJRmAimAAAZ
+🔍 Sending move_made to player 4K80EH6coh4CXkIwAAAX
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_qq9p9ger6
+🔍 Sending move_made to player DWdFrr_89kJRmAimAAAZ
+🔍 Sending move_made to player 4K80EH6coh4CXkIwAAAX
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_qq9p9ger6
+🔍 Sending move_made to player DWdFrr_89kJRmAimAAAZ
+🔍 Sending move_made to player 4K80EH6coh4CXkIwAAAX
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_qq9p9ger6
+🔍 Sending move_made to player DWdFrr_89kJRmAimAAAZ
+🔍 Sending move_made to player 4K80EH6coh4CXkIwAAAX
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_qq9p9ger6
+🔍 Sending move_made to player DWdFrr_89kJRmAimAAAZ
+🔍 Sending move_made to player 4K80EH6coh4CXkIwAAAX
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_qq9p9ger6
+🔍 Sending move_made to player DWdFrr_89kJRmAimAAAZ
+🔍 Sending move_made to player 4K80EH6coh4CXkIwAAAX
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_qq9p9ger6
+🔍 Sending move_made to player DWdFrr_89kJRmAimAAAZ
+🔍 Sending move_made to player 4K80EH6coh4CXkIwAAAX
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_qq9p9ger6
+🔍 Sending move_made to player DWdFrr_89kJRmAimAAAZ
+🔍 Sending move_made to player 4K80EH6coh4CXkIwAAAX
+🔍 Broadcast complete for move_made
+Player disconnected: DWdFrr_89kJRmAimAAAZ
+Player DWdFrr_89kJRmAimAAAZ left room room_qq9p9ger6
+🔍 Broadcasting player_left to 1 players in room room_qq9p9ger6
+🔍 Sending player_left to player 4K80EH6coh4CXkIwAAAX
+🔍 Broadcast complete for player_left
+Ending game in room room_qq9p9ger6
+🔍 Broadcasting game_ended to 1 players in room room_qq9p9ger6
+🔍 Sending game_ended to player 4K80EH6coh4CXkIwAAAX
+🔍 Broadcast complete for game_ended
+Player disconnected: 4K80EH6coh4CXkIwAAAX
+Player 4K80EH6coh4CXkIwAAAX left room room_qq9p9ger6
+🔍 Broadcasting player_left to 0 players in room room_qq9p9ger6
+🔍 Broadcast complete for player_left
+Removed empty room room_qq9p9ger6
+Player disconnected: Nm4FrwA7I07Z4O9fAAAF
+Player connected: esR70i9zcoIakODwAAAb
+Player connected: 1MSXjrw8KP86xeDnAAAe
+Player connected: fqL72QW0Z3I7b1O8AAAf
+Cleaned up room room_qq9p9ger6
+Player disconnected: 1MSXjrw8KP86xeDnAAAe
+Player connected: 2Pxwp5D6V44D-fVpAAAh
+Player disconnected: 2Pxwp5D6V44D-fVpAAAh
+Player connected: s6cug4YReKQ5zftNAAAj
+Player disconnected: fqL72QW0Z3I7b1O8AAAf
+Player connected: GW7vQL-Yi2lvjtfkAAAl
+Player GW7vQL-Yi2lvjtfkAAAl wants to join 2P2G game
+Created game room room_noswyavld for 2P2G
+Player GW7vQL-Yi2lvjtfkAAAl joined room room_noswyavld
+🔍 Broadcasting player_joined to 1 players in room room_noswyavld
+🔍 Sending player_joined to player GW7vQL-Yi2lvjtfkAAAl
+🔍 Broadcast complete for player_joined
+Player GW7vQL-Yi2lvjtfkAAAl is ready in room room_noswyavld
+Starting game in room room_noswyavld
+Added dummy player for single-player testing
+=== INITIALIZED GAME STATE ===
+Selected map: {
+  gridMatrix: null,
+  player1Pos: [ 7, 13 ],
+  player2Pos: [ 7, 1 ],
+  goals: [ [ 0, 7 ], [ 14, 7 ] ],
+  mapId: '215'
+}
+Goals set: [ [ 0, 7 ], [ 14, 7 ] ]
+Player positions: {
+  'GW7vQL-Yi2lvjtfkAAAl': { position: [ 7, 13 ], goalHistory: [] },
+  dummy_player_test: { position: [ 7, 1 ], goalHistory: [] }
+}
+Trial: 1
+Player positions: {
+  'GW7vQL-Yi2lvjtfkAAAl': { position: [ 7, 13 ], goalHistory: [] },
+  dummy_player_test: { position: [ 7, 1 ], goalHistory: [] }
+}
+Goals: [ [ 0, 7 ], [ 14, 7 ] ]
+=== SENDING GAME_STARTED EVENT ===
+Game type: 2P2G
+Goals in game state: [ [ 0, 7 ], [ 14, 7 ] ]
+Player states: {
+  'GW7vQL-Yi2lvjtfkAAAl': { position: [ 7, 13 ], goalHistory: [] },
+  dummy_player_test: { position: [ 7, 1 ], goalHistory: [] }
+}
+Grid matrix exists: true
+🔍 Broadcasting game_started to 1 players in room room_noswyavld
+🔍 Sending game_started to player GW7vQL-Yi2lvjtfkAAAl
+🔍 Broadcast complete for game_started
+Player s6cug4YReKQ5zftNAAAj wants to join 2P2G game
+Created game room room_bksvf2ss9 for 2P2G
+Player s6cug4YReKQ5zftNAAAj joined room room_bksvf2ss9
+🔍 Broadcasting player_joined to 1 players in room room_bksvf2ss9
+🔍 Sending player_joined to player s6cug4YReKQ5zftNAAAj
+🔍 Broadcast complete for player_joined
+Player s6cug4YReKQ5zftNAAAj is ready in room room_bksvf2ss9
+Starting game in room room_bksvf2ss9
+Added dummy player for single-player testing
+=== INITIALIZED GAME STATE ===
+Selected map: {
+  gridMatrix: null,
+  player1Pos: [ 2, 7 ],
+  player2Pos: [ 14, 7 ],
+  goals: [ [ 8, 1 ], [ 8, 13 ] ],
+  mapId: '224'
+}
+Goals set: [ [ 8, 1 ], [ 8, 13 ] ]
+Player positions: {
+  s6cug4YReKQ5zftNAAAj: { position: [ 2, 7 ], goalHistory: [] },
+  dummy_player_test: { position: [ 14, 7 ], goalHistory: [] }
+}
+Trial: 1
+Player positions: {
+  s6cug4YReKQ5zftNAAAj: { position: [ 2, 7 ], goalHistory: [] },
+  dummy_player_test: { position: [ 14, 7 ], goalHistory: [] }
+}
+Goals: [ [ 8, 1 ], [ 8, 13 ] ]
+=== SENDING GAME_STARTED EVENT ===
+Game type: 2P2G
+Goals in game state: [ [ 8, 1 ], [ 8, 13 ] ]
+Player states: {
+  s6cug4YReKQ5zftNAAAj: { position: [ 2, 7 ], goalHistory: [] },
+  dummy_player_test: { position: [ 14, 7 ], goalHistory: [] }
+}
+Grid matrix exists: true
+🔍 Broadcasting game_started to 1 players in room room_bksvf2ss9
+🔍 Sending game_started to player s6cug4YReKQ5zftNAAAj
+🔍 Broadcast complete for game_started
+🔍 Broadcasting move_made to 1 players in room room_bksvf2ss9
+🔍 Sending move_made to player s6cug4YReKQ5zftNAAAj
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 1 players in room room_bksvf2ss9
+🔍 Sending move_made to player s6cug4YReKQ5zftNAAAj
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 1 players in room room_bksvf2ss9
+🔍 Sending move_made to player s6cug4YReKQ5zftNAAAj
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 1 players in room room_bksvf2ss9
+🔍 Sending move_made to player s6cug4YReKQ5zftNAAAj
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 1 players in room room_noswyavld
+🔍 Sending move_made to player GW7vQL-Yi2lvjtfkAAAl
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 1 players in room room_noswyavld
+🔍 Sending move_made to player GW7vQL-Yi2lvjtfkAAAl
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 1 players in room room_noswyavld
+🔍 Sending move_made to player GW7vQL-Yi2lvjtfkAAAl
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 1 players in room room_noswyavld
+🔍 Sending move_made to player GW7vQL-Yi2lvjtfkAAAl
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 1 players in room room_noswyavld
+🔍 Sending move_made to player GW7vQL-Yi2lvjtfkAAAl
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 1 players in room room_noswyavld
+🔍 Sending move_made to player GW7vQL-Yi2lvjtfkAAAl
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 1 players in room room_noswyavld
+🔍 Sending move_made to player GW7vQL-Yi2lvjtfkAAAl
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 1 players in room room_noswyavld
+🔍 Sending move_made to player GW7vQL-Yi2lvjtfkAAAl
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 1 players in room room_noswyavld
+🔍 Sending move_made to player GW7vQL-Yi2lvjtfkAAAl
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 1 players in room room_noswyavld
+🔍 Sending move_made to player GW7vQL-Yi2lvjtfkAAAl
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 1 players in room room_noswyavld
+🔍 Sending move_made to player GW7vQL-Yi2lvjtfkAAAl
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 1 players in room room_noswyavld
+🔍 Sending move_made to player GW7vQL-Yi2lvjtfkAAAl
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 1 players in room room_noswyavld
+🔍 Sending move_made to player GW7vQL-Yi2lvjtfkAAAl
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 1 players in room room_bksvf2ss9
+🔍 Sending move_made to player s6cug4YReKQ5zftNAAAj
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 1 players in room room_bksvf2ss9
+🔍 Sending move_made to player s6cug4YReKQ5zftNAAAj
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 1 players in room room_bksvf2ss9
+🔍 Sending move_made to player s6cug4YReKQ5zftNAAAj
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 1 players in room room_bksvf2ss9
+🔍 Sending move_made to player s6cug4YReKQ5zftNAAAj
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 1 players in room room_bksvf2ss9
+🔍 Sending move_made to player s6cug4YReKQ5zftNAAAj
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 1 players in room room_bksvf2ss9
+🔍 Sending move_made to player s6cug4YReKQ5zftNAAAj
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 1 players in room room_bksvf2ss9
+🔍 Sending move_made to player s6cug4YReKQ5zftNAAAj
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 1 players in room room_bksvf2ss9
+🔍 Sending move_made to player s6cug4YReKQ5zftNAAAj
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 1 players in room room_bksvf2ss9
+🔍 Sending move_made to player s6cug4YReKQ5zftNAAAj
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 1 players in room room_bksvf2ss9
+🔍 Sending move_made to player s6cug4YReKQ5zftNAAAj
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 1 players in room room_bksvf2ss9
+🔍 Sending move_made to player s6cug4YReKQ5zftNAAAj
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 1 players in room room_bksvf2ss9
+🔍 Sending move_made to player s6cug4YReKQ5zftNAAAj
+🔍 Broadcast complete for move_made
+Player disconnected: s6cug4YReKQ5zftNAAAj
+Player s6cug4YReKQ5zftNAAAj left room room_bksvf2ss9
+🔍 Broadcasting player_left to 0 players in room room_bksvf2ss9
+🔍 Broadcast complete for player_left
+Ending game in room room_bksvf2ss9
+🔍 Broadcasting game_ended to 0 players in room room_bksvf2ss9
+🔍 Broadcast complete for game_ended
+Removed empty room room_bksvf2ss9
+Player connected: 2ViWuDtCofNYjgakAAAn
+Player disconnected: GW7vQL-Yi2lvjtfkAAAl
+Player GW7vQL-Yi2lvjtfkAAAl left room room_noswyavld
+🔍 Broadcasting player_left to 0 players in room room_noswyavld
+🔍 Broadcast complete for player_left
+Ending game in room room_noswyavld
+🔍 Broadcasting game_ended to 0 players in room room_noswyavld
+🔍 Broadcast complete for game_ended
+Removed empty room room_noswyavld
+Player connected: vVIvJNeGIs7sZnsjAAAp
+Player vVIvJNeGIs7sZnsjAAAp wants to join 2P2G game
+Created game room room_680aoqwut for 2P2G
+Player vVIvJNeGIs7sZnsjAAAp joined room room_680aoqwut
+🔍 Broadcasting player_joined to 1 players in room room_680aoqwut
+🔍 Sending player_joined to player vVIvJNeGIs7sZnsjAAAp
+🔍 Broadcast complete for player_joined
+Cleaned up room room_bksvf2ss9
+Player 2ViWuDtCofNYjgakAAAn wants to join 2P2G game
+Player 2ViWuDtCofNYjgakAAAn joined room room_680aoqwut
+🔍 Broadcasting player_joined to 2 players in room room_680aoqwut
+🔍 Sending player_joined to player vVIvJNeGIs7sZnsjAAAp
+🔍 Sending player_joined to player 2ViWuDtCofNYjgakAAAn
+🔍 Broadcast complete for player_joined
+🔍 Broadcasting room_full to 2 players in room room_680aoqwut
+🔍 Sending room_full to player vVIvJNeGIs7sZnsjAAAp
+🔍 Sending room_full to player 2ViWuDtCofNYjgakAAAn
+🔍 Broadcast complete for room_full
+Player 2ViWuDtCofNYjgakAAAn is ready in room room_680aoqwut
+Player vVIvJNeGIs7sZnsjAAAp is ready in room room_680aoqwut
+Starting game in room room_680aoqwut
+=== INITIALIZED GAME STATE ===
+Selected map: {
+  gridMatrix: null,
+  player1Pos: [ 7, 4 ],
+  player2Pos: [ 7, 14 ],
+  goals: [ [ 1, 9 ], [ 13, 9 ] ],
+  mapId: '282'
+}
+Goals set: [ [ 1, 9 ], [ 13, 9 ] ]
+Player positions: {
+  vVIvJNeGIs7sZnsjAAAp: { position: [ 7, 4 ], goalHistory: [] },
+  '2ViWuDtCofNYjgakAAAn': { position: [ 7, 14 ], goalHistory: [] }
+}
+Trial: 1
+Player positions: {
+  vVIvJNeGIs7sZnsjAAAp: { position: [ 7, 4 ], goalHistory: [] },
+  '2ViWuDtCofNYjgakAAAn': { position: [ 7, 14 ], goalHistory: [] }
+}
+Goals: [ [ 1, 9 ], [ 13, 9 ] ]
+=== SENDING GAME_STARTED EVENT ===
+Game type: 2P2G
+Goals in game state: [ [ 1, 9 ], [ 13, 9 ] ]
+Player states: {
+  vVIvJNeGIs7sZnsjAAAp: { position: [ 7, 4 ], goalHistory: [] },
+  '2ViWuDtCofNYjgakAAAn': { position: [ 7, 14 ], goalHistory: [] }
+}
+Grid matrix exists: true
+🔍 Broadcasting game_started to 2 players in room room_680aoqwut
+🔍 Sending game_started to player vVIvJNeGIs7sZnsjAAAp
+🔍 Sending game_started to player 2ViWuDtCofNYjgakAAAn
+🔍 Broadcast complete for game_started
+Cleaned up room room_noswyavld
+🔍 Broadcasting move_made to 2 players in room room_680aoqwut
+🔍 Sending move_made to player vVIvJNeGIs7sZnsjAAAp
+🔍 Sending move_made to player 2ViWuDtCofNYjgakAAAn
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_680aoqwut
+🔍 Sending move_made to player vVIvJNeGIs7sZnsjAAAp
+🔍 Sending move_made to player 2ViWuDtCofNYjgakAAAn
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_680aoqwut
+🔍 Sending move_made to player vVIvJNeGIs7sZnsjAAAp
+🔍 Sending move_made to player 2ViWuDtCofNYjgakAAAn
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_680aoqwut
+🔍 Sending move_made to player vVIvJNeGIs7sZnsjAAAp
+🔍 Sending move_made to player 2ViWuDtCofNYjgakAAAn
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_680aoqwut
+🔍 Sending move_made to player vVIvJNeGIs7sZnsjAAAp
+🔍 Sending move_made to player 2ViWuDtCofNYjgakAAAn
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_680aoqwut
+🔍 Sending move_made to player vVIvJNeGIs7sZnsjAAAp
+🔍 Sending move_made to player 2ViWuDtCofNYjgakAAAn
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_680aoqwut
+🔍 Sending move_made to player vVIvJNeGIs7sZnsjAAAp
+🔍 Sending move_made to player 2ViWuDtCofNYjgakAAAn
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_680aoqwut
+🔍 Sending move_made to player vVIvJNeGIs7sZnsjAAAp
+🔍 Sending move_made to player 2ViWuDtCofNYjgakAAAn
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_680aoqwut
+🔍 Sending move_made to player vVIvJNeGIs7sZnsjAAAp
+🔍 Sending move_made to player 2ViWuDtCofNYjgakAAAn
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_680aoqwut
+🔍 Sending move_made to player vVIvJNeGIs7sZnsjAAAp
+🔍 Sending move_made to player 2ViWuDtCofNYjgakAAAn
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_680aoqwut
+🔍 Sending move_made to player vVIvJNeGIs7sZnsjAAAp
+🔍 Sending move_made to player 2ViWuDtCofNYjgakAAAn
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_680aoqwut
+🔍 Sending move_made to player vVIvJNeGIs7sZnsjAAAp
+🔍 Sending move_made to player 2ViWuDtCofNYjgakAAAn
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_680aoqwut
+🔍 Sending move_made to player vVIvJNeGIs7sZnsjAAAp
+🔍 Sending move_made to player 2ViWuDtCofNYjgakAAAn
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_680aoqwut
+🔍 Sending move_made to player vVIvJNeGIs7sZnsjAAAp
+🔍 Sending move_made to player 2ViWuDtCofNYjgakAAAn
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_680aoqwut
+🔍 Sending move_made to player vVIvJNeGIs7sZnsjAAAp
+🔍 Sending move_made to player 2ViWuDtCofNYjgakAAAn
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_680aoqwut
+🔍 Sending move_made to player vVIvJNeGIs7sZnsjAAAp
+🔍 Sending move_made to player 2ViWuDtCofNYjgakAAAn
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_680aoqwut
+🔍 Sending move_made to player vVIvJNeGIs7sZnsjAAAp
+🔍 Sending move_made to player 2ViWuDtCofNYjgakAAAn
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_680aoqwut
+🔍 Sending move_made to player vVIvJNeGIs7sZnsjAAAp
+🔍 Sending move_made to player 2ViWuDtCofNYjgakAAAn
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_680aoqwut
+🔍 Sending move_made to player vVIvJNeGIs7sZnsjAAAp
+🔍 Sending move_made to player 2ViWuDtCofNYjgakAAAn
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_680aoqwut
+🔍 Sending move_made to player vVIvJNeGIs7sZnsjAAAp
+🔍 Sending move_made to player 2ViWuDtCofNYjgakAAAn
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_680aoqwut
+🔍 Sending move_made to player vVIvJNeGIs7sZnsjAAAp
+🔍 Sending move_made to player 2ViWuDtCofNYjgakAAAn
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_680aoqwut
+🔍 Sending move_made to player vVIvJNeGIs7sZnsjAAAp
+🔍 Sending move_made to player 2ViWuDtCofNYjgakAAAn
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_680aoqwut
+🔍 Sending move_made to player vVIvJNeGIs7sZnsjAAAp
+🔍 Sending move_made to player 2ViWuDtCofNYjgakAAAn
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_680aoqwut
+🔍 Sending move_made to player vVIvJNeGIs7sZnsjAAAp
+🔍 Sending move_made to player 2ViWuDtCofNYjgakAAAn
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_680aoqwut
+🔍 Sending move_made to player vVIvJNeGIs7sZnsjAAAp
+🔍 Sending move_made to player 2ViWuDtCofNYjgakAAAn
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_680aoqwut
+🔍 Sending move_made to player vVIvJNeGIs7sZnsjAAAp
+🔍 Sending move_made to player 2ViWuDtCofNYjgakAAAn
+🔍 Broadcast complete for move_made
+Completing trial 1 in room room_680aoqwut
+🔍 Broadcasting trial_complete to 2 players in room room_680aoqwut
+🔍 Sending trial_complete to player vVIvJNeGIs7sZnsjAAAp
+🔍 Sending trial_complete to player 2ViWuDtCofNYjgakAAAn
+🔍 Broadcast complete for trial_complete
+Starting trial 2 in room room_680aoqwut
+=== INITIALIZED GAME STATE ===
+Selected map: {
+  gridMatrix: null,
+  player1Pos: [ 7, 0 ],
+  player2Pos: [ 7, 14 ],
+  goals: [ [ 2, 7 ], [ 12, 7 ] ],
+  mapId: '284'
+}
+Goals set: [ [ 2, 7 ], [ 12, 7 ] ]
+Player positions: {
+  vVIvJNeGIs7sZnsjAAAp: { position: [ 7, 0 ], goalHistory: [] },
+  '2ViWuDtCofNYjgakAAAn': { position: [ 7, 14 ], goalHistory: [] }
+}
+Trial: 2
+Player positions: {
+  vVIvJNeGIs7sZnsjAAAp: { position: [ 7, 0 ], goalHistory: [] },
+  '2ViWuDtCofNYjgakAAAn': { position: [ 7, 14 ], goalHistory: [] }
+}
+Goals: [ [ 2, 7 ], [ 12, 7 ] ]
+🔍 Broadcasting trial_started to 2 players in room room_680aoqwut
+🔍 Sending trial_started to player vVIvJNeGIs7sZnsjAAAp
+🔍 Sending trial_started to player 2ViWuDtCofNYjgakAAAn
+🔍 Broadcast complete for trial_started
+Player disconnected: esR70i9zcoIakODwAAAb
+Player connected: 1UTzUINz1U9fmivHAAAr
+Player disconnected: vVIvJNeGIs7sZnsjAAAp
+Player vVIvJNeGIs7sZnsjAAAp left room room_680aoqwut
+🔍 Broadcasting player_left to 1 players in room room_680aoqwut
+🔍 Sending player_left to player 2ViWuDtCofNYjgakAAAn
+🔍 Broadcast complete for player_left
+Ending game in room room_680aoqwut
+🔍 Broadcasting game_ended to 1 players in room room_680aoqwut
+🔍 Sending game_ended to player 2ViWuDtCofNYjgakAAAn
+🔍 Broadcast complete for game_ended
+Player connected: DYLOeey286wVklTWAAAt
+Player DYLOeey286wVklTWAAAt wants to join 2P2G game
+Player DYLOeey286wVklTWAAAt joined room room_680aoqwut
+🔍 Broadcasting player_joined to 2 players in room room_680aoqwut
+🔍 Sending player_joined to player 2ViWuDtCofNYjgakAAAn
+🔍 Sending player_joined to player DYLOeey286wVklTWAAAt
+🔍 Broadcast complete for player_joined
+🔍 Broadcasting room_full to 2 players in room room_680aoqwut
+🔍 Sending room_full to player 2ViWuDtCofNYjgakAAAn
+🔍 Sending room_full to player DYLOeey286wVklTWAAAt
+🔍 Broadcast complete for room_full
+Player DYLOeey286wVklTWAAAt is ready in room room_680aoqwut
+Starting game in room room_680aoqwut
+=== INITIALIZED GAME STATE ===
+Selected map: {
+  gridMatrix: null,
+  player1Pos: [ 14, 7 ],
+  player2Pos: [ 0, 7 ],
+  goals: [ [ 7, 0 ], [ 7, 14 ] ],
+  mapId: '220'
+}
+Goals set: [ [ 7, 0 ], [ 7, 14 ] ]
+Player positions: {
+  '2ViWuDtCofNYjgakAAAn': { position: [ 14, 7 ], goalHistory: [] },
+  DYLOeey286wVklTWAAAt: { position: [ 0, 7 ], goalHistory: [] }
+}
+Trial: 2
+Player positions: {
+  '2ViWuDtCofNYjgakAAAn': { position: [ 14, 7 ], goalHistory: [] },
+  DYLOeey286wVklTWAAAt: { position: [ 0, 7 ], goalHistory: [] }
+}
+Goals: [ [ 7, 0 ], [ 7, 14 ] ]
+=== SENDING GAME_STARTED EVENT ===
+Game type: 2P2G
+Goals in game state: [ [ 7, 0 ], [ 7, 14 ] ]
+Player states: {
+  '2ViWuDtCofNYjgakAAAn': { position: [ 14, 7 ], goalHistory: [] },
+  DYLOeey286wVklTWAAAt: { position: [ 0, 7 ], goalHistory: [] }
+}
+Grid matrix exists: true
+🔍 Broadcasting game_started to 2 players in room room_680aoqwut
+🔍 Sending game_started to player 2ViWuDtCofNYjgakAAAn
+🔍 Sending game_started to player DYLOeey286wVklTWAAAt
+🔍 Broadcast complete for game_started
+Player 1UTzUINz1U9fmivHAAAr wants to join 2P2G game
+Created game room room_rd4ieyjtx for 2P2G
+Player 1UTzUINz1U9fmivHAAAr joined room room_rd4ieyjtx
+🔍 Broadcasting player_joined to 1 players in room room_rd4ieyjtx
+🔍 Sending player_joined to player 1UTzUINz1U9fmivHAAAr
+🔍 Broadcast complete for player_joined
+Cleaned up room room_680aoqwut
+Player 1UTzUINz1U9fmivHAAAr is ready in room room_rd4ieyjtx
+Starting game in room room_rd4ieyjtx
+Added dummy player for single-player testing
+=== INITIALIZED GAME STATE ===
+Selected map: {
+  gridMatrix: null,
+  player1Pos: [ 14, 7 ],
+  player2Pos: [ 0, 7 ],
+  goals: [ [ 7, 0 ], [ 7, 14 ] ],
+  mapId: '227'
+}
+Goals set: [ [ 7, 0 ], [ 7, 14 ] ]
+Player positions: {
+  '1UTzUINz1U9fmivHAAAr': { position: [ 14, 7 ], goalHistory: [] },
+  dummy_player_test: { position: [ 0, 7 ], goalHistory: [] }
+}
+Trial: 1
+Player positions: {
+  '1UTzUINz1U9fmivHAAAr': { position: [ 14, 7 ], goalHistory: [] },
+  dummy_player_test: { position: [ 0, 7 ], goalHistory: [] }
+}
+Goals: [ [ 7, 0 ], [ 7, 14 ] ]
+=== SENDING GAME_STARTED EVENT ===
+Game type: 2P2G
+Goals in game state: [ [ 7, 0 ], [ 7, 14 ] ]
+Player states: {
+  '1UTzUINz1U9fmivHAAAr': { position: [ 14, 7 ], goalHistory: [] },
+  dummy_player_test: { position: [ 0, 7 ], goalHistory: [] }
+}
+Grid matrix exists: true
+🔍 Broadcasting game_started to 1 players in room room_rd4ieyjtx
+🔍 Sending game_started to player 1UTzUINz1U9fmivHAAAr
+🔍 Broadcast complete for game_started
+Player disconnected: DYLOeey286wVklTWAAAt
+Player DYLOeey286wVklTWAAAt left room room_680aoqwut
+🔍 Broadcasting player_left to 1 players in room room_680aoqwut
+🔍 Sending player_left to player 2ViWuDtCofNYjgakAAAn
+🔍 Broadcast complete for player_left
+Ending game in room room_680aoqwut
+🔍 Broadcasting game_ended to 1 players in room room_680aoqwut
+🔍 Sending game_ended to player 2ViWuDtCofNYjgakAAAn
+🔍 Broadcast complete for game_ended
+Player connected: O2FJ3ai4ViDYWNlBAAAv
+Player disconnected: 1UTzUINz1U9fmivHAAAr
+Player 1UTzUINz1U9fmivHAAAr left room room_rd4ieyjtx
+🔍 Broadcasting player_left to 0 players in room room_rd4ieyjtx
+🔍 Broadcast complete for player_left
+Ending game in room room_rd4ieyjtx
+🔍 Broadcasting game_ended to 0 players in room room_rd4ieyjtx
+🔍 Broadcast complete for game_ended
+Removed empty room room_rd4ieyjtx
+Player connected: JrV9nVsW5x9nHMfwAAAx
+Cleaned up room room_680aoqwut
+Cleaned up room room_rd4ieyjtx
+Player disconnected: O2FJ3ai4ViDYWNlBAAAv
+Player connected: 745I4KAFLohQvgKeAAAz
+Player disconnected: JrV9nVsW5x9nHMfwAAAx
+Player connected: G9vfvmTaGy8a8VdnAAA1
+Player G9vfvmTaGy8a8VdnAAA1 wants to join 2P2G game
+Created game room room_ygswtbr6b for 2P2G
+Player G9vfvmTaGy8a8VdnAAA1 joined room room_ygswtbr6b
+🔍 Broadcasting player_joined to 1 players in room room_ygswtbr6b
+🔍 Sending player_joined to player G9vfvmTaGy8a8VdnAAA1
+🔍 Broadcast complete for player_joined
+Player 745I4KAFLohQvgKeAAAz wants to join 2P2G game
+Player 745I4KAFLohQvgKeAAAz joined room room_ygswtbr6b
+🔍 Broadcasting player_joined to 2 players in room room_ygswtbr6b
+🔍 Sending player_joined to player G9vfvmTaGy8a8VdnAAA1
+🔍 Sending player_joined to player 745I4KAFLohQvgKeAAAz
+🔍 Broadcast complete for player_joined
+🔍 Broadcasting room_full to 2 players in room room_ygswtbr6b
+🔍 Sending room_full to player G9vfvmTaGy8a8VdnAAA1
+🔍 Sending room_full to player 745I4KAFLohQvgKeAAAz
+🔍 Broadcast complete for room_full
+Player 745I4KAFLohQvgKeAAAz is ready in room room_ygswtbr6b
+Player 745I4KAFLohQvgKeAAAz is ready in room room_ygswtbr6b
+Player G9vfvmTaGy8a8VdnAAA1 is ready in room room_ygswtbr6b
+Starting game in room room_ygswtbr6b
+=== INITIALIZED GAME STATE ===
+Selected map: {
+  gridMatrix: null,
+  player1Pos: [ 7, 0 ],
+  player2Pos: [ 7, 14 ],
+  goals: [ [ 1, 7 ], [ 13, 7 ] ],
+  mapId: '286'
+}
+Goals set: [ [ 1, 7 ], [ 13, 7 ] ]
+Player positions: {
+  G9vfvmTaGy8a8VdnAAA1: { position: [ 7, 0 ], goalHistory: [] },
+  '745I4KAFLohQvgKeAAAz': { position: [ 7, 14 ], goalHistory: [] }
+}
+Trial: 1
+Player positions: {
+  G9vfvmTaGy8a8VdnAAA1: { position: [ 7, 0 ], goalHistory: [] },
+  '745I4KAFLohQvgKeAAAz': { position: [ 7, 14 ], goalHistory: [] }
+}
+Goals: [ [ 1, 7 ], [ 13, 7 ] ]
+=== SENDING GAME_STARTED EVENT ===
+Game type: 2P2G
+Goals in game state: [ [ 1, 7 ], [ 13, 7 ] ]
+Player states: {
+  G9vfvmTaGy8a8VdnAAA1: { position: [ 7, 0 ], goalHistory: [] },
+  '745I4KAFLohQvgKeAAAz': { position: [ 7, 14 ], goalHistory: [] }
+}
+Grid matrix exists: true
+🔍 Broadcasting game_started to 2 players in room room_ygswtbr6b
+🔍 Sending game_started to player G9vfvmTaGy8a8VdnAAA1
+🔍 Sending game_started to player 745I4KAFLohQvgKeAAAz
+🔍 Broadcast complete for game_started
+🔍 Broadcasting move_made to 2 players in room room_ygswtbr6b
+🔍 Sending move_made to player G9vfvmTaGy8a8VdnAAA1
+🔍 Sending move_made to player 745I4KAFLohQvgKeAAAz
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_ygswtbr6b
+🔍 Sending move_made to player G9vfvmTaGy8a8VdnAAA1
+🔍 Sending move_made to player 745I4KAFLohQvgKeAAAz
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_ygswtbr6b
+🔍 Sending move_made to player G9vfvmTaGy8a8VdnAAA1
+🔍 Sending move_made to player 745I4KAFLohQvgKeAAAz
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_ygswtbr6b
+🔍 Sending move_made to player G9vfvmTaGy8a8VdnAAA1
+🔍 Sending move_made to player 745I4KAFLohQvgKeAAAz
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_ygswtbr6b
+🔍 Sending move_made to player G9vfvmTaGy8a8VdnAAA1
+🔍 Sending move_made to player 745I4KAFLohQvgKeAAAz
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_ygswtbr6b
+🔍 Sending move_made to player G9vfvmTaGy8a8VdnAAA1
+🔍 Sending move_made to player 745I4KAFLohQvgKeAAAz
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_ygswtbr6b
+🔍 Sending move_made to player G9vfvmTaGy8a8VdnAAA1
+🔍 Sending move_made to player 745I4KAFLohQvgKeAAAz
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_ygswtbr6b
+🔍 Sending move_made to player G9vfvmTaGy8a8VdnAAA1
+🔍 Sending move_made to player 745I4KAFLohQvgKeAAAz
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_ygswtbr6b
+🔍 Sending move_made to player G9vfvmTaGy8a8VdnAAA1
+🔍 Sending move_made to player 745I4KAFLohQvgKeAAAz
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_ygswtbr6b
+🔍 Sending move_made to player G9vfvmTaGy8a8VdnAAA1
+🔍 Sending move_made to player 745I4KAFLohQvgKeAAAz
+🔍 Broadcast complete for move_made
+Player disconnected: 745I4KAFLohQvgKeAAAz
+Player 745I4KAFLohQvgKeAAAz left room room_ygswtbr6b
+🔍 Broadcasting player_left to 1 players in room room_ygswtbr6b
+🔍 Sending player_left to player G9vfvmTaGy8a8VdnAAA1
+🔍 Broadcast complete for player_left
+Ending game in room room_ygswtbr6b
+🔍 Broadcasting game_ended to 1 players in room room_ygswtbr6b
+🔍 Sending game_ended to player G9vfvmTaGy8a8VdnAAA1
+🔍 Broadcast complete for game_ended
+Player connected: wtOmefPSSkvHr3gTAAA3
+Player disconnected: wtOmefPSSkvHr3gTAAA3
+Player connected: mt7reEbe7FeVnBZtAAA5
+Player disconnected: G9vfvmTaGy8a8VdnAAA1
+Player G9vfvmTaGy8a8VdnAAA1 left room room_ygswtbr6b
+🔍 Broadcasting player_left to 0 players in room room_ygswtbr6b
+🔍 Broadcast complete for player_left
+Removed empty room room_ygswtbr6b
+Player connected: chycb0woJYJ8Ui0UAAA7
+Player chycb0woJYJ8Ui0UAAA7 wants to join 2P2G game
+Created game room room_x12twm5ho for 2P2G
+Player chycb0woJYJ8Ui0UAAA7 joined room room_x12twm5ho
+🔍 Broadcasting player_joined to 1 players in room room_x12twm5ho
+🔍 Sending player_joined to player chycb0woJYJ8Ui0UAAA7
+🔍 Broadcast complete for player_joined
+Cleaned up room room_ygswtbr6b
+Player mt7reEbe7FeVnBZtAAA5 wants to join 2P2G game
+Player mt7reEbe7FeVnBZtAAA5 joined room room_x12twm5ho
+🔍 Broadcasting player_joined to 2 players in room room_x12twm5ho
+🔍 Sending player_joined to player chycb0woJYJ8Ui0UAAA7
+🔍 Sending player_joined to player mt7reEbe7FeVnBZtAAA5
+🔍 Broadcast complete for player_joined
+🔍 Broadcasting room_full to 2 players in room room_x12twm5ho
+🔍 Sending room_full to player chycb0woJYJ8Ui0UAAA7
+🔍 Sending room_full to player mt7reEbe7FeVnBZtAAA5
+🔍 Broadcast complete for room_full
+Player mt7reEbe7FeVnBZtAAA5 is ready in room room_x12twm5ho
+Player mt7reEbe7FeVnBZtAAA5 is ready in room room_x12twm5ho
+Player chycb0woJYJ8Ui0UAAA7 is ready in room room_x12twm5ho
+Starting game in room room_x12twm5ho
+=== INITIALIZED GAME STATE ===
+Selected map: {
+  gridMatrix: null,
+  player1Pos: [ 1, 7 ],
+  player2Pos: [ 11, 7 ],
+  goals: [ [ 6, 2 ], [ 6, 12 ] ],
+  mapId: '274'
+}
+Goals set: [ [ 6, 2 ], [ 6, 12 ] ]
+Player positions: {
+  chycb0woJYJ8Ui0UAAA7: { position: [ 1, 7 ], goalHistory: [] },
+  mt7reEbe7FeVnBZtAAA5: { position: [ 11, 7 ], goalHistory: [] }
+}
+Trial: 1
+Player positions: {
+  chycb0woJYJ8Ui0UAAA7: { position: [ 1, 7 ], goalHistory: [] },
+  mt7reEbe7FeVnBZtAAA5: { position: [ 11, 7 ], goalHistory: [] }
+}
+Goals: [ [ 6, 2 ], [ 6, 12 ] ]
+=== SENDING GAME_STARTED EVENT ===
+Game type: 2P2G
+Goals in game state: [ [ 6, 2 ], [ 6, 12 ] ]
+Player states: {
+  chycb0woJYJ8Ui0UAAA7: { position: [ 1, 7 ], goalHistory: [] },
+  mt7reEbe7FeVnBZtAAA5: { position: [ 11, 7 ], goalHistory: [] }
+}
+Grid matrix exists: true
+🔍 Broadcasting game_started to 2 players in room room_x12twm5ho
+🔍 Sending game_started to player chycb0woJYJ8Ui0UAAA7
+🔍 Sending game_started to player mt7reEbe7FeVnBZtAAA5
+🔍 Broadcast complete for game_started
+🔍 Broadcasting move_made to 2 players in room room_x12twm5ho
+🔍 Sending move_made to player chycb0woJYJ8Ui0UAAA7
+🔍 Sending move_made to player mt7reEbe7FeVnBZtAAA5
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_x12twm5ho
+🔍 Sending move_made to player chycb0woJYJ8Ui0UAAA7
+🔍 Sending move_made to player mt7reEbe7FeVnBZtAAA5
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_x12twm5ho
+🔍 Sending move_made to player chycb0woJYJ8Ui0UAAA7
+🔍 Sending move_made to player mt7reEbe7FeVnBZtAAA5
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_x12twm5ho
+🔍 Sending move_made to player chycb0woJYJ8Ui0UAAA7
+🔍 Sending move_made to player mt7reEbe7FeVnBZtAAA5
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_x12twm5ho
+🔍 Sending move_made to player chycb0woJYJ8Ui0UAAA7
+🔍 Sending move_made to player mt7reEbe7FeVnBZtAAA5
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_x12twm5ho
+🔍 Sending move_made to player chycb0woJYJ8Ui0UAAA7
+🔍 Sending move_made to player mt7reEbe7FeVnBZtAAA5
+🔍 Broadcast complete for move_made
+Player disconnected: mt7reEbe7FeVnBZtAAA5
+Player mt7reEbe7FeVnBZtAAA5 left room room_x12twm5ho
+🔍 Broadcasting player_left to 1 players in room room_x12twm5ho
+🔍 Sending player_left to player chycb0woJYJ8Ui0UAAA7
+🔍 Broadcast complete for player_left
+Ending game in room room_x12twm5ho
+🔍 Broadcasting game_ended to 1 players in room room_x12twm5ho
+🔍 Sending game_ended to player chycb0woJYJ8Ui0UAAA7
+🔍 Broadcast complete for game_ended
+Player disconnected: chycb0woJYJ8Ui0UAAA7
+Player chycb0woJYJ8Ui0UAAA7 left room room_x12twm5ho
+🔍 Broadcasting player_left to 0 players in room room_x12twm5ho
+🔍 Broadcast complete for player_left
+Removed empty room room_x12twm5ho
+Cleaned up room room_x12twm5ho
+Player connected: tfyiKgvHKJ-Ob8GfAAA9
+Player connected: RZBW4_267Wke6G83AAA_
+Player tfyiKgvHKJ-Ob8GfAAA9 wants to join 2P2G game
+Created game room room_rwcfnvjg7 for 2P2G
+Player tfyiKgvHKJ-Ob8GfAAA9 joined room room_rwcfnvjg7
+🔍 Broadcasting player_joined to 1 players in room room_rwcfnvjg7
+🔍 Sending player_joined to player tfyiKgvHKJ-Ob8GfAAA9
+🔍 Broadcast complete for player_joined
+Player RZBW4_267Wke6G83AAA_ wants to join 2P2G game
+Player RZBW4_267Wke6G83AAA_ joined room room_rwcfnvjg7
+🔍 Broadcasting player_joined to 2 players in room room_rwcfnvjg7
+🔍 Sending player_joined to player tfyiKgvHKJ-Ob8GfAAA9
+🔍 Sending player_joined to player RZBW4_267Wke6G83AAA_
+🔍 Broadcast complete for player_joined
+🔍 Broadcasting room_full to 2 players in room room_rwcfnvjg7
+🔍 Sending room_full to player tfyiKgvHKJ-Ob8GfAAA9
+🔍 Sending room_full to player RZBW4_267Wke6G83AAA_
+🔍 Broadcast complete for room_full
+Player RZBW4_267Wke6G83AAA_ is ready in room room_rwcfnvjg7
+Player tfyiKgvHKJ-Ob8GfAAA9 is ready in room room_rwcfnvjg7
+Starting game in room room_rwcfnvjg7
+=== INITIALIZED GAME STATE ===
+Selected map: {
+  gridMatrix: null,
+  player1Pos: [ 7, 14 ],
+  player2Pos: [ 7, 2 ],
+  goals: [ [ 0, 8 ], [ 14, 8 ] ],
+  mapId: '255'
+}
+Goals set: [ [ 0, 8 ], [ 14, 8 ] ]
+Player positions: {
+  'tfyiKgvHKJ-Ob8GfAAA9': { position: [ 7, 14 ], goalHistory: [] },
+  RZBW4_267Wke6G83AAA_: { position: [ 7, 2 ], goalHistory: [] }
+}
+Trial: 1
+Player positions: {
+  'tfyiKgvHKJ-Ob8GfAAA9': { position: [ 7, 14 ], goalHistory: [] },
+  RZBW4_267Wke6G83AAA_: { position: [ 7, 2 ], goalHistory: [] }
+}
+Goals: [ [ 0, 8 ], [ 14, 8 ] ]
+=== SENDING GAME_STARTED EVENT ===
+Game type: 2P2G
+Goals in game state: [ [ 0, 8 ], [ 14, 8 ] ]
+Player states: {
+  'tfyiKgvHKJ-Ob8GfAAA9': { position: [ 7, 14 ], goalHistory: [] },
+  RZBW4_267Wke6G83AAA_: { position: [ 7, 2 ], goalHistory: [] }
+}
+Grid matrix exists: true
+🔍 Broadcasting game_started to 2 players in room room_rwcfnvjg7
+🔍 Sending game_started to player tfyiKgvHKJ-Ob8GfAAA9
+🔍 Sending game_started to player RZBW4_267Wke6G83AAA_
+🔍 Broadcast complete for game_started
+Player disconnected: tfyiKgvHKJ-Ob8GfAAA9
+Player tfyiKgvHKJ-Ob8GfAAA9 left room room_rwcfnvjg7
+🔍 Broadcasting player_left to 1 players in room room_rwcfnvjg7
+🔍 Sending player_left to player RZBW4_267Wke6G83AAA_
+🔍 Broadcast complete for player_left
+Ending game in room room_rwcfnvjg7
+🔍 Broadcasting game_ended to 1 players in room room_rwcfnvjg7
+🔍 Sending game_ended to player RZBW4_267Wke6G83AAA_
+🔍 Broadcast complete for game_ended
+Player connected: e8vZu_saQuTLLPZVAABB
+Player disconnected: RZBW4_267Wke6G83AAA_
+Player RZBW4_267Wke6G83AAA_ left room room_rwcfnvjg7
+🔍 Broadcasting player_left to 0 players in room room_rwcfnvjg7
+🔍 Broadcast complete for player_left
+Removed empty room room_rwcfnvjg7
+Player connected: sHnOpUzUhDXsGaUYAABD
+Player e8vZu_saQuTLLPZVAABB wants to join 2P2G game
+Created game room room_4tt45kien for 2P2G
+Player e8vZu_saQuTLLPZVAABB joined room room_4tt45kien
+🔍 Broadcasting player_joined to 1 players in room room_4tt45kien
+🔍 Sending player_joined to player e8vZu_saQuTLLPZVAABB
+🔍 Broadcast complete for player_joined
+Player sHnOpUzUhDXsGaUYAABD wants to join 2P2G game
+Player sHnOpUzUhDXsGaUYAABD joined room room_4tt45kien
+🔍 Broadcasting player_joined to 2 players in room room_4tt45kien
+🔍 Sending player_joined to player e8vZu_saQuTLLPZVAABB
+🔍 Sending player_joined to player sHnOpUzUhDXsGaUYAABD
+🔍 Broadcast complete for player_joined
+🔍 Broadcasting room_full to 2 players in room room_4tt45kien
+🔍 Sending room_full to player e8vZu_saQuTLLPZVAABB
+🔍 Sending room_full to player sHnOpUzUhDXsGaUYAABD
+🔍 Broadcast complete for room_full
+Player sHnOpUzUhDXsGaUYAABD is ready in room room_4tt45kien
+Player e8vZu_saQuTLLPZVAABB is ready in room room_4tt45kien
+Starting game in room room_4tt45kien
+=== INITIALIZED GAME STATE ===
+Selected map: {
+  gridMatrix: null,
+  player1Pos: [ 0, 7 ],
+  player2Pos: [ 14, 7 ],
+  goals: [ [ 7, 2 ], [ 7, 12 ] ],
+  mapId: '264'
+}
+Goals set: [ [ 7, 2 ], [ 7, 12 ] ]
+Player positions: {
+  e8vZu_saQuTLLPZVAABB: { position: [ 0, 7 ], goalHistory: [] },
+  sHnOpUzUhDXsGaUYAABD: { position: [ 14, 7 ], goalHistory: [] }
+}
+Trial: 1
+Player positions: {
+  e8vZu_saQuTLLPZVAABB: { position: [ 0, 7 ], goalHistory: [] },
+  sHnOpUzUhDXsGaUYAABD: { position: [ 14, 7 ], goalHistory: [] }
+}
+Goals: [ [ 7, 2 ], [ 7, 12 ] ]
+=== SENDING GAME_STARTED EVENT ===
+Game type: 2P2G
+Goals in game state: [ [ 7, 2 ], [ 7, 12 ] ]
+Player states: {
+  e8vZu_saQuTLLPZVAABB: { position: [ 0, 7 ], goalHistory: [] },
+  sHnOpUzUhDXsGaUYAABD: { position: [ 14, 7 ], goalHistory: [] }
+}
+Grid matrix exists: true
+🔍 Broadcasting game_started to 2 players in room room_4tt45kien
+🔍 Sending game_started to player e8vZu_saQuTLLPZVAABB
+🔍 Sending game_started to player sHnOpUzUhDXsGaUYAABD
+🔍 Broadcast complete for game_started
+Cleaned up room room_rwcfnvjg7
+Player disconnected: e8vZu_saQuTLLPZVAABB
+Player e8vZu_saQuTLLPZVAABB left room room_4tt45kien
+🔍 Broadcasting player_left to 1 players in room room_4tt45kien
+🔍 Sending player_left to player sHnOpUzUhDXsGaUYAABD
+🔍 Broadcast complete for player_left
+Ending game in room room_4tt45kien
+🔍 Broadcasting game_ended to 1 players in room room_4tt45kien
+🔍 Sending game_ended to player sHnOpUzUhDXsGaUYAABD
+🔍 Broadcast complete for game_ended
+Player connected: wmIc6utPQsvhz-BkAABF
+Player wmIc6utPQsvhz-BkAABF wants to join 2P2G game
+Player wmIc6utPQsvhz-BkAABF joined room room_4tt45kien
+🔍 Broadcasting player_joined to 2 players in room room_4tt45kien
+🔍 Sending player_joined to player sHnOpUzUhDXsGaUYAABD
+🔍 Sending player_joined to player wmIc6utPQsvhz-BkAABF
+🔍 Broadcast complete for player_joined
+🔍 Broadcasting room_full to 2 players in room room_4tt45kien
+🔍 Sending room_full to player sHnOpUzUhDXsGaUYAABD
+🔍 Sending room_full to player wmIc6utPQsvhz-BkAABF
+🔍 Broadcast complete for room_full
+Player wmIc6utPQsvhz-BkAABF is ready in room room_4tt45kien
+Starting game in room room_4tt45kien
+=== INITIALIZED GAME STATE ===
+Selected map: {
+  gridMatrix: null,
+  player1Pos: [ 7, 0 ],
+  player2Pos: [ 7, 14 ],
+  goals: [ [ 0, 7 ], [ 14, 7 ] ],
+  mapId: '253'
+}
+Goals set: [ [ 0, 7 ], [ 14, 7 ] ]
+Player positions: {
+  sHnOpUzUhDXsGaUYAABD: { position: [ 7, 0 ], goalHistory: [] },
+  'wmIc6utPQsvhz-BkAABF': { position: [ 7, 14 ], goalHistory: [] }
+}
+Trial: 1
+Player positions: {
+  sHnOpUzUhDXsGaUYAABD: { position: [ 7, 0 ], goalHistory: [] },
+  'wmIc6utPQsvhz-BkAABF': { position: [ 7, 14 ], goalHistory: [] }
+}
+Goals: [ [ 0, 7 ], [ 14, 7 ] ]
+=== SENDING GAME_STARTED EVENT ===
+Game type: 2P2G
+Goals in game state: [ [ 0, 7 ], [ 14, 7 ] ]
+Player states: {
+  sHnOpUzUhDXsGaUYAABD: { position: [ 7, 0 ], goalHistory: [] },
+  'wmIc6utPQsvhz-BkAABF': { position: [ 7, 14 ], goalHistory: [] }
+}
+Grid matrix exists: true
+🔍 Broadcasting game_started to 2 players in room room_4tt45kien
+🔍 Sending game_started to player sHnOpUzUhDXsGaUYAABD
+🔍 Sending game_started to player wmIc6utPQsvhz-BkAABF
+🔍 Broadcast complete for game_started
+Player sHnOpUzUhDXsGaUYAABD is ready in room room_4tt45kien
+Starting game in room room_4tt45kien
+=== INITIALIZED GAME STATE ===
+Selected map: {
+  gridMatrix: null,
+  player1Pos: [ 0, 7 ],
+  player2Pos: [ 12, 7 ],
+  goals: [ [ 6, 1 ], [ 6, 13 ] ],
+  mapId: '293'
+}
+Goals set: [ [ 6, 1 ], [ 6, 13 ] ]
+Player positions: {
+  sHnOpUzUhDXsGaUYAABD: { position: [ 0, 7 ], goalHistory: [] },
+  'wmIc6utPQsvhz-BkAABF': { position: [ 12, 7 ], goalHistory: [] }
+}
+Trial: 1
+Player positions: {
+  sHnOpUzUhDXsGaUYAABD: { position: [ 0, 7 ], goalHistory: [] },
+  'wmIc6utPQsvhz-BkAABF': { position: [ 12, 7 ], goalHistory: [] }
+}
+Goals: [ [ 6, 1 ], [ 6, 13 ] ]
+=== SENDING GAME_STARTED EVENT ===
+Game type: 2P2G
+Goals in game state: [ [ 6, 1 ], [ 6, 13 ] ]
+Player states: {
+  sHnOpUzUhDXsGaUYAABD: { position: [ 0, 7 ], goalHistory: [] },
+  'wmIc6utPQsvhz-BkAABF': { position: [ 12, 7 ], goalHistory: [] }
+}
+Grid matrix exists: true
+🔍 Broadcasting game_started to 2 players in room room_4tt45kien
+🔍 Sending game_started to player sHnOpUzUhDXsGaUYAABD
+🔍 Sending game_started to player wmIc6utPQsvhz-BkAABF
+🔍 Broadcast complete for game_started
+Player sHnOpUzUhDXsGaUYAABD is ready in room room_4tt45kien
+Starting game in room room_4tt45kien
+=== INITIALIZED GAME STATE ===
+Selected map: {
+  gridMatrix: null,
+  player1Pos: [ 13, 7 ],
+  player2Pos: [ 1, 7 ],
+  goals: [ [ 7, 2 ], [ 7, 12 ] ],
+  mapId: '287'
+}
+Goals set: [ [ 7, 2 ], [ 7, 12 ] ]
+Player positions: {
+  sHnOpUzUhDXsGaUYAABD: { position: [ 13, 7 ], goalHistory: [] },
+  'wmIc6utPQsvhz-BkAABF': { position: [ 1, 7 ], goalHistory: [] }
+}
+Trial: 1
+Player positions: {
+  sHnOpUzUhDXsGaUYAABD: { position: [ 13, 7 ], goalHistory: [] },
+  'wmIc6utPQsvhz-BkAABF': { position: [ 1, 7 ], goalHistory: [] }
+}
+Goals: [ [ 7, 2 ], [ 7, 12 ] ]
+=== SENDING GAME_STARTED EVENT ===
+Game type: 2P2G
+Goals in game state: [ [ 7, 2 ], [ 7, 12 ] ]
+Player states: {
+  sHnOpUzUhDXsGaUYAABD: { position: [ 13, 7 ], goalHistory: [] },
+  'wmIc6utPQsvhz-BkAABF': { position: [ 1, 7 ], goalHistory: [] }
+}
+Grid matrix exists: true
+🔍 Broadcasting game_started to 2 players in room room_4tt45kien
+🔍 Sending game_started to player sHnOpUzUhDXsGaUYAABD
+🔍 Sending game_started to player wmIc6utPQsvhz-BkAABF
+🔍 Broadcast complete for game_started
+Cleaned up room room_4tt45kien
+Player disconnected: wmIc6utPQsvhz-BkAABF
+Player wmIc6utPQsvhz-BkAABF left room room_4tt45kien
+🔍 Broadcasting player_left to 1 players in room room_4tt45kien
+🔍 Sending player_left to player sHnOpUzUhDXsGaUYAABD
+🔍 Broadcast complete for player_left
+Ending game in room room_4tt45kien
+🔍 Broadcasting game_ended to 1 players in room room_4tt45kien
+🔍 Sending game_ended to player sHnOpUzUhDXsGaUYAABD
+🔍 Broadcast complete for game_ended
+Player connected: eTaMbmDsqf4bRujrAABH
+Player disconnected: sHnOpUzUhDXsGaUYAABD
+Player sHnOpUzUhDXsGaUYAABD left room room_4tt45kien
+🔍 Broadcasting player_left to 0 players in room room_4tt45kien
+🔍 Broadcast complete for player_left
+Removed empty room room_4tt45kien
+Player connected: fZa8-s3W9_F8AFSTAABJ
+Player eTaMbmDsqf4bRujrAABH wants to join 2P2G game
+Created game room room_6pb3ryldm for 2P2G
+Player eTaMbmDsqf4bRujrAABH joined room room_6pb3ryldm
+🔍 Broadcasting player_joined to 1 players in room room_6pb3ryldm
+🔍 Sending player_joined to player eTaMbmDsqf4bRujrAABH
+🔍 Broadcast complete for player_joined
+Player fZa8-s3W9_F8AFSTAABJ wants to join 2P2G game
+Player fZa8-s3W9_F8AFSTAABJ joined room room_6pb3ryldm
+🔍 Broadcasting player_joined to 2 players in room room_6pb3ryldm
+🔍 Sending player_joined to player eTaMbmDsqf4bRujrAABH
+🔍 Sending player_joined to player fZa8-s3W9_F8AFSTAABJ
+🔍 Broadcast complete for player_joined
+🔍 Broadcasting room_full to 2 players in room room_6pb3ryldm
+🔍 Sending room_full to player eTaMbmDsqf4bRujrAABH
+🔍 Sending room_full to player fZa8-s3W9_F8AFSTAABJ
+🔍 Broadcast complete for room_full
+Player fZa8-s3W9_F8AFSTAABJ is ready in room room_6pb3ryldm
+Cleaned up room room_4tt45kien
+Player fZa8-s3W9_F8AFSTAABJ is ready in room room_6pb3ryldm
+Player eTaMbmDsqf4bRujrAABH is ready in room room_6pb3ryldm
+Starting game in room room_6pb3ryldm
+=== INITIALIZED GAME STATE ===
+Selected map: {
+  gridMatrix: null,
+  player1Pos: [ 14, 7 ],
+  player2Pos: [ 4, 7 ],
+  goals: [ [ 9, 2 ], [ 9, 12 ] ],
+  mapId: '269'
+}
+Goals set: [ [ 9, 2 ], [ 9, 12 ] ]
+Player positions: {
+  eTaMbmDsqf4bRujrAABH: { position: [ 14, 7 ], goalHistory: [] },
+  'fZa8-s3W9_F8AFSTAABJ': { position: [ 4, 7 ], goalHistory: [] }
+}
+Trial: 1
+Player positions: {
+  eTaMbmDsqf4bRujrAABH: { position: [ 14, 7 ], goalHistory: [] },
+  'fZa8-s3W9_F8AFSTAABJ': { position: [ 4, 7 ], goalHistory: [] }
+}
+Goals: [ [ 9, 2 ], [ 9, 12 ] ]
+=== SENDING GAME_STARTED EVENT ===
+Game type: 2P2G
+Goals in game state: [ [ 9, 2 ], [ 9, 12 ] ]
+Player states: {
+  eTaMbmDsqf4bRujrAABH: { position: [ 14, 7 ], goalHistory: [] },
+  'fZa8-s3W9_F8AFSTAABJ': { position: [ 4, 7 ], goalHistory: [] }
+}
+Grid matrix exists: true
+🔍 Broadcasting game_started to 2 players in room room_6pb3ryldm
+🔍 Sending game_started to player eTaMbmDsqf4bRujrAABH
+🔍 Sending game_started to player fZa8-s3W9_F8AFSTAABJ
+🔍 Broadcast complete for game_started
+🔍 Broadcasting move_made to 2 players in room room_6pb3ryldm
+🔍 Sending move_made to player eTaMbmDsqf4bRujrAABH
+🔍 Sending move_made to player fZa8-s3W9_F8AFSTAABJ
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_6pb3ryldm
+🔍 Sending move_made to player eTaMbmDsqf4bRujrAABH
+🔍 Sending move_made to player fZa8-s3W9_F8AFSTAABJ
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_6pb3ryldm
+🔍 Sending move_made to player eTaMbmDsqf4bRujrAABH
+🔍 Sending move_made to player fZa8-s3W9_F8AFSTAABJ
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_6pb3ryldm
+🔍 Sending move_made to player eTaMbmDsqf4bRujrAABH
+🔍 Sending move_made to player fZa8-s3W9_F8AFSTAABJ
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_6pb3ryldm
+🔍 Sending move_made to player eTaMbmDsqf4bRujrAABH
+🔍 Sending move_made to player fZa8-s3W9_F8AFSTAABJ
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_6pb3ryldm
+🔍 Sending move_made to player eTaMbmDsqf4bRujrAABH
+🔍 Sending move_made to player fZa8-s3W9_F8AFSTAABJ
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_6pb3ryldm
+🔍 Sending move_made to player eTaMbmDsqf4bRujrAABH
+🔍 Sending move_made to player fZa8-s3W9_F8AFSTAABJ
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_6pb3ryldm
+🔍 Sending move_made to player eTaMbmDsqf4bRujrAABH
+🔍 Sending move_made to player fZa8-s3W9_F8AFSTAABJ
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_6pb3ryldm
+🔍 Sending move_made to player eTaMbmDsqf4bRujrAABH
+🔍 Sending move_made to player fZa8-s3W9_F8AFSTAABJ
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_6pb3ryldm
+🔍 Sending move_made to player eTaMbmDsqf4bRujrAABH
+🔍 Sending move_made to player fZa8-s3W9_F8AFSTAABJ
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_6pb3ryldm
+🔍 Sending move_made to player eTaMbmDsqf4bRujrAABH
+🔍 Sending move_made to player fZa8-s3W9_F8AFSTAABJ
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_6pb3ryldm
+🔍 Sending move_made to player eTaMbmDsqf4bRujrAABH
+🔍 Sending move_made to player fZa8-s3W9_F8AFSTAABJ
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_6pb3ryldm
+🔍 Sending move_made to player eTaMbmDsqf4bRujrAABH
+🔍 Sending move_made to player fZa8-s3W9_F8AFSTAABJ
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_6pb3ryldm
+🔍 Sending move_made to player eTaMbmDsqf4bRujrAABH
+🔍 Sending move_made to player fZa8-s3W9_F8AFSTAABJ
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_6pb3ryldm
+🔍 Sending move_made to player eTaMbmDsqf4bRujrAABH
+🔍 Sending move_made to player fZa8-s3W9_F8AFSTAABJ
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_6pb3ryldm
+🔍 Sending move_made to player eTaMbmDsqf4bRujrAABH
+🔍 Sending move_made to player fZa8-s3W9_F8AFSTAABJ
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_6pb3ryldm
+🔍 Sending move_made to player eTaMbmDsqf4bRujrAABH
+🔍 Sending move_made to player fZa8-s3W9_F8AFSTAABJ
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_6pb3ryldm
+🔍 Sending move_made to player eTaMbmDsqf4bRujrAABH
+🔍 Sending move_made to player fZa8-s3W9_F8AFSTAABJ
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_6pb3ryldm
+🔍 Sending move_made to player eTaMbmDsqf4bRujrAABH
+🔍 Sending move_made to player fZa8-s3W9_F8AFSTAABJ
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_6pb3ryldm
+🔍 Sending move_made to player eTaMbmDsqf4bRujrAABH
+🔍 Sending move_made to player fZa8-s3W9_F8AFSTAABJ
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_6pb3ryldm
+🔍 Sending move_made to player eTaMbmDsqf4bRujrAABH
+🔍 Sending move_made to player fZa8-s3W9_F8AFSTAABJ
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_6pb3ryldm
+🔍 Sending move_made to player eTaMbmDsqf4bRujrAABH
+🔍 Sending move_made to player fZa8-s3W9_F8AFSTAABJ
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_6pb3ryldm
+🔍 Sending move_made to player eTaMbmDsqf4bRujrAABH
+🔍 Sending move_made to player fZa8-s3W9_F8AFSTAABJ
+🔍 Broadcast complete for move_made
+Completing trial 1 in room room_6pb3ryldm
+🔍 Broadcasting trial_complete to 2 players in room room_6pb3ryldm
+🔍 Sending trial_complete to player eTaMbmDsqf4bRujrAABH
+🔍 Sending trial_complete to player fZa8-s3W9_F8AFSTAABJ
+🔍 Broadcast complete for trial_complete
+Starting trial 2 in room room_6pb3ryldm
+=== INITIALIZED GAME STATE ===
+Selected map: {
+  gridMatrix: null,
+  player1Pos: [ 0, 7 ],
+  player2Pos: [ 14, 7 ],
+  goals: [ [ 7, 2 ], [ 7, 12 ] ],
+  mapId: '264'
+}
+Goals set: [ [ 7, 2 ], [ 7, 12 ] ]
+Player positions: {
+  eTaMbmDsqf4bRujrAABH: { position: [ 0, 7 ], goalHistory: [] },
+  'fZa8-s3W9_F8AFSTAABJ': { position: [ 14, 7 ], goalHistory: [] }
+}
+Trial: 2
+Player positions: {
+  eTaMbmDsqf4bRujrAABH: { position: [ 0, 7 ], goalHistory: [] },
+  'fZa8-s3W9_F8AFSTAABJ': { position: [ 14, 7 ], goalHistory: [] }
+}
+Goals: [ [ 7, 2 ], [ 7, 12 ] ]
+🔍 Broadcasting trial_started to 2 players in room room_6pb3ryldm
+🔍 Sending trial_started to player eTaMbmDsqf4bRujrAABH
+🔍 Sending trial_started to player fZa8-s3W9_F8AFSTAABJ
+🔍 Broadcast complete for trial_started
+Player disconnected: eTaMbmDsqf4bRujrAABH
+Player eTaMbmDsqf4bRujrAABH left room room_6pb3ryldm
+🔍 Broadcasting player_left to 1 players in room room_6pb3ryldm
+🔍 Sending player_left to player fZa8-s3W9_F8AFSTAABJ
+🔍 Broadcast complete for player_left
+Ending game in room room_6pb3ryldm
+🔍 Broadcasting game_ended to 1 players in room room_6pb3ryldm
+🔍 Sending game_ended to player fZa8-s3W9_F8AFSTAABJ
+🔍 Broadcast complete for game_ended
+Player connected: wOObZ7ihyB_3yWMMAABL
+Player disconnected: fZa8-s3W9_F8AFSTAABJ
+Player fZa8-s3W9_F8AFSTAABJ left room room_6pb3ryldm
+🔍 Broadcasting player_left to 0 players in room room_6pb3ryldm
+🔍 Broadcast complete for player_left
+Removed empty room room_6pb3ryldm
+Player connected: L4z4vL74skfHyiAVAABN
+Player wOObZ7ihyB_3yWMMAABL wants to join 2P2G game
+Created game room room_5untksfgz for 2P2G
+Player wOObZ7ihyB_3yWMMAABL joined room room_5untksfgz
+🔍 Broadcasting player_joined to 1 players in room room_5untksfgz
+🔍 Sending player_joined to player wOObZ7ihyB_3yWMMAABL
+🔍 Broadcast complete for player_joined
+Player L4z4vL74skfHyiAVAABN wants to join 2P2G game
+Player L4z4vL74skfHyiAVAABN joined room room_5untksfgz
+🔍 Broadcasting player_joined to 2 players in room room_5untksfgz
+🔍 Sending player_joined to player wOObZ7ihyB_3yWMMAABL
+🔍 Sending player_joined to player L4z4vL74skfHyiAVAABN
+🔍 Broadcast complete for player_joined
+🔍 Broadcasting room_full to 2 players in room room_5untksfgz
+🔍 Sending room_full to player wOObZ7ihyB_3yWMMAABL
+🔍 Sending room_full to player L4z4vL74skfHyiAVAABN
+🔍 Broadcast complete for room_full
+Player L4z4vL74skfHyiAVAABN is ready in room room_5untksfgz
+Player wOObZ7ihyB_3yWMMAABL is ready in room room_5untksfgz
+Starting game in room room_5untksfgz
+=== INITIALIZED GAME STATE ===
+Selected map: {
+  gridMatrix: null,
+  player1Pos: [ 0, 7 ],
+  player2Pos: [ 12, 7 ],
+  goals: [ [ 6, 1 ], [ 6, 13 ] ],
+  mapId: '226'
+}
+Goals set: [ [ 6, 1 ], [ 6, 13 ] ]
+Player positions: {
+  wOObZ7ihyB_3yWMMAABL: { position: [ 0, 7 ], goalHistory: [] },
+  L4z4vL74skfHyiAVAABN: { position: [ 12, 7 ], goalHistory: [] }
+}
+Trial: 1
+Player positions: {
+  wOObZ7ihyB_3yWMMAABL: { position: [ 0, 7 ], goalHistory: [] },
+  L4z4vL74skfHyiAVAABN: { position: [ 12, 7 ], goalHistory: [] }
+}
+Goals: [ [ 6, 1 ], [ 6, 13 ] ]
+=== SENDING GAME_STARTED EVENT ===
+Game type: 2P2G
+Goals in game state: [ [ 6, 1 ], [ 6, 13 ] ]
+Player states: {
+  wOObZ7ihyB_3yWMMAABL: { position: [ 0, 7 ], goalHistory: [] },
+  L4z4vL74skfHyiAVAABN: { position: [ 12, 7 ], goalHistory: [] }
+}
+Grid matrix exists: true
+🔍 Broadcasting game_started to 2 players in room room_5untksfgz
+🔍 Sending game_started to player wOObZ7ihyB_3yWMMAABL
+🔍 Sending game_started to player L4z4vL74skfHyiAVAABN
+🔍 Broadcast complete for game_started
+Cleaned up room room_6pb3ryldm
+🔍 Broadcasting move_made to 2 players in room room_5untksfgz
+🔍 Sending move_made to player wOObZ7ihyB_3yWMMAABL
+🔍 Sending move_made to player L4z4vL74skfHyiAVAABN
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_5untksfgz
+🔍 Sending move_made to player wOObZ7ihyB_3yWMMAABL
+🔍 Sending move_made to player L4z4vL74skfHyiAVAABN
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_5untksfgz
+🔍 Sending move_made to player wOObZ7ihyB_3yWMMAABL
+🔍 Sending move_made to player L4z4vL74skfHyiAVAABN
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_5untksfgz
+🔍 Sending move_made to player wOObZ7ihyB_3yWMMAABL
+🔍 Sending move_made to player L4z4vL74skfHyiAVAABN
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_5untksfgz
+🔍 Sending move_made to player wOObZ7ihyB_3yWMMAABL
+🔍 Sending move_made to player L4z4vL74skfHyiAVAABN
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_5untksfgz
+🔍 Sending move_made to player wOObZ7ihyB_3yWMMAABL
+🔍 Sending move_made to player L4z4vL74skfHyiAVAABN
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_5untksfgz
+🔍 Sending move_made to player wOObZ7ihyB_3yWMMAABL
+🔍 Sending move_made to player L4z4vL74skfHyiAVAABN
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_5untksfgz
+🔍 Sending move_made to player wOObZ7ihyB_3yWMMAABL
+🔍 Sending move_made to player L4z4vL74skfHyiAVAABN
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_5untksfgz
+🔍 Sending move_made to player wOObZ7ihyB_3yWMMAABL
+🔍 Sending move_made to player L4z4vL74skfHyiAVAABN
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_5untksfgz
+🔍 Sending move_made to player wOObZ7ihyB_3yWMMAABL
+🔍 Sending move_made to player L4z4vL74skfHyiAVAABN
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_5untksfgz
+🔍 Sending move_made to player wOObZ7ihyB_3yWMMAABL
+🔍 Sending move_made to player L4z4vL74skfHyiAVAABN
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_5untksfgz
+🔍 Sending move_made to player wOObZ7ihyB_3yWMMAABL
+🔍 Sending move_made to player L4z4vL74skfHyiAVAABN
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_5untksfgz
+🔍 Sending move_made to player wOObZ7ihyB_3yWMMAABL
+🔍 Sending move_made to player L4z4vL74skfHyiAVAABN
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_5untksfgz
+🔍 Sending move_made to player wOObZ7ihyB_3yWMMAABL
+🔍 Sending move_made to player L4z4vL74skfHyiAVAABN
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_5untksfgz
+🔍 Sending move_made to player wOObZ7ihyB_3yWMMAABL
+🔍 Sending move_made to player L4z4vL74skfHyiAVAABN
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_5untksfgz
+🔍 Sending move_made to player wOObZ7ihyB_3yWMMAABL
+🔍 Sending move_made to player L4z4vL74skfHyiAVAABN
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_5untksfgz
+🔍 Sending move_made to player wOObZ7ihyB_3yWMMAABL
+🔍 Sending move_made to player L4z4vL74skfHyiAVAABN
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_5untksfgz
+🔍 Sending move_made to player wOObZ7ihyB_3yWMMAABL
+🔍 Sending move_made to player L4z4vL74skfHyiAVAABN
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_5untksfgz
+🔍 Sending move_made to player wOObZ7ihyB_3yWMMAABL
+🔍 Sending move_made to player L4z4vL74skfHyiAVAABN
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_5untksfgz
+🔍 Sending move_made to player wOObZ7ihyB_3yWMMAABL
+🔍 Sending move_made to player L4z4vL74skfHyiAVAABN
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_5untksfgz
+🔍 Sending move_made to player wOObZ7ihyB_3yWMMAABL
+🔍 Sending move_made to player L4z4vL74skfHyiAVAABN
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_5untksfgz
+🔍 Sending move_made to player wOObZ7ihyB_3yWMMAABL
+🔍 Sending move_made to player L4z4vL74skfHyiAVAABN
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_5untksfgz
+🔍 Sending move_made to player wOObZ7ihyB_3yWMMAABL
+🔍 Sending move_made to player L4z4vL74skfHyiAVAABN
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_5untksfgz
+🔍 Sending move_made to player wOObZ7ihyB_3yWMMAABL
+🔍 Sending move_made to player L4z4vL74skfHyiAVAABN
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_5untksfgz
+🔍 Sending move_made to player wOObZ7ihyB_3yWMMAABL
+🔍 Sending move_made to player L4z4vL74skfHyiAVAABN
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_5untksfgz
+🔍 Sending move_made to player wOObZ7ihyB_3yWMMAABL
+🔍 Sending move_made to player L4z4vL74skfHyiAVAABN
+🔍 Broadcast complete for move_made
+Completing trial 1 in room room_5untksfgz
+🔍 Broadcasting trial_complete to 2 players in room room_5untksfgz
+🔍 Sending trial_complete to player wOObZ7ihyB_3yWMMAABL
+🔍 Sending trial_complete to player L4z4vL74skfHyiAVAABN
+🔍 Broadcast complete for trial_complete
+Starting trial 2 in room room_5untksfgz
+=== INITIALIZED GAME STATE ===
+Selected map: {
+  gridMatrix: null,
+  player1Pos: [ 14, 7 ],
+  player2Pos: [ 4, 7 ],
+  goals: [ [ 9, 0 ], [ 9, 14 ] ],
+  mapId: '225'
+}
+Goals set: [ [ 9, 0 ], [ 9, 14 ] ]
+Player positions: {
+  wOObZ7ihyB_3yWMMAABL: { position: [ 14, 7 ], goalHistory: [] },
+  L4z4vL74skfHyiAVAABN: { position: [ 4, 7 ], goalHistory: [] }
+}
+Trial: 2
+Player positions: {
+  wOObZ7ihyB_3yWMMAABL: { position: [ 14, 7 ], goalHistory: [] },
+  L4z4vL74skfHyiAVAABN: { position: [ 4, 7 ], goalHistory: [] }
+}
+Goals: [ [ 9, 0 ], [ 9, 14 ] ]
+🔍 Broadcasting trial_started to 2 players in room room_5untksfgz
+🔍 Sending trial_started to player wOObZ7ihyB_3yWMMAABL
+🔍 Sending trial_started to player L4z4vL74skfHyiAVAABN
+🔍 Broadcast complete for trial_started
+Player disconnected: wOObZ7ihyB_3yWMMAABL
+Player wOObZ7ihyB_3yWMMAABL left room room_5untksfgz
+🔍 Broadcasting player_left to 1 players in room room_5untksfgz
+🔍 Sending player_left to player L4z4vL74skfHyiAVAABN
+🔍 Broadcast complete for player_left
+Ending game in room room_5untksfgz
+🔍 Broadcasting game_ended to 1 players in room room_5untksfgz
+🔍 Sending game_ended to player L4z4vL74skfHyiAVAABN
+🔍 Broadcast complete for game_ended
+Player disconnected: L4z4vL74skfHyiAVAABN
+Player L4z4vL74skfHyiAVAABN left room room_5untksfgz
+🔍 Broadcasting player_left to 0 players in room room_5untksfgz
+🔍 Broadcast complete for player_left
+Removed empty room room_5untksfgz
+Cleaned up room room_5untksfgz
+Player connected: pVn8Hz_PGXVe2DP6AABP
+Player connected: YpaXc1at8eLUggtLAABR
+Player pVn8Hz_PGXVe2DP6AABP wants to join 2P2G game
+Created game room room_bmtivjkbx for 2P2G
+Player pVn8Hz_PGXVe2DP6AABP joined room room_bmtivjkbx
+🔍 Broadcasting player_joined to 1 players in room room_bmtivjkbx
+🔍 Sending player_joined to player pVn8Hz_PGXVe2DP6AABP
+🔍 Broadcast complete for player_joined
+Player YpaXc1at8eLUggtLAABR wants to join 2P2G game
+Player YpaXc1at8eLUggtLAABR joined room room_bmtivjkbx
+🔍 Broadcasting player_joined to 2 players in room room_bmtivjkbx
+🔍 Sending player_joined to player pVn8Hz_PGXVe2DP6AABP
+🔍 Sending player_joined to player YpaXc1at8eLUggtLAABR
+🔍 Broadcast complete for player_joined
+🔍 Broadcasting room_full to 2 players in room room_bmtivjkbx
+🔍 Sending room_full to player pVn8Hz_PGXVe2DP6AABP
+🔍 Sending room_full to player YpaXc1at8eLUggtLAABR
+🔍 Broadcast complete for room_full
+Player YpaXc1at8eLUggtLAABR is ready in room room_bmtivjkbx
+Player pVn8Hz_PGXVe2DP6AABP is ready in room room_bmtivjkbx
+Starting game in room room_bmtivjkbx
+=== INITIALIZED GAME STATE ===
+Selected map: {
+  gridMatrix: null,
+  player1Pos: [ 7, 10 ],
+  player2Pos: [ 7, 0 ],
+  goals: [ [ 1, 5 ], [ 13, 5 ] ],
+  mapId: '231'
+}
+Goals set: [ [ 1, 5 ], [ 13, 5 ] ]
+Player positions: {
+  pVn8Hz_PGXVe2DP6AABP: { position: [ 7, 10 ], goalHistory: [] },
+  YpaXc1at8eLUggtLAABR: { position: [ 7, 0 ], goalHistory: [] }
+}
+Trial: 1
+Player positions: {
+  pVn8Hz_PGXVe2DP6AABP: { position: [ 7, 10 ], goalHistory: [] },
+  YpaXc1at8eLUggtLAABR: { position: [ 7, 0 ], goalHistory: [] }
+}
+Goals: [ [ 1, 5 ], [ 13, 5 ] ]
+=== SENDING GAME_STARTED EVENT ===
+Game type: 2P2G
+Goals in game state: [ [ 1, 5 ], [ 13, 5 ] ]
+Player states: {
+  pVn8Hz_PGXVe2DP6AABP: { position: [ 7, 10 ], goalHistory: [] },
+  YpaXc1at8eLUggtLAABR: { position: [ 7, 0 ], goalHistory: [] }
+}
+Grid matrix exists: true
+🔍 Broadcasting game_started to 2 players in room room_bmtivjkbx
+🔍 Sending game_started to player pVn8Hz_PGXVe2DP6AABP
+🔍 Sending game_started to player YpaXc1at8eLUggtLAABR
+🔍 Broadcast complete for game_started
+🔍 Broadcasting move_made to 2 players in room room_bmtivjkbx
+🔍 Sending move_made to player pVn8Hz_PGXVe2DP6AABP
+🔍 Sending move_made to player YpaXc1at8eLUggtLAABR
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_bmtivjkbx
+🔍 Sending move_made to player pVn8Hz_PGXVe2DP6AABP
+🔍 Sending move_made to player YpaXc1at8eLUggtLAABR
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_bmtivjkbx
+🔍 Sending move_made to player pVn8Hz_PGXVe2DP6AABP
+🔍 Sending move_made to player YpaXc1at8eLUggtLAABR
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_bmtivjkbx
+🔍 Sending move_made to player pVn8Hz_PGXVe2DP6AABP
+🔍 Sending move_made to player YpaXc1at8eLUggtLAABR
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_bmtivjkbx
+🔍 Sending move_made to player pVn8Hz_PGXVe2DP6AABP
+🔍 Sending move_made to player YpaXc1at8eLUggtLAABR
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_bmtivjkbx
+🔍 Sending move_made to player pVn8Hz_PGXVe2DP6AABP
+🔍 Sending move_made to player YpaXc1at8eLUggtLAABR
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_bmtivjkbx
+🔍 Sending move_made to player pVn8Hz_PGXVe2DP6AABP
+🔍 Sending move_made to player YpaXc1at8eLUggtLAABR
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_bmtivjkbx
+🔍 Sending move_made to player pVn8Hz_PGXVe2DP6AABP
+🔍 Sending move_made to player YpaXc1at8eLUggtLAABR
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_bmtivjkbx
+🔍 Sending move_made to player pVn8Hz_PGXVe2DP6AABP
+🔍 Sending move_made to player YpaXc1at8eLUggtLAABR
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_bmtivjkbx
+🔍 Sending move_made to player pVn8Hz_PGXVe2DP6AABP
+🔍 Sending move_made to player YpaXc1at8eLUggtLAABR
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_bmtivjkbx
+🔍 Sending move_made to player pVn8Hz_PGXVe2DP6AABP
+🔍 Sending move_made to player YpaXc1at8eLUggtLAABR
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_bmtivjkbx
+🔍 Sending move_made to player pVn8Hz_PGXVe2DP6AABP
+🔍 Sending move_made to player YpaXc1at8eLUggtLAABR
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_bmtivjkbx
+🔍 Sending move_made to player pVn8Hz_PGXVe2DP6AABP
+🔍 Sending move_made to player YpaXc1at8eLUggtLAABR
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_bmtivjkbx
+🔍 Sending move_made to player pVn8Hz_PGXVe2DP6AABP
+🔍 Sending move_made to player YpaXc1at8eLUggtLAABR
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_bmtivjkbx
+🔍 Sending move_made to player pVn8Hz_PGXVe2DP6AABP
+🔍 Sending move_made to player YpaXc1at8eLUggtLAABR
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_bmtivjkbx
+🔍 Sending move_made to player pVn8Hz_PGXVe2DP6AABP
+🔍 Sending move_made to player YpaXc1at8eLUggtLAABR
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_bmtivjkbx
+🔍 Sending move_made to player pVn8Hz_PGXVe2DP6AABP
+🔍 Sending move_made to player YpaXc1at8eLUggtLAABR
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_bmtivjkbx
+🔍 Sending move_made to player pVn8Hz_PGXVe2DP6AABP
+🔍 Sending move_made to player YpaXc1at8eLUggtLAABR
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_bmtivjkbx
+🔍 Sending move_made to player pVn8Hz_PGXVe2DP6AABP
+🔍 Sending move_made to player YpaXc1at8eLUggtLAABR
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_bmtivjkbx
+🔍 Sending move_made to player pVn8Hz_PGXVe2DP6AABP
+🔍 Sending move_made to player YpaXc1at8eLUggtLAABR
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_bmtivjkbx
+🔍 Sending move_made to player pVn8Hz_PGXVe2DP6AABP
+🔍 Sending move_made to player YpaXc1at8eLUggtLAABR
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_bmtivjkbx
+🔍 Sending move_made to player pVn8Hz_PGXVe2DP6AABP
+🔍 Sending move_made to player YpaXc1at8eLUggtLAABR
+🔍 Broadcast complete for move_made
+Completing trial 1 in room room_bmtivjkbx
+🔍 Broadcasting trial_complete to 2 players in room room_bmtivjkbx
+🔍 Sending trial_complete to player pVn8Hz_PGXVe2DP6AABP
+🔍 Sending trial_complete to player YpaXc1at8eLUggtLAABR
+🔍 Broadcast complete for trial_complete
+Starting trial 2 in room room_bmtivjkbx
+=== INITIALIZED GAME STATE ===
+Selected map: {
+  gridMatrix: null,
+  player1Pos: [ 0, 7 ],
+  player2Pos: [ 14, 7 ],
+  goals: [ [ 7, 2 ], [ 7, 12 ] ],
+  mapId: '264'
+}
+Goals set: [ [ 7, 2 ], [ 7, 12 ] ]
+Player positions: {
+  pVn8Hz_PGXVe2DP6AABP: { position: [ 0, 7 ], goalHistory: [] },
+  YpaXc1at8eLUggtLAABR: { position: [ 14, 7 ], goalHistory: [] }
+}
+Trial: 2
+Player positions: {
+  pVn8Hz_PGXVe2DP6AABP: { position: [ 0, 7 ], goalHistory: [] },
+  YpaXc1at8eLUggtLAABR: { position: [ 14, 7 ], goalHistory: [] }
+}
+Goals: [ [ 7, 2 ], [ 7, 12 ] ]
+🔍 Broadcasting trial_started to 2 players in room room_bmtivjkbx
+🔍 Sending trial_started to player pVn8Hz_PGXVe2DP6AABP
+🔍 Sending trial_started to player YpaXc1at8eLUggtLAABR
+🔍 Broadcast complete for trial_started
+Player 2ViWuDtCofNYjgakAAAn is ready in room room_680aoqwut
+Starting game in room room_680aoqwut
+Added dummy player for single-player testing
+=== INITIALIZED GAME STATE ===
+Selected map: {
+  gridMatrix: null,
+  player1Pos: [ 7, 11 ],
+  player2Pos: [ 7, 1 ],
+  goals: [ [ 0, 6 ], [ 14, 6 ] ],
+  mapId: '203'
+}
+Goals set: [ [ 0, 6 ], [ 14, 6 ] ]
+Player positions: {
+  '2ViWuDtCofNYjgakAAAn': { position: [ 7, 11 ], goalHistory: [] },
+  dummy_player_test: { position: [ 7, 1 ], goalHistory: [] }
+}
+Trial: 2
+Player positions: {
+  '2ViWuDtCofNYjgakAAAn': { position: [ 7, 11 ], goalHistory: [] },
+  dummy_player_test: { position: [ 7, 1 ], goalHistory: [] }
+}
+Goals: [ [ 0, 6 ], [ 14, 6 ] ]
+=== SENDING GAME_STARTED EVENT ===
+Game type: 2P2G
+Goals in game state: [ [ 0, 6 ], [ 14, 6 ] ]
+Player states: {
+  '2ViWuDtCofNYjgakAAAn': { position: [ 7, 11 ], goalHistory: [] },
+  dummy_player_test: { position: [ 7, 1 ], goalHistory: [] }
+}
+Grid matrix exists: true
+🔍 Broadcasting game_started to 1 players in room room_680aoqwut
+🔍 Sending game_started to player 2ViWuDtCofNYjgakAAAn
+🔍 Broadcast complete for game_started
+Player 2ViWuDtCofNYjgakAAAn is ready in room room_680aoqwut
+Starting game in room room_680aoqwut
+Added dummy player for single-player testing
+=== INITIALIZED GAME STATE ===
+Selected map: {
+  gridMatrix: null,
+  player1Pos: [ 2, 7 ],
+  player2Pos: [ 14, 7 ],
+  goals: [ [ 8, 0 ], [ 8, 14 ] ],
+  mapId: '232'
+}
+Goals set: [ [ 8, 0 ], [ 8, 14 ] ]
+Player positions: {
+  '2ViWuDtCofNYjgakAAAn': { position: [ 2, 7 ], goalHistory: [] },
+  dummy_player_test: { position: [ 14, 7 ], goalHistory: [] }
+}
+Trial: 2
+Player positions: {
+  '2ViWuDtCofNYjgakAAAn': { position: [ 2, 7 ], goalHistory: [] },
+  dummy_player_test: { position: [ 14, 7 ], goalHistory: [] }
+}
+Goals: [ [ 8, 0 ], [ 8, 14 ] ]
+=== SENDING GAME_STARTED EVENT ===
+Game type: 2P2G
+Goals in game state: [ [ 8, 0 ], [ 8, 14 ] ]
+Player states: {
+  '2ViWuDtCofNYjgakAAAn': { position: [ 2, 7 ], goalHistory: [] },
+  dummy_player_test: { position: [ 14, 7 ], goalHistory: [] }
+}
+Grid matrix exists: true
+🔍 Broadcasting game_started to 1 players in room room_680aoqwut
+🔍 Sending game_started to player 2ViWuDtCofNYjgakAAAn
+🔍 Broadcast complete for game_started
+Player disconnected: 2ViWuDtCofNYjgakAAAn
+Player 2ViWuDtCofNYjgakAAAn left room room_680aoqwut
+🔍 Broadcasting player_left to 0 players in room room_680aoqwut
+🔍 Broadcast complete for player_left
+Ending game in room room_680aoqwut
+🔍 Broadcasting game_ended to 0 players in room room_680aoqwut
+🔍 Broadcast complete for game_ended
+Removed empty room room_680aoqwut
+Player connected: iR7xCE-dCBeU6F5UAABT
+Cleaned up room room_680aoqwut
+Player disconnected: pVn8Hz_PGXVe2DP6AABP
+Player pVn8Hz_PGXVe2DP6AABP left room room_bmtivjkbx
+🔍 Broadcasting player_left to 1 players in room room_bmtivjkbx
+🔍 Sending player_left to player YpaXc1at8eLUggtLAABR
+🔍 Broadcast complete for player_left
+Ending game in room room_bmtivjkbx
+🔍 Broadcasting game_ended to 1 players in room room_bmtivjkbx
+🔍 Sending game_ended to player YpaXc1at8eLUggtLAABR
+🔍 Broadcast complete for game_ended
+Player connected: Ozhrcrj3XbHrm3AkAABV
+Player disconnected: iR7xCE-dCBeU6F5UAABT
+Player connected: F7gN42ia4HVr79niAABX
+Player Ozhrcrj3XbHrm3AkAABV wants to join 2P2G game
+Player Ozhrcrj3XbHrm3AkAABV joined room room_bmtivjkbx
+🔍 Broadcasting player_joined to 2 players in room room_bmtivjkbx
+🔍 Sending player_joined to player YpaXc1at8eLUggtLAABR
+🔍 Sending player_joined to player Ozhrcrj3XbHrm3AkAABV
+🔍 Broadcast complete for player_joined
+🔍 Broadcasting room_full to 2 players in room room_bmtivjkbx
+🔍 Sending room_full to player YpaXc1at8eLUggtLAABR
+🔍 Sending room_full to player Ozhrcrj3XbHrm3AkAABV
+🔍 Broadcast complete for room_full
+Player Ozhrcrj3XbHrm3AkAABV is ready in room room_bmtivjkbx
+Starting game in room room_bmtivjkbx
+=== INITIALIZED GAME STATE ===
+Selected map: {
+  gridMatrix: null,
+  player1Pos: [ 1, 7 ],
+  player2Pos: [ 11, 7 ],
+  goals: [ [ 6, 1 ], [ 6, 13 ] ],
+  mapId: '202'
+}
+Goals set: [ [ 6, 1 ], [ 6, 13 ] ]
+Player positions: {
+  YpaXc1at8eLUggtLAABR: { position: [ 1, 7 ], goalHistory: [] },
+  Ozhrcrj3XbHrm3AkAABV: { position: [ 11, 7 ], goalHistory: [] }
+}
+Trial: 2
+Player positions: {
+  YpaXc1at8eLUggtLAABR: { position: [ 1, 7 ], goalHistory: [] },
+  Ozhrcrj3XbHrm3AkAABV: { position: [ 11, 7 ], goalHistory: [] }
+}
+Goals: [ [ 6, 1 ], [ 6, 13 ] ]
+=== SENDING GAME_STARTED EVENT ===
+Game type: 2P2G
+Goals in game state: [ [ 6, 1 ], [ 6, 13 ] ]
+Player states: {
+  YpaXc1at8eLUggtLAABR: { position: [ 1, 7 ], goalHistory: [] },
+  Ozhrcrj3XbHrm3AkAABV: { position: [ 11, 7 ], goalHistory: [] }
+}
+Grid matrix exists: true
+🔍 Broadcasting game_started to 2 players in room room_bmtivjkbx
+🔍 Sending game_started to player YpaXc1at8eLUggtLAABR
+🔍 Sending game_started to player Ozhrcrj3XbHrm3AkAABV
+🔍 Broadcast complete for game_started
+Player F7gN42ia4HVr79niAABX wants to join 2P2G game
+Created game room room_lkbbpwg0t for 2P2G
+Player F7gN42ia4HVr79niAABX joined room room_lkbbpwg0t
+🔍 Broadcasting player_joined to 1 players in room room_lkbbpwg0t
+🔍 Sending player_joined to player F7gN42ia4HVr79niAABX
+🔍 Broadcast complete for player_joined
+Cleaned up room room_bmtivjkbx
+🔍 Broadcasting move_made to 2 players in room room_bmtivjkbx
+🔍 Sending move_made to player YpaXc1at8eLUggtLAABR
+🔍 Sending move_made to player Ozhrcrj3XbHrm3AkAABV
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_bmtivjkbx
+🔍 Sending move_made to player YpaXc1at8eLUggtLAABR
+🔍 Sending move_made to player Ozhrcrj3XbHrm3AkAABV
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_bmtivjkbx
+🔍 Sending move_made to player YpaXc1at8eLUggtLAABR
+🔍 Sending move_made to player Ozhrcrj3XbHrm3AkAABV
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_bmtivjkbx
+🔍 Sending move_made to player YpaXc1at8eLUggtLAABR
+🔍 Sending move_made to player Ozhrcrj3XbHrm3AkAABV
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_bmtivjkbx
+🔍 Sending move_made to player YpaXc1at8eLUggtLAABR
+🔍 Sending move_made to player Ozhrcrj3XbHrm3AkAABV
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_bmtivjkbx
+🔍 Sending move_made to player YpaXc1at8eLUggtLAABR
+🔍 Sending move_made to player Ozhrcrj3XbHrm3AkAABV
+🔍 Broadcast complete for move_made
+Player disconnected: F7gN42ia4HVr79niAABX
+Player F7gN42ia4HVr79niAABX left room room_lkbbpwg0t
+🔍 Broadcasting player_left to 0 players in room room_lkbbpwg0t
+🔍 Broadcast complete for player_left
+Removed empty room room_lkbbpwg0t
+Player connected: -RMQiFaI0QvA_4GQAABZ
+Player -RMQiFaI0QvA_4GQAABZ wants to join 2P2G game
+Created game room room_opn2nru7f for 2P2G
+Player -RMQiFaI0QvA_4GQAABZ joined room room_opn2nru7f
+🔍 Broadcasting player_joined to 1 players in room room_opn2nru7f
+🔍 Sending player_joined to player -RMQiFaI0QvA_4GQAABZ
+🔍 Broadcast complete for player_joined
+Player disconnected: Ozhrcrj3XbHrm3AkAABV
+Player Ozhrcrj3XbHrm3AkAABV left room room_bmtivjkbx
+🔍 Broadcasting player_left to 1 players in room room_bmtivjkbx
+🔍 Sending player_left to player YpaXc1at8eLUggtLAABR
+🔍 Broadcast complete for player_left
+Ending game in room room_bmtivjkbx
+🔍 Broadcasting game_ended to 1 players in room room_bmtivjkbx
+🔍 Sending game_ended to player YpaXc1at8eLUggtLAABR
+🔍 Broadcast complete for game_ended
+Player connected: g1ZFjZ_smJMNXVh9AABb
+Player g1ZFjZ_smJMNXVh9AABb wants to join 2P2G game
+Player g1ZFjZ_smJMNXVh9AABb joined room room_opn2nru7f
+🔍 Broadcasting player_joined to 2 players in room room_opn2nru7f
+🔍 Sending player_joined to player -RMQiFaI0QvA_4GQAABZ
+🔍 Sending player_joined to player g1ZFjZ_smJMNXVh9AABb
+🔍 Broadcast complete for player_joined
+🔍 Broadcasting room_full to 2 players in room room_opn2nru7f
+🔍 Sending room_full to player -RMQiFaI0QvA_4GQAABZ
+🔍 Sending room_full to player g1ZFjZ_smJMNXVh9AABb
+🔍 Broadcast complete for room_full
+Player g1ZFjZ_smJMNXVh9AABb is ready in room room_opn2nru7f
+Cleaned up room room_bmtivjkbx
+Player g1ZFjZ_smJMNXVh9AABb is ready in room room_opn2nru7f
+Player -RMQiFaI0QvA_4GQAABZ is ready in room room_opn2nru7f
+Starting game in room room_opn2nru7f
+=== INITIALIZED GAME STATE ===
+Selected map: {
+  gridMatrix: null,
+  player1Pos: [ 14, 7 ],
+  player2Pos: [ 2, 7 ],
+  goals: [ [ 8, 2 ], [ 8, 12 ] ],
+  mapId: '213'
+}
+Goals set: [ [ 8, 2 ], [ 8, 12 ] ]
+Player positions: {
+  '-RMQiFaI0QvA_4GQAABZ': { position: [ 14, 7 ], goalHistory: [] },
+  g1ZFjZ_smJMNXVh9AABb: { position: [ 2, 7 ], goalHistory: [] }
+}
+Trial: 1
+Player positions: {
+  '-RMQiFaI0QvA_4GQAABZ': { position: [ 14, 7 ], goalHistory: [] },
+  g1ZFjZ_smJMNXVh9AABb: { position: [ 2, 7 ], goalHistory: [] }
+}
+Goals: [ [ 8, 2 ], [ 8, 12 ] ]
+=== SENDING GAME_STARTED EVENT ===
+Game type: 2P2G
+Goals in game state: [ [ 8, 2 ], [ 8, 12 ] ]
+Player states: {
+  '-RMQiFaI0QvA_4GQAABZ': { position: [ 14, 7 ], goalHistory: [] },
+  g1ZFjZ_smJMNXVh9AABb: { position: [ 2, 7 ], goalHistory: [] }
+}
+Grid matrix exists: true
+🔍 Broadcasting game_started to 2 players in room room_opn2nru7f
+🔍 Sending game_started to player -RMQiFaI0QvA_4GQAABZ
+🔍 Sending game_started to player g1ZFjZ_smJMNXVh9AABb
+🔍 Broadcast complete for game_started
+🔍 Broadcasting move_made to 2 players in room room_opn2nru7f
+🔍 Sending move_made to player -RMQiFaI0QvA_4GQAABZ
+🔍 Sending move_made to player g1ZFjZ_smJMNXVh9AABb
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_opn2nru7f
+🔍 Sending move_made to player -RMQiFaI0QvA_4GQAABZ
+🔍 Sending move_made to player g1ZFjZ_smJMNXVh9AABb
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_opn2nru7f
+🔍 Sending move_made to player -RMQiFaI0QvA_4GQAABZ
+🔍 Sending move_made to player g1ZFjZ_smJMNXVh9AABb
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_opn2nru7f
+🔍 Sending move_made to player -RMQiFaI0QvA_4GQAABZ
+🔍 Sending move_made to player g1ZFjZ_smJMNXVh9AABb
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_opn2nru7f
+🔍 Sending move_made to player -RMQiFaI0QvA_4GQAABZ
+🔍 Sending move_made to player g1ZFjZ_smJMNXVh9AABb
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_opn2nru7f
+🔍 Sending move_made to player -RMQiFaI0QvA_4GQAABZ
+🔍 Sending move_made to player g1ZFjZ_smJMNXVh9AABb
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_opn2nru7f
+🔍 Sending move_made to player -RMQiFaI0QvA_4GQAABZ
+🔍 Sending move_made to player g1ZFjZ_smJMNXVh9AABb
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_opn2nru7f
+🔍 Sending move_made to player -RMQiFaI0QvA_4GQAABZ
+🔍 Sending move_made to player g1ZFjZ_smJMNXVh9AABb
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_opn2nru7f
+🔍 Sending move_made to player -RMQiFaI0QvA_4GQAABZ
+🔍 Sending move_made to player g1ZFjZ_smJMNXVh9AABb
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_opn2nru7f
+🔍 Sending move_made to player -RMQiFaI0QvA_4GQAABZ
+🔍 Sending move_made to player g1ZFjZ_smJMNXVh9AABb
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_opn2nru7f
+🔍 Sending move_made to player -RMQiFaI0QvA_4GQAABZ
+🔍 Sending move_made to player g1ZFjZ_smJMNXVh9AABb
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_opn2nru7f
+🔍 Sending move_made to player -RMQiFaI0QvA_4GQAABZ
+🔍 Sending move_made to player g1ZFjZ_smJMNXVh9AABb
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_opn2nru7f
+🔍 Sending move_made to player -RMQiFaI0QvA_4GQAABZ
+🔍 Sending move_made to player g1ZFjZ_smJMNXVh9AABb
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_opn2nru7f
+🔍 Sending move_made to player -RMQiFaI0QvA_4GQAABZ
+🔍 Sending move_made to player g1ZFjZ_smJMNXVh9AABb
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_opn2nru7f
+🔍 Sending move_made to player -RMQiFaI0QvA_4GQAABZ
+🔍 Sending move_made to player g1ZFjZ_smJMNXVh9AABb
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_opn2nru7f
+🔍 Sending move_made to player -RMQiFaI0QvA_4GQAABZ
+🔍 Sending move_made to player g1ZFjZ_smJMNXVh9AABb
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_opn2nru7f
+🔍 Sending move_made to player -RMQiFaI0QvA_4GQAABZ
+🔍 Sending move_made to player g1ZFjZ_smJMNXVh9AABb
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_opn2nru7f
+🔍 Sending move_made to player -RMQiFaI0QvA_4GQAABZ
+🔍 Sending move_made to player g1ZFjZ_smJMNXVh9AABb
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_opn2nru7f
+🔍 Sending move_made to player -RMQiFaI0QvA_4GQAABZ
+🔍 Sending move_made to player g1ZFjZ_smJMNXVh9AABb
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_opn2nru7f
+🔍 Sending move_made to player -RMQiFaI0QvA_4GQAABZ
+🔍 Sending move_made to player g1ZFjZ_smJMNXVh9AABb
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_opn2nru7f
+🔍 Sending move_made to player -RMQiFaI0QvA_4GQAABZ
+🔍 Sending move_made to player g1ZFjZ_smJMNXVh9AABb
+🔍 Broadcast complete for move_made
+🔍 Broadcasting move_made to 2 players in room room_opn2nru7f
+🔍 Sending move_made to player -RMQiFaI0QvA_4GQAABZ
+🔍 Sending move_made to player g1ZFjZ_smJMNXVh9AABb
+🔍 Broadcast complete for move_made
+Completing trial 1 in room room_opn2nru7f
+🔍 Broadcasting trial_complete to 2 players in room room_opn2nru7f
+🔍 Sending trial_complete to player -RMQiFaI0QvA_4GQAABZ
+🔍 Sending trial_complete to player g1ZFjZ_smJMNXVh9AABb
+🔍 Broadcast complete for trial_complete
+Starting trial 2 in room room_opn2nru7f
+=== INITIALIZED GAME STATE ===
+Selected map: {
+  gridMatrix: null,
+  player1Pos: [ 2, 7 ],
+  player2Pos: [ 14, 7 ],
+  goals: [ [ 8, 1 ], [ 8, 13 ] ],
+  mapId: '290'
+}
+Goals set: [ [ 8, 1 ], [ 8, 13 ] ]
+Player positions: {
+  '-RMQiFaI0QvA_4GQAABZ': { position: [ 2, 7 ], goalHistory: [] },
+  g1ZFjZ_smJMNXVh9AABb: { position: [ 14, 7 ], goalHistory: [] }
+}
+Trial: 2
+Player positions: {
+  '-RMQiFaI0QvA_4GQAABZ': { position: [ 2, 7 ], goalHistory: [] },
+  g1ZFjZ_smJMNXVh9AABb: { position: [ 14, 7 ], goalHistory: [] }
+}
+Goals: [ [ 8, 1 ], [ 8, 13 ] ]
+🔍 Broadcasting trial_started to 2 players in room room_opn2nru7f
+🔍 Sending trial_started to player -RMQiFaI0QvA_4GQAABZ
+🔍 Sending trial_started to player g1ZFjZ_smJMNXVh9AABb
+🔍 Broadcast complete for trial_started
