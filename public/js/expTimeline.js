@@ -754,6 +754,35 @@ function addNextTrialStages(experimentType, experimentIndex, trialIndex) {
     console.log(`Added next trial stages for ${experimentType} trial ${trialIndex + 1}`);
 }
 
+function addCollaborationExperimentStages(experimentType, experimentIndex, trialIndex) {
+    // Fixation screen
+    timeline.stages.push({
+        type: 'fixation',
+        experimentType: experimentType,
+        experimentIndex: experimentIndex,
+        trialIndex: trialIndex,
+        handler: showFixationStage
+    });
+
+    // Main trial
+    timeline.stages.push({
+        type: 'trial',
+        experimentType: experimentType,
+        experimentIndex: experimentIndex,
+        trialIndex: trialIndex,
+        handler: runTrialStage
+    });
+
+    // Post-trial feedback with dynamic continuation
+    timeline.stages.push({
+        type: 'post-trial',
+        experimentType: experimentType,
+        experimentIndex: experimentIndex,
+        trialIndex: trialIndex,
+        handler: showPostTrialStage
+    });
+}
+
 /**
  * Show post-questionnaire stage (matching testExpWithAI.js)
  */

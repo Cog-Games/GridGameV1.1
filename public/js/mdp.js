@@ -56,15 +56,6 @@ function isGoalReached(playerState, goalStates) {
     return false;
 }
 
-function whichGoalReached(playerState, goalStates) {
-    const [player_x,player_y] = playerState
-    for (let i = 0; i < goalStates.length; i++) {
-        if (player_x === goalStates[i][0] && player_y === goalStates[i][1]) {
-            return i + 1; // Return 1-based index
-        }
-    }
-    return 0; // No goal reached
-}
 
 function calCloserDestination(playerState, goalStates) {
     dis1 = calculatetGirdDistance(playerState, goalStates[0])

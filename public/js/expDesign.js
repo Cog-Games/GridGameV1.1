@@ -364,7 +364,12 @@ function checkTrialEnd2P3G(callback) {
     if (humanAtGoal && aiAtGoal) {
         var humanGoal = whichGoalReached(gameData.playerState, gameData.currentGoals);
         var aiGoal = whichGoalReached(gameData.aiState, gameData.currentGoals);
-        var collaboration = (humanGoal === aiGoal && humanGoal !== 0);
+
+        // Collaboration is successful if both players reached the same goal
+        // Note: Using 0-based indexing from gameHelpers.js (goal 0, 1, 2...)
+        var collaboration = (humanGoal === aiGoal && humanGoal !== null);
+
+        console.log(`2P3G Collaboration check: Human goal=${humanGoal}, AI goal=${aiGoal}, Collaboration=${collaboration}`);
 
         gameData.currentTrialData.collaborationSucceeded = collaboration;
         finalizeTrial(true);

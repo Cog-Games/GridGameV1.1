@@ -1,19 +1,9 @@
-
-// Import nodeGame if available
-if (typeof node !== 'undefined') {
-    var node = node;
-} else if (typeof require !== 'undefined') {
-    var node = require('nodegame-client');
-}
-
 // Game states and data storage
 var gameData = {
     currentExperiment: null,
-    currentExperimentIndex: 0, // Track which experiment we're on
     currentTrial: 0,
     allTrialsData: [],
     currentTrialData: {},
-    questionnaireData: null, // Store questionnaire responses
     gridMatrix: null,
     playerState: null,
     aiState: null,
@@ -36,7 +26,6 @@ window.gameData = gameData;
 // Make imported functions globally available for non-module scripts
 window.setupGridMatrixForTrial = setupGridMatrixForTrial;
 window.transition = transition;
-window.calculatetGirdDistance = calculatetGirdDistance;
 window.isValidPosition = isValidPosition;
 window.isGoalReached = isGoalReached;
 window.whichGoalReached = whichGoalReached;
@@ -65,32 +54,6 @@ var timeline = {
 // Make timeline globally available for expTimeline.js
 window.timeline = timeline;
 
-// NodeGame client setup
-var gameClient = null;
-var isStandaloneMode = false;
-
-/**
- * Initialize NodeGame Client
- */
-function initializeNodeGameClient() {
-    try {
-        // Basic nodeGame setup
-        gameClient = node.createClient({
-            name: NODEGAME_CONFIG.name,
-            version: NODEGAME_CONFIG.version,
-            treatments: NODEGAME_CONFIG.treatments
-        });
-
-        if (gameClient) {
-            return true;
-        }
-    } catch (error) {
-        console.warn('NodeGame not available, falling back to standalone mode:', error);
-        return false;
-    }
-    return false;
-}
-
 /**
  * Get AI action
  */
@@ -101,7 +64,7 @@ function getAIAction(gridMatrix, currentPos, goals, playerPos = null) {
     if (window.RLAgent && window.RLAgent.getAIAction) {
         return window.RLAgent.getAIAction(gridMatrix, currentPos, goals, playerPos);
     } else {
-        console.error('RL Agent not loaded. Please ensure rlAgent.js is included before nodeGameHumanAIVersion.js');
+        console.error('RL Agent not loaded. Please ensure rlAgent.js is included before human-AI-version.js');
         return [0, 0];
     }
 }
@@ -289,13 +252,6 @@ function runTrial1P1G() {
 function runTrial1P2G() {
     var gameLoopInterval = null;
 
-    // Initialize goal detection tracking for 1P2G
-    gameData.currentTrialData.humanCurrentGoal = [];
-    gameData.currentTrialData.newGoalPresentedTime = null;
-    gameData.currentTrialData.newGoalPosition = null;
-    gameData.currentTrialData.newGoalConditionType = null;
-    gameData.currentTrialData.newGoalPresented = false; // Initialize flag
-
     function handleKeyPress(event) {
         if (timeline.isMoving) {
             event.preventDefault();
@@ -381,6 +337,8 @@ function checkTrialEnd2P2G(callback) {
     if (humanAtGoal && aiAtGoal) {
         var humanGoal = whichGoalReached(gameData.playerState, gameData.currentGoals);
         var aiGoal = whichGoalReached(gameData.aiState, gameData.currentGoals);
+
+        // Collaboration is successful if both players reached the same goal
         // Note: Using 0-based indexing from gameHelpers.js (goal 0, 1, 2...)
         var collaboration = (humanGoal === aiGoal && humanGoal !== null);
 
@@ -450,13 +408,27 @@ function runTrial2P2G() {
             gameData.gridMatrix = updateMatrix(gameData.gridMatrix, aiNextState[0], aiNextState[1], OBJECT.ai_player);
             gameData.aiState = aiNextState;
             recordAIMove(aiAction); // Record AI move after position is updated
+
+            // Check if AI reached goal and track when
+            var aiAtGoal = isGoalReached(gameData.aiState, gameData.currentGoals);
+            if (aiAtGoal && gameData.currentTrialData.aiGoalReachedStep === -1) {
+                // AI just reached goal - record the step
+                gameData.currentTrialData.aiGoalReachedStep = gameData.stepCount;
+                console.log(`AI reached goal at step ${gameData.stepCount}`);
+            }
         }
 
         gameData.stepCount++;
         nodeGameUpdateGameDisplay();
 
-        // Check if human reached goal
+        // Check if human reached goal and track when
+        var wasHumanAtGoal = humanAtGoal;
         humanAtGoal = isGoalReached(gameData.playerState, gameData.currentGoals);
+        if (!wasHumanAtGoal && humanAtGoal) {
+            // Human just reached goal - record the step
+            gameData.currentTrialData.humanGoalReachedStep = gameData.stepCount;
+            console.log(`Human reached goal at step ${gameData.stepCount}`);
+        }
 
         // Check win condition
         checkTrialEnd2P2G(() => {
@@ -494,6 +466,14 @@ function runTrial2P2G() {
 
         gameData.stepCount++;
         nodeGameUpdateGameDisplay();
+
+        // Check if AI reached goal and track when
+        var aiAtGoal = isGoalReached(gameData.aiState, gameData.currentGoals);
+        if (aiAtGoal && gameData.currentTrialData.aiGoalReachedStep === -1) {
+            // AI just reached goal - record the step
+            gameData.currentTrialData.aiGoalReachedStep = gameData.stepCount;
+            console.log(`AI reached goal at step ${gameData.stepCount}`);
+        }
 
         // Check win condition after AI move
         checkTrialEnd2P2G(() => {
@@ -574,8 +554,9 @@ function runTrial2P2G() {
 }
 
 /**
- * Run 2P3G trial (matching original testExpWithAI.js logic + AI moves simultaneously with human, but independently if human reaches goal)
+ * Run 2P3G trial
  */
+
 function runTrial2P3G() {
     var gameLoopInterval = null;
     var aiMoveInterval = null;
@@ -584,18 +565,14 @@ function runTrial2P3G() {
     var freezeTimeout = null; // Track freeze timeout
 
     // Reset 2P3G specific variables for new trial
+    // Use global variables from expDesign.js
     newGoalPresented = false;
     newGoalPosition = null;
     isNewGoalCloserToAI = null;
     humanInferredGoals = [];
     aiInferredGoals = [];
 
-    // Initialize goal inference tracking
-    gameData.currentTrialData.humanCurrentGoal = [];
-    gameData.currentTrialData.aiCurrentGoal = [];
-    gameData.currentTrialData.newGoalPresentedTime = null;
-    gameData.currentTrialData.newGoalPosition = null;
-    gameData.currentTrialData.isNewGoalCloserToAI = null;
+
 
     function handleKeyPress(event) {
         // Prevent multiple moves with more robust checking
@@ -640,7 +617,6 @@ function runTrial2P3G() {
         var aiAction = null;
         var aiNextState = null;
         if (!isGoalReached(gameData.aiState, gameData.currentGoals) && !isFrozen) {
-
 
             aiAction = getAIAction(gameData.gridMatrix, gameData.aiState, gameData.currentGoals, gameData.playerState);
             var aiRealAction = isValidMove(gameData.gridMatrix, gameData.aiState, aiAction);
@@ -832,7 +808,6 @@ function runTrial2P3G() {
         if (!gameData || !gameData.playerState || !gameData.aiState || !gameData.currentGoals) {
             return;
         }
-
         // Only start independent AI movement if:
         // 1. Human has actually reached a goal (check current state, not just the flag)
         // 2. AI hasn't reached a goal yet
@@ -892,6 +867,17 @@ function initializeTrialData(trialIndex, experimentType, design) {
         aiAction: [],
         RT: [],
         trialStartTime: Date.now(),
+        humanGoalReachedStep: -1,  // Track when human reaches goal (-1 means not reached yet)
+        aiGoalReachedStep: -1,     // Track when AI reaches goal (-1 means not reached yet)
+        // Initialize goal tracking variables for 2P experiments
+        humanCurrentGoal: [],
+        aiCurrentGoal: [],
+        newGoalPresentedTime: null,
+        newGoalPosition: null,
+        newGoalConditionType: null,
+        newGoalPresented: false,
+        isNewGoalCloserToAI: null,
+        collaborationSucceeded: undefined, // Will be set during trial
         ...design
     };
 
@@ -1114,58 +1100,11 @@ function getRandomDistanceConditionFor1P2G(trialIndex) {
 }
 
 
-
-
-
 /**
- * Add collaboration experiment stages (for dynamic trial generation)
- * @param {string} experimentType - Type of experiment
- * @param {number} experimentIndex - Index of experiment
- * @param {number} trialIndex - Index of trial
- */
-function addCollaborationExperimentStages(experimentType, experimentIndex, trialIndex) {
-    // Fixation screen
-    timeline.stages.push({
-        type: 'fixation',
-        experimentType: experimentType,
-        experimentIndex: experimentIndex,
-        trialIndex: trialIndex,
-        handler: showFixationStage
-    });
-
-    // Main trial
-    timeline.stages.push({
-        type: 'trial',
-        experimentType: experimentType,
-        experimentIndex: experimentIndex,
-        trialIndex: trialIndex,
-        handler: runTrialStage
-    });
-
-    // Post-trial feedback with dynamic continuation
-    timeline.stages.push({
-        type: 'post-trial',
-        experimentType: experimentType,
-        experimentIndex: experimentIndex,
-        trialIndex: trialIndex,
-        handler: showPostTrialStage
-    });
-}
-
-
-/**
- * Initialize NodeGame experiments
+ * Initialize experiments
  */
 function initializeNodeGameExperiments() {
-    console.log('Initializing NodeGame experiments...');
-
-    // Try to initialize nodeGame client
-    var nodeGameAvailable = initializeNodeGameClient();
-
-    if (!nodeGameAvailable) {
-        console.log('NodeGame not available, using standalone mode');
-        isStandaloneMode = true;
-    }
+    console.log('Initializing experiments...');
 
     // Ensure required dependencies are available
     if (typeof DIRECTIONS === 'undefined' || typeof OBJECT === 'undefined') {
@@ -1192,7 +1131,7 @@ function initializeNodeGameExperiments() {
         return false;
     }
 
-    console.log('NodeGame experiments ready');
+    console.log('Experiments ready');
     return true;
 }
 
@@ -1200,31 +1139,13 @@ function initializeNodeGameExperiments() {
  * Start a specific experiment
  */
 function startNodeGameExperiment(experimentType) {
-    if (isStandaloneMode) {
-        // Run in standalone mode without nodeGame client
-        console.log('Starting experiment in standalone mode:', experimentType);
-        startStandaloneExperiment(experimentType);
-        return;
-    }
-
-    if (!gameClient) {
-        console.error('NodeGame client not initialized');
-        return;
-    }
-
-    // Enable automatic pre-calculation for joint-RL to eliminate lags
-    if (window.RLAgent && window.RLAgent.enableAutoPolicyPrecalculation) {
-        console.log('✅ Enabling automatic joint-RL policy pre-calculation');
-        window.RLAgent.enableAutoPolicyPrecalculation();
-    }
-
-    // Set treatment and start
-    node.game.setTreatment(experimentType);
-    node.start();
+    // Always run in standalone mode
+    console.log('Starting experiment in standalone mode:', experimentType);
+    startStandaloneExperiment(experimentType);
 }
 
 /**
- * Start experiment in standalone mode (without nodeGame client)
+ * Start experiment in standalone mode
  */
 function startStandaloneExperiment(experimentType) {
     try {
@@ -1232,14 +1153,13 @@ function startStandaloneExperiment(experimentType) {
         document.getElementById('container').innerHTML = '';
 
         // Reset experiment state for continuous experiments
-        gameData.currentExperimentIndex = 0;
         gameData.currentTrial = 0;
         gameData.allTrialsData = [];
 
         // Initialize success threshold tracking
         initializeSuccessThresholdTracking();
 
-        // Enable automatic pre-calculation for joint-RL
+        // Enable automatic pre-calculation for joint-RL to eliminate lags
         if (window.RLAgent && window.RLAgent.enableAutoPolicyPrecalculation) {
             console.log('✅ Enabling automatic joint-RL policy pre-calculation');
             window.RLAgent.enableAutoPolicyPrecalculation();
@@ -1256,25 +1176,8 @@ function startStandaloneExperiment(experimentType) {
         runNextStage();
 
     } catch (error) {
-        console.error('Error starting standalone experiment:', error);
-        showStandaloneError('Error starting experiment: ' + error.message);
+        console.error('Error starting experiment:', error);
     }
-}
-
-/**
- * Show error message in standalone mode
- */
-function showStandaloneError(message) {
-    var container = document.getElementById('container');
-    container.innerHTML = `
-        <div style="text-align: center; padding: 40px;">
-            <h3 style="color: red;">⚠️ Error</h3>
-            <p>${message}</p>
-            <p style="color: #666; margin-top: 20px;">
-                Please make sure all required dependencies are loaded.
-            </p>
-        </div>
-    `;
 }
 
 /**
@@ -1301,31 +1204,6 @@ function nextStage() {
 }
 
 
-// =================================================================================================
-// 2P3G Functions - Moved to expDesign.js
-// =================================================================================================
-
-// Global variables for 2P3G goal tracking (matching original)
-var humanInferredGoals = [];
-var aiInferredGoals = [];
-var newGoalPresented = false;
-var newGoalPosition = null;
-var isNewGoalCloserToAI = null;
-
-// detectPlayerGoal, generateRandomizedDistanceSequence, and generateRandomized1P2GDistanceSequence functions are imported from nodeGameHelpers.js
-
-// Note: Experimental design functions have been moved to expDesign.js
-// The following functions are now available through window.ExpDesign:
-// - getDistanceCondition
-// - setDistanceConditionSequence
-// - generateNewGoal
-// - isGoalBlockingPath
-// - isInRectangleBetween
-// - checkNewGoalPresentation2P3G
-// - checkTrialEnd2P3G
-// - checkNewGoalPresentation1P2G
-// - generateNewGoalFor1P2G
-
 /**
  * Create a fallback design when map data is not available
  * @param {string} experimentType - Type of experiment
@@ -1335,7 +1213,6 @@ function createFallbackDesign(experimentType) {
     console.log('Creating fallback design for:', experimentType);
 
     // Basic 15x15 grid design
-    var matrixSize = EXPSETTINGS.matrixsize || 15;
 
     switch (experimentType) {
         case '1P1G':
@@ -1377,103 +1254,15 @@ function createFallbackDesign(experimentType) {
     }
 }
 
-// getMapsForExperiment function is imported from nodeGameHelpers.js
-
-// Export for use in other files
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = {
-        initializeNodeGameExperiments,
-        startNodeGameExperiment,
-        gameData,
-        NODEGAME_CONFIG,
-        TWOP3G_CONFIG,
-        ONEP2G_CONFIG
-    };
-}
 
 // Global functions for easy access
 window.NodeGameExperiments = {
     initialize: initializeNodeGameExperiments,
     start: startNodeGameExperiment,
-    data: gameData,
-    config: NODEGAME_CONFIG,
-    twop3gConfig: TWOP3G_CONFIG,
-    onep2gConfig: ONEP2G_CONFIG,
-
-    // RL Agent functions (from rlAgent.js)
-    setRLAgentSimple: function() {
-        if (window.RLAgent) window.RLAgent.setRLAgentType('individual');
-    },
-    setRLAgentIndividual: function() {
-        if (window.RLAgent) window.RLAgent.setRLAgentIndividual();
-    },
-    setRLAgentJoint: function() {
-        if (window.RLAgent) window.RLAgent.setRLAgentJoint();
-    },
-    setRLAgentType: function(type) {
-        if (window.RLAgent) window.RLAgent.setRLAgentType(type);
-    },
-    updateRLAgentConfig: function(config) {
-        if (window.RLAgent) window.RLAgent.updateRLAgentConfig(config);
-    },
-    getRLAgentType: function() {
-        return window.RLAgent ? window.RLAgent.getRLAgentType() : 'individual';
-    },
-    getRLAgentConfig: function() {
-        return window.RLAgent ? window.RLAgent.getRLAgentConfig() : {};
-    },
-
-    // Helper functions for distance conditions
-    getDistanceCondition: function(trialIndex) {
-        var distanceConditionIndex = trialIndex % TWOP3G_CONFIG.distanceConditionSequence.length;
-        return TWOP3G_CONFIG.distanceConditionSequence[distanceConditionIndex];
-    },
-
-    setDistanceConditionSequence: function(newSequence) {
-        TWOP3G_CONFIG.distanceConditionSequence = newSequence;
-        console.log('Distance condition sequence updated:', newSequence);
-    },
-
-    // Helper functions for 1P2G distance conditions
-    get1P2GDistanceCondition: function(trialIndex) {
-        var distanceConditionIndex = trialIndex % ONEP2G_CONFIG.distanceConditionSequence.length;
-        return ONEP2G_CONFIG.distanceConditionSequence[distanceConditionIndex];
-    },
-
-    set1P2GDistanceConditionSequence: function(newSequence) {
-        ONEP2G_CONFIG.distanceConditionSequence = newSequence;
-        console.log('1P2G distance condition sequence updated:', newSequence);
-    },
-
-    // Success threshold functions
-    initializeSuccessThreshold: initializeSuccessThresholdTracking,
-    updateSuccessThreshold: updateSuccessThresholdTracking,
-    shouldEndExperiment: shouldEndExperimentDueToSuccessThreshold,
-    getSuccessThresholdStatus: function() {
-        return {
-            consecutiveSuccesses: gameData.successThreshold.consecutiveSuccesses,
-            totalTrialsCompleted: gameData.successThreshold.totalTrialsCompleted,
-            experimentEndedEarly: gameData.successThreshold.experimentEndedEarly,
-            successHistory: gameData.successThreshold.successHistory
-        };
-    },
-
-    // Configuration helpers
-    setSuccessThresholdConfig: function(config) {
-        Object.assign(NODEGAME_CONFIG.successThreshold, config);
-        console.log('Success threshold configuration updated:', NODEGAME_CONFIG.successThreshold);
-    },
-
-    // Debug helpers
-    createFallbackDesign: createFallbackDesign,
-    getMapsForExperiment: getMapsForExperiment,
-    selectRandomMaps: selectRandomMaps
 };
 
-// Auto-initialize if nodeGame is available
-if (typeof node !== 'undefined') {
-    document.addEventListener('DOMContentLoaded', initializeNodeGameExperiments);
-}
+// Auto-initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', initializeNodeGameExperiments);
 
 
 
