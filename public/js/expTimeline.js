@@ -1,4 +1,3 @@
-
 /**
  * Create timeline stages for all experiments
  */
@@ -67,14 +66,14 @@ function createTimelineStages() {
         }
 
         // Add instructions stage for this experiment (uncomment if needed)
-        // timeline.stages.push({
-        //     type: 'instructions',
-        //     experimentType: experimentType,
-        //     experimentIndex: expIndex,
-        //     handler: showInstructionsStage
-        // });
+        timeline.stages.push({
+            type: 'instructions',
+            experimentType: experimentType,
+            experimentIndex: expIndex,
+            handler: showInstructionsStage
+        });
 
-        // For collaboration games, we'll create stages dynamically based on success threshold
+        // For collaboration games, create stages dynamically based on success threshold
         if (experimentType.includes('2P') && NODEGAME_CONFIG.successThreshold.enabled) {
             // Add a single trial stage that will be repeated dynamically
             addCollaborationExperimentStages(experimentType, expIndex, 0);
@@ -85,6 +84,11 @@ function createTimelineStages() {
             }
         }
     }
+    // Add game feedback stage (only once at the end, before questionnaire)
+    timeline.stages.push({
+        type: 'game-feedback',
+        handler: showGameFeedbackStage
+    });
 
     // Add post-questionnaire stage (only once at the end, before completion)
     timeline.stages.push({
@@ -92,25 +96,26 @@ function createTimelineStages() {
         handler: showQuestionnaireStage
     });
 
-    // Add end experiment info stage (matching jsPsych version)
+    // Add end experiment info stage
     timeline.stages.push({
         type: 'end-info',
         handler: showEndExperimentInfoStage
     });
 
-    // Add Prolific redirect stage (matching jsPsych version)
+    // Add Prolific redirect stage
     timeline.stages.push({
         type: 'prolific-redirect',
         handler: showProlificRedirectStage
     });
 
     // Add completion stage (only once at the end)
-    timeline.stages.push({
-        type: 'complete',
-        handler: showCompletionStage
-    });
+    // timeline.stages.push({
+    //     type: 'complete',
+    //     handler: showCompletionStage
+    // });
 
     console.log(`Timeline created with ${timeline.stages.length} total stages`);
+    console.log('Timeline stages:', timeline.stages.map((stage, index) => `${index}: ${stage.type}`).join(', '));
 
 }
 
@@ -568,10 +573,31 @@ function showPostTrialStage(stage) {
     `;
 
     // Create and draw canvas with final state
-    var canvas = nodeGameCreateGameCanvas();
+    var canvas;
+    if (typeof nodeGameCreateGameCanvas === 'function') {
+        canvas = nodeGameCreateGameCanvas();
+    } else if (typeof createGameCanvas === 'function') {
+        canvas = createGameCanvas();
+    } else {
+        console.error('No canvas creation function available');
+        return;
+    }
     var canvasContainer = document.getElementById('gameCanvas');
     canvasContainer.appendChild(canvas);
-    nodeGameUpdateGameDisplay();
+
+    // Use the appropriate rendering function based on experiment type
+    if (experimentType.includes('1P') || experimentType.includes('2P')) {
+        // For human-human experiments, use the fallback rendering
+        if (typeof renderGameBoardFallback === 'function') {
+            renderGameBoardFallback();
+        } else {
+            console.warn('renderGameBoardFallback not available, using nodeGameUpdateGameDisplay');
+            nodeGameUpdateGameDisplay();
+        }
+    } else {
+        // For human-AI experiments, use the original function
+        nodeGameUpdateGameDisplay();
+    }
 
     // Add visual feedback overlay on top of the canvas if collaboration feedback exists
     if (visualFeedback && experimentType.includes('2P') && lastTrialData.collaborationSucceeded !== undefined) {
@@ -611,28 +637,88 @@ function showPostTrialStage(stage) {
 
     // Auto-advance after configurable duration
     setTimeout(() => {
+        console.log(`Post-trial auto-advance: experimentType=${experimentType}, trialIndex=${trialIndex}`);
+
         // Check if we should end the experiment early due to success threshold
         if (shouldEndExperimentDueToSuccessThreshold()) {
+            console.log('Ending experiment due to success threshold - will skip to game-feedback or next experiment');
             // Skip to the end of this experiment by finding the next experiment or completion stage
             skipToNextExperimentOrCompletion();
         } else {
             // For collaboration games, check if we should continue to next trial
             if (experimentType.includes('2P') && NODEGAME_CONFIG.successThreshold.enabled) {
                 if (shouldContinueToNextTrial(experimentType, trialIndex)) {
+                    console.log('Continuing to next trial for collaboration game');
                     // Add the next trial stages dynamically
                     addNextTrialStages(experimentType, experimentIndex, trialIndex + 1);
                     nextStage();
                 } else {
+                    console.log('Ending collaboration experiment - will skip to game-feedback or next experiment');
                     // End this experiment and move to next
                     skipToNextExperimentOrCompletion();
                 }
             } else {
+                console.log('Continuing to next stage normally');
                 nextStage();
             }
         }
     }, NODEGAME_CONFIG.timing.feedbackDisplayDuration);
 }
 
+
+
+/**
+ * Skip to the next experiment or completion stage
+ */
+function skipToNextExperimentOrCompletion() {
+    var currentStage = timeline.stages[timeline.currentStage];
+    var currentExperimentType = currentStage.experimentType;
+
+    console.log(`Skipping to next experiment or completion from ${currentExperimentType}`);
+
+    // Find the next stage that's either a different experiment, end-info, or completion
+    var nextStageIndex = timeline.currentStage + 1;
+    console.log(`Starting search from stage ${nextStageIndex}`);
+    console.log(`Total stages in timeline: ${timeline.stages.length}`);
+
+    while (nextStageIndex < timeline.stages.length) {
+        var nextStage = timeline.stages[nextStageIndex];
+        console.log(`Checking stage ${nextStageIndex}: ${nextStage.type} - ${nextStage.handler ? nextStage.handler.name : 'no handler'}`);
+
+        // If it's a different experiment type, game-feedback stage, questionnaire stage, end-info stage, or completion stage, stop here
+        if (nextStage.type === 'complete' || nextStage.type === 'end-info' || nextStage.type === 'game-feedback' || nextStage.type === 'questionnaire' ||
+            (nextStage.experimentType && nextStage.experimentType !== currentExperimentType)) {
+            console.log(`Found stopping point: ${nextStage.type}`);
+            break;
+        }
+        nextStageIndex++;
+    }
+
+    // Set the current stage to the found stage
+    timeline.currentStage = nextStageIndex;
+
+    // If we found a valid next stage and it's a different experiment, reset success threshold
+    if (timeline.currentStage < timeline.stages.length) {
+        var nextStage = timeline.stages[timeline.currentStage];
+        if (nextStage.experimentType && nextStage.experimentType !== currentExperimentType) {
+            console.log(`Switching from ${currentExperimentType} to ${nextStage.experimentType} - resetting success threshold`);
+            initializeSuccessThresholdTracking();
+        }
+        console.log(`Skipped to stage ${timeline.currentStage}: ${nextStage.type}`);
+        if (nextStage.handler) {
+            nextStage.handler(nextStage);
+        } else {
+            console.warn(`No handler for stage: ${nextStage.type}`);
+            nextStage();
+        }
+    } else {
+        console.log('No more stages to run');
+    }
+}
+
+/**
+ * Add next trial stages
+ */
 function addNextTrialStages(experimentType, experimentIndex, trialIndex) {
     // Find the current post-trial stage index
     var currentStageIndex = timeline.currentStage;
@@ -741,12 +827,40 @@ function showQuestionnaireStage(stage) {
 
                         <div style="margin-bottom: 25px;">
                             <label style="display: block; font-weight: bold; margin-bottom: 10px; color: #333;">
+                                Have you ever told a lie?
+                            </label>
+                            <div style="display: flex; flex-direction: column; gap: 8px;">
+                                <label style="display: flex; align-items: center; cursor: pointer;">
+                                    <input type="radio" name="attention_check" value="Definitely yes" required style="margin-right: 10px;">
+                                    Definitely yes
+                                </label>
+                                <label style="display: flex; align-items: center; cursor: pointer;">
+                                    <input type="radio" name="attention_check" value="Probably yes" required style="margin-right: 10px;">
+                                    Probably yes
+                                </label>
+                                <label style="display: flex; align-items: center; cursor: pointer;">
+                                    <input type="radio" name="attention_check" value="Not sure" required style="margin-right: 10px;">
+                                    Not sure
+                                </label>
+                                <label style="display: flex; align-items: center; cursor: pointer;">
+                                    <input type="radio" name="attention_check" value="Probably not" required style="margin-right: 10px;">
+                                    Probably not
+                                </label>
+                                <label style="display: flex; align-items: center; cursor: pointer;">
+                                    <input type="radio" name="attention_check" value="Definitely not" required style="margin-right: 10px;">
+                                    Definitely not
+                                </label>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 25px;">
+                            <label style="display: block; font-weight: bold; margin-bottom: 10px; color: #333;">
                                 Will you play with the other player again?
                             </label>
                             <div style="display: flex; flex-direction: column; gap: 8px;">
                                 <label style="display: flex; align-items: center; cursor: pointer;">
                                     <input type="radio" name="play_again" value="Definitely not play again" required style="margin-right: 10px;">
-                                    Definitely not
+                                    Definitely not play again
                                 </label>
                                 <label style="display: flex; align-items: center; cursor: pointer;">
                                     <input type="radio" name="play_again" value="Probably not play again" required style="margin-right: 10px;">
@@ -766,7 +880,6 @@ function showQuestionnaireStage(stage) {
                                 </label>
                             </div>
                         </div>
-
                         <div style="text-align: center; margin-top: 30px;">
                             <button type="button" id="nextPageBtn" style="
                                 background: #007bff;
@@ -795,6 +908,20 @@ function showQuestionnaireStage(stage) {
                                 font-family: inherit;
                                 resize: vertical;
                             " placeholder="Please describe your strategy..."></textarea>
+                        </div>
+
+                        <div style="margin-bottom: 25px;">
+                            <label style="display: block; font-weight: bold; margin-bottom: 10px; color: #333;">
+                                Is this your first time using a computer?
+                            </label>
+                            <textarea name="computer_experience_page2" rows="4" style="
+                                width: 100%;
+                                padding: 10px;
+                                border: 1px solid #ddd;
+                                border-radius: 5px;
+                                font-family: inherit;
+                                resize: vertical;
+                            " placeholder="Please answer yes or no..."></textarea>
                         </div>
 
                         <div style="margin-bottom: 25px;">
@@ -855,18 +982,21 @@ function showQuestionnaireStage(stage) {
     // Handle page navigation
     document.getElementById('nextPageBtn').addEventListener('click', function () {
         // Validate required fields on page 1
-        var requiredFields = ['ai_detection', 'collaboration_rating', 'play_again'];
+        var requiredFields = ['ai_detection', 'collaboration_rating', 'attention_check', 'play_again'];
         var isValid = true;
 
         requiredFields.forEach(function (field) {
             var element = document.querySelector('input[name="' + field + '"]:checked');
             if (!element) {
                 isValid = false;
-                // Highlight missing field
-                var fieldGroup = document.querySelector('input[name="' + field + '"]').closest('div').parentElement;
-                fieldGroup.style.border = '2px solid #dc3545';
-                fieldGroup.style.borderRadius = '5px';
-                fieldGroup.style.padding = '10px';
+                // Highlight missing field - only if the field exists
+                var fieldInput = document.querySelector('input[name="' + field + '"]');
+                if (fieldInput) {
+                    var fieldGroup = fieldInput.closest('div').parentElement;
+                    fieldGroup.style.border = '2px solid #dc3545';
+                    fieldGroup.style.borderRadius = '5px';
+                    fieldGroup.style.padding = '10px';
+                }
             }
         });
 
@@ -910,13 +1040,18 @@ function showEndExperimentInfoStage(stage) {
 
     container.innerHTML = `
         <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
-            <div style="text-align: center; max-width: 600px;">
-                <p style="font-size: 30px; margin-bottom: 20px;">You have finished all the tasks!</p>
-                <p style="font-size: 18px; margin-bottom: 20px;">Thank you for completing the experiment!</p>
-                <p style="font-size: 16px; color: #666; margin-bottom: 30px;">Your data is being saved to our secure server.</p>
-                <div style="margin: 20px 0;">
-                    <div style="display: inline-block; width: 20px; height: 20px; border: 3px solid #f3f3f3; border-top: 3px solid #007bff; border-radius: 50%; animation: spin 1s linear infinite;"></div>
-                    <p style="margin-top: 10px; color: #666;">Saving data...</p>
+            <div style="background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 600px; text-align: center;">
+                <h2 style="color: #333; margin-bottom: 30px;">🎉 Experiment Complete!</h2>
+                <p style="font-size: 18px; color: #666; margin-bottom: 30px;">You have finished all the tasks!</p>
+                <p style="font-size: 16px; color: #666; margin-bottom: 30px;">Please wait a few seconds. Your data is being saved to our secure server.</p>
+                <div style="margin: 30px 0;">
+                    <div style="display: inline-block; width: 30px; height: 30px; border: 3px solid #f3f3f3; border-top: 3px solid #007bff; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                    <p style="margin-top: 15px; color: #666; font-size: 16px;">Saving data...</p>
+                </div>
+                <div style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 5px; padding: 15px; margin-top: 20px;">
+                    <p style="font-size: 14px; color: #6c757d; margin: 0;">
+                        <strong>Note:</strong> Please do not close this window while data is being saved.
+                    </p>
                 </div>
             </div>
         </div>
@@ -933,67 +1068,72 @@ function showEndExperimentInfoStage(stage) {
 }
 
 /**
- * Show Prolific redirect stage (matching jsPsych version)
+ * Show Prolific redirect stage
  */
 function showProlificRedirectStage(stage) {
     var container = document.getElementById('container');
+    var completionCode = NODEGAME_CONFIG.prolificCompletionCode || 'COMPLETION_CODE';
 
-    if (NODEGAME_CONFIG.enableProlificRedirect) {
-        container.innerHTML = `
-            <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
-                <div style="text-align: center; max-width: 600px;">
-                    <h2 style="color: #333; margin-bottom: 20px;">Redirecting to Prolific...</h2>
-                    <p style="font-size: 18px; margin-bottom: 20px;">Thank you for completing the experiment!</p>
-                    <p style="font-size: 16px; color: #666; margin-bottom: 30px;">You will be redirected to Prolific to complete your submission.</p>
-                    <div style="margin: 20px 0;">
-                        <div style="display: inline-block; width: 20px; height: 20px; border: 3px solid #f3f3f3; border-top: 3px solid #007bff; border-radius: 50%; animation: spin 1s linear infinite;"></div>
-                        <p style="margin-top: 10px; color: #666;">Redirecting...</p>
+    container.innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
+            <div style="text-align: center; max-width: 600px; background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                <h2 style="color: #333; margin-bottom: 20px;">🎉 Experiment Complete!</h2>
+                <p style="font-size: 18px; margin-bottom: 20px;">Thank you for completing the experiment!</p>
+
+                <div style="background: #e8f5e8; border: 2px solid #28a745; border-radius: 8px; padding: 20px; margin: 30px 0;">
+                    <h3 style="color: #28a745; margin-bottom: 15px;">Your Completion Code</h3>
+                    <div style="background: white; border: 2px dashed #28a745; border-radius: 5px; padding: 15px; margin: 10px 0;">
+                        <p style="font-size: 24px; font-weight: bold; color: #28a745; margin: 0; font-family: monospace; letter-spacing: 2px;">
+                            ${completionCode}
+                        </p>
                     </div>
+                    <p style="font-size: 14px; color: #666; margin: 10px 0 0 0;">
+                        Please copy this code and paste it in Prolific to complete your submission.
+                    </p>
                 </div>
-            </div>
-            <style>
-                @keyframes spin {
-                    0% { transform: rotate(0deg); }
-                    100% { transform: rotate(360deg); }
-                }
-            </style>
-        `;
 
-        // Auto-redirect to Prolific after 3 seconds
-        setTimeout(() => {
-            redirectToProlific();
-        }, 3000);
-    } else {
-        // For testing, show a message and proceed
-        container.innerHTML = `
-            <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
-                <div style="text-align: center; max-width: 600px;">
-                    <h2 style="color: #333; margin-bottom: 20px;">Prolific Redirect (Testing Mode)</h2>
-                    <p style="font-size: 18px; margin-bottom: 20px;">Thank you for completing the experiment!</p>
-                    <p style="font-size: 16px; color: #666; margin-bottom: 30px;">In production, you would be redirected to Prolific.</p>
-                    <p style="font-size: 16px; color: #28a745; margin-bottom: 30px;">✅ Prolific redirect is disabled for testing.</p>
-                    <button id="continueBtn" style="
-                        background: #28a745;
+                <div style="margin: 30px 0;">
+                    <p style="font-size: 16px; color: #666; margin-bottom: 20px;">
+                        Click the button below to go to Prolific and submit your completion code.
+                    </p>
+                    <button id="prolificRedirectBtn" style="
+                        background: #007bff;
                         color: white;
                         border: none;
                         padding: 15px 30px;
                         font-size: 16px;
                         border-radius: 5px;
                         cursor: pointer;
-                    ">Continue to Completion</button>
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                        transition: all 0.3s ease;
+                    " onmouseover="this.style.background='#0056b3'" onmouseout="this.style.background='#007bff'">
+                        📋 Go to Prolific
+                    </button>
+                </div>
+
+                <div style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 5px; padding: 15px; margin-top: 20px;">
+                    <p style="font-size: 14px; color: #6c757d; margin: 0;">
+                        <strong>Note:</strong> Make sure to copy your completion code before clicking the button.
+                    </p>
                 </div>
             </div>
-        `;
+        </div>
+    `;
 
-        // Handle continue button
-        document.getElementById('continueBtn').addEventListener('click', function () {
-            redirectToProlific();
-        });
-    }
+    // Handle Prolific redirect button
+    document.getElementById('prolificRedirectBtn').addEventListener('click', function () {
+        // Show loading state
+        this.disabled = true;
+        this.textContent = 'Redirecting...';
+        this.style.background = '#6c757d';
+
+        // Redirect to Prolific
+        redirectToProlific();
+    });
 }
 
 /**
- * Send Excel file to Google Drive (matching jsPsych version)
+ * Send Excel file to Google Drive
  */
 function sendExcelToGoogleDrive(experimentData, questionnaireData, filename) {
     try {
@@ -1064,31 +1204,172 @@ function sendExcelToGoogleDrive(experimentData, questionnaireData, filename) {
             mode: "no-cors",  // Required for Google Apps Script from local files
             body: formData
         }).then(response => {
+            console.log('Google Drive save successful');
             alert('Data saved successfully!');
 
-            // Redirect to Prolific completion page
-            redirectToProlific();
+            // Move to next stage after successful save
+            nextStage();
 
         }).catch(error => {
             console.error('Error saving to Google Drive:', error);
-            alert('Error saving to Google Drive. Please try again.');
+
+            // Fallback: Download the file locally instead
+            console.log('Google Drive save failed, falling back to local download...');
+            downloadExcelFileLocally(wb, filename);
+
+            // Still move to next stage even if Google Drive failed
+            nextStage();
         });
 
     } catch (error) {
         console.error('Error creating Excel file for Google Drive:', error);
-        alert('Error creating Excel file. Please try again.');
+
+        // Fallback: Try to create and download file locally
+        try {
+            if (typeof XLSX !== 'undefined') {
+                const wb = XLSX.utils.book_new();
+                const emptyWS = XLSX.utils.aoa_to_sheet([["Error creating experiment data"], ["Error details:", error.message]]);
+                XLSX.utils.book_append_sheet(wb, emptyWS, "Error Data");
+                downloadExcelFileLocally(wb, filename);
+            }
+        } catch (fallbackError) {
+            console.error('Fallback download also failed:', fallbackError);
+        }
+
+        alert('Error creating Excel file. Data will be downloaded locally instead.');
+        redirectToProlific();
     }
 }
 
 /**
- * Redirect to Prolific completion page (matching jsPsych version)
+ * Download Excel file locally as fallback when Google Drive fails
+ */
+function downloadExcelFileLocally(wb, filename) {
+    try {
+        // Convert workbook to blob
+        const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+        const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+        // Create download link
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        console.log('Excel file downloaded locally:', filename);
+        alert('Data downloaded successfully! Please save this file.');
+    } catch (error) {
+        console.error('Error downloading Excel file locally:', error);
+        alert('Error downloading data file. Please contact the experiment administrator.');
+    }
+}
+
+/**
+ * Redirect to Prolific completion page
  */
 function redirectToProlific() {
-    if (NODEGAME_CONFIG.enableProlificRedirect) {
-        window.location.href = `https://app.prolific.com/submissions/complete?cc=${NODEGAME_CONFIG.prolificCompletionCode}`;
-    } else {
-        // For testing, just proceed to completion stage
-        nextStage();
+    try {
+        // Check if we're in a testing environment (no Prolific redirect needed)
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            console.log('Running locally - skipping Prolific redirect');
+            // Show completion message instead
+            showCompletionStage();
+            return;
+        }
+
+        // Redirect to Prolific completion page
+        const completionCode = NODEGAME_CONFIG.prolificCompletionCode || 'COMPLETION_CODE';
+        const redirectUrl = `https://app.prolific.co/submissions/complete?cc=${completionCode}`;
+
+        console.log('Redirecting to Prolific:', redirectUrl);
+        window.location.href = redirectUrl;
+    } catch (error) {
+        console.error('Error redirecting to Prolific:', error);
+        // Fallback: show completion message
+        showCompletionStage();
+    }
+}
+
+/**
+ * Convert questionnaire data to array format for Excel export
+ */
+function convertQuestionnaireToArray(questionnaireData) {
+    if (!questionnaireData) {
+        return [["No questionnaire data available"]];
+    }
+
+    try {
+        // If questionnaireData is already an array, return it
+        if (Array.isArray(questionnaireData)) {
+            return questionnaireData;
+        }
+
+        // If it's an object, convert to array format
+        if (typeof questionnaireData === 'object') {
+            const array = [];
+
+            // Add header row
+            const headers = Object.keys(questionnaireData);
+            array.push(headers);
+
+            // Add data row
+            const values = headers.map(header => questionnaireData[header]);
+            array.push(values);
+
+            return array;
+        }
+
+        // If it's a string, try to parse as JSON
+        if (typeof questionnaireData === 'string') {
+            try {
+                const parsed = JSON.parse(questionnaireData);
+                return convertQuestionnaireToArray(parsed);
+            } catch (parseError) {
+                return [["Questionnaire data (string):", questionnaireData]];
+            }
+        }
+
+        // Fallback
+        return [["Questionnaire data:", String(questionnaireData)]];
+    } catch (error) {
+        console.error('Error converting questionnaire data to array:', error);
+        return [["Error converting questionnaire data:", error.message]];
+    }
+}
+
+/**
+ * Save data to Google Drive (matching jsPsych version)
+ */
+function saveDataToGoogleDrive() {
+    try {
+        // Get experiment data
+        let experimentData = gameData.allTrialsData;
+
+        // If no experiment data, create a placeholder
+        if (!experimentData || experimentData.length === 0) {
+            experimentData = [{
+                trialIndex: 0,
+                note: 'No experimental data collected - experiment may not have been completed',
+                timestamp: new Date().toISOString()
+            }];
+        }
+
+        // Convert questionnaire data to array format
+        const questionnaireArray = convertQuestionnaireToArray(gameData.questionnaireData);
+
+        // Create Excel file to send to Google Drive
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        const excelFilename = `experiment_data_${timestamp}.xlsx`;
+
+        sendExcelToGoogleDrive(experimentData, questionnaireArray, excelFilename);
+
+    } catch (error) {
+        console.error('Error in saveDataToGoogleDrive:', error);
+        alert('Error saving data to Google Drive. Please try again.');
     }
 }
 
@@ -1167,11 +1448,11 @@ function showCompletionStage(stage) {
 function getWelcomeMessage(experimentType) {
     switch (experimentType) {
         case '1P1G':
-            return '<p style="font-size:30px;">Welcome to the 1-Player-1-Goal Task. Press space bar to begin.</p>';
+            return '<p style="font-size:30px;">Welcome to the 1-Player-1-Goal Task.</p><p style="font-size:24px;">Press <strong>space bar</strong> to begin.</p>';
         case '1P2G':
-            return '<p style="font-size:30px;">Welcome to the 1-Player-2-Goals Task. Press space bar to begin.</p>';
+            return '<p style="font-size:30px;">Welcome to the 1-Player-2-Goals Task.</p><p style="font-size:24px;">Press <strong>space bar</strong> to begin.</p>';
         case '2P2G':
-            return '<p style="font-size:30px;">Welcome to the 2-Player-2-Goals Task. Press space bar to begin.</p>';
+            return '<p style="font-size:30px;">Welcome to the 2-Player-2-Goals Task.</p><p style="font-size:24px;">Press <strong>space bar</strong> to begin.</p>';
         case '2P3G':
             return `
                 <p style="font-size:24px; color: #333; margin-top: 30px;">
@@ -1190,10 +1471,9 @@ function getWelcomeMessage(experimentType) {
 }
 
 /**
- * Get instructions for experiment type (simplified to match jsPsych)
+ * Get instructions for experiment type
  */
 function getInstructionsForExperiment(experimentType) {
-    // jsPsych version didn't have detailed instructions - just welcome screens and basic controls
     return `
         <h3>Game Instructions</h3>
         <p>Navigate the grid to reach the goal(s).</p>
@@ -1310,75 +1590,6 @@ function showWaitingForPartnerStage(stage) {
 
     }, 5000);
 }
-/**
- * Show completion stage
- */
-function showCompletionStage(stage) {
-    // Save all data before showing completion
-    saveExperimentData();
-
-    // Save data to Google Drive (matching other versions)
-    try {
-        saveDataToGoogleDrive();
-    } catch (error) {
-        console.error('Error saving to Google Drive:', error);
-        // Continue with completion even if Google Drive save fails
-    }
-
-    const container = document.getElementById('container');
-    container.innerHTML = `
-        <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
-            <div style="max-width: 700px; margin: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 40px; text-align: center;">
-                <h1 style="color: #28a745; margin-bottom: 30px;">🎉 Experiment Complete!</h1>
-
-                <div style="font-size: 18px; color: #666; margin-bottom: 30px;">
-                    <p>Thank you for participating in our human-human collaboration study!</p>
-                    <p>Your data has been saved and will contribute to important research on human coordination and teamwork.</p>
-                </div>
-
-                <div style="background: #d4edda; border: 1px solid #c3e6cb; border-radius: 5px; padding: 20px; margin-bottom: 30px;">
-                    <h3 style="color: #155724; margin-top: 0;">Completion Code</h3>
-                    <p style="color: #155724; font-size: 24px; font-weight: bold; margin: 10px 0;">
-                        ${NODEGAME_HUMAN_HUMAN_CONFIG.prolificCompletionCode}
-                    </p>
-                    <p style="color: #155724; margin-bottom: 0; font-size: 14px;">
-                        Please copy this code and paste it in the Prolific completion page.
-                    </p>
-                </div>
-
-                <div style="background: #f8f9fa; padding: 20px; border-radius: 5px; margin-bottom: 30px;">
-                    <h3 style="margin-top: 0; color: #333;">Experiment Summary</h3>
-                    <p><strong>Experiments completed:</strong> ${NODEGAME_HUMAN_HUMAN_CONFIG.experimentOrder.join(', ')}</p>
-                    <p><strong>Total trials:</strong> ${gameData.allTrialsData.length}</p>
-                    <p><strong>Successful trials:</strong> ${gameData.allTrialsData.filter(t => t.success).length}</p>
-                    <p><strong>Success rate:</strong> ${gameData.allTrialsData.length > 0 ? Math.round((gameData.allTrialsData.filter(t => t.success).length / gameData.allTrialsData.length) * 100) : 0}%</p>
-                </div>
-
-                <div style="margin-bottom: 30px;">
-                    <button onclick="downloadExperimentData()" style="background: #007bff; color: white; border: none; padding: 12px 24px; font-size: 16px; border-radius: 5px; cursor: pointer; margin-right: 10px;">
-                        Download Your Data
-                    </button>
-
-                    ${NODEGAME_HUMAN_HUMAN_CONFIG.enableProlificRedirect ? `
-                        <button onclick="redirectToProlific()" style="background: #28a745; color: white; border: none; padding: 12px 24px; font-size: 16px; border-radius: 5px; cursor: pointer;">
-                            Return to Prolific
-                        </button>
-                    ` : ''}
-                </div>
-
-                <div style="color: #6c757d; font-size: 14px;">
-                    <p>You may now close this window.</p>
-                    <p>If you have any questions about this research, please contact the research team.</p>
-                </div>
-            </div>
-        </div>
-    `;
-
-    // Make functions globally available
-    window.downloadExperimentData = downloadExperimentData;
-    window.redirectToProlific = redirectToProlific;
-}
-
 
 
 /**
@@ -1460,3 +1671,217 @@ function showGameReadyMessage() {
     document.addEventListener('keydown', handleSpacebar);
     document.body.focus();
 }
+
+// =================================================================================================
+// MAKE FUNCTIONS GLOBALLY AVAILABLE FOR NON-MODULE SCRIPTS
+// =================================================================================================
+
+// Make createTimelineStages available globally
+window.createTimelineStages = createTimelineStages;
+
+// Make other important functions available globally
+window.showCompletionStage = showCompletionStage;
+window.showQuestionnaireStage = showQuestionnaireStage;
+window.showGameFeedbackStage = showGameFeedbackStage;
+window.showEndExperimentInfoStage = showEndExperimentInfoStage;
+window.showProlificRedirectStage = showProlificRedirectStage;
+window.showWaitingForPartnerStage = showWaitingForPartnerStage;
+window.showGameReadyMessage = showGameReadyMessage;
+window.showConnectionLostMessage = showConnectionLostMessage;
+window.exportExperimentData = exportExperimentData;
+
+// Make timeline navigation functions available globally
+window.nextStage = function() {
+    timeline.currentStage++;
+    if (timeline.currentStage < timeline.stages.length) {
+        var stage = timeline.stages[timeline.currentStage];
+        console.log(`Moving to stage ${timeline.currentStage}: ${stage.type}`);
+        stage.handler(stage);
+    } else {
+        console.log('Timeline complete');
+    }
+};
+
+/**
+ * Export experiment data as JSON file
+ */
+function exportExperimentData() {
+    try {
+        // Prepare experiment data
+        const experimentData = {
+            participantId: gameData.participantId || `participant_${Date.now()}`,
+            timestamp: new Date().toISOString(),
+            experimentOrder: NODEGAME_CONFIG.experimentOrder,
+            allTrialsData: gameData.allTrialsData || [],
+            questionnaireData: gameData.questionnaireData || null,
+            successThreshold: gameData.successThreshold || {},
+            completionCode: NODEGAME_CONFIG.prolificCompletionCode,
+            version: NODEGAME_CONFIG.version,
+            experimentType: 'human-AI'
+        };
+
+        // Create and download JSON file
+        const blob = new Blob([JSON.stringify(experimentData, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+
+        // Generate safe filename
+        const participantId = experimentData.participantId.replace(/[^a-zA-Z0-9_-]/g, '_');
+        const filename = `experiment_data_${participantId}_${new Date().toISOString().slice(0, 10)}.json`;
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        console.log('Experiment data exported successfully:', filename);
+        alert('Data exported successfully!');
+    } catch (error) {
+        console.error('Error exporting experiment data:', error);
+        alert('Error exporting data: ' + error.message);
+    }
+}
+
+/**
+ * Show game feedback stage
+ */
+function showGameFeedbackStage(stage) {
+    console.log('🎮 Game Feedback Stage: Starting...');
+    var container = document.getElementById('container');
+
+    // Calculate metrics
+    var totalTrials = gameData.allTrialsData.length;
+    var successRate = calculateSuccessRate();
+
+    // Calculate total time in minutes
+    var totalTimeMinutes = 0;
+    if (gameData.allTrialsData.length > 0) {
+        var firstTrialStart = gameData.allTrialsData[0].trialStartTime;
+        var lastTrialEnd = gameData.allTrialsData[gameData.allTrialsData.length - 1].trialEndTime;
+        var totalTimeMs = lastTrialEnd - firstTrialStart;
+        totalTimeMinutes = Math.round(totalTimeMs / (1000 * 60));
+    }
+
+    // Determine what type of experiments were run
+    var hasCollaborationTrials = gameData.allTrialsData.some(trial =>
+        trial.experimentType && trial.experimentType.includes('2P')
+    );
+    var hasSinglePlayerTrials = gameData.allTrialsData.some(trial =>
+        trial.experimentType && trial.experimentType.includes('1P')
+    );
+
+    // Calculate different success rates based on experiment types
+    var singlePlayerSuccessRate = 0;
+    var collaborationSuccessRate = 0;
+
+    if (hasSinglePlayerTrials) {
+        var singlePlayerTrials = gameData.allTrialsData.filter(trial =>
+            trial.experimentType && trial.experimentType.includes('1P')
+        );
+        var successfulSinglePlayer = singlePlayerTrials.filter(trial =>
+            trial.completed === true
+        ).length;
+        singlePlayerSuccessRate = Math.round((successfulSinglePlayer / singlePlayerTrials.length) * 100);
+    }
+
+    if (hasCollaborationTrials) {
+        var collaborationTrials = gameData.allTrialsData.filter(trial =>
+            trial.experimentType && trial.experimentType.includes('2P')
+        );
+        var successfulCollaborations = collaborationTrials.filter(trial =>
+            trial.collaborationSucceeded === true
+        ).length;
+        collaborationSuccessRate = Math.round((successfulCollaborations / collaborationTrials.length) * 100);
+    }
+
+    container.innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
+            <div style="background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 700px; width: 100%; text-align: center;">
+                <h2 style="color: #333; margin-bottom: 30px;">🎮 Game Performance Summary</h2>
+
+                <div style="background: #f8f9fa; border-radius: 8px; padding: 30px; margin-bottom: 30px;">
+                    <h3 style="color: #666; margin-bottom: 20px;">Your Results</h3>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 20px;">
+                        <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #007bff;">
+                            <h4 style="color: #007bff; margin-bottom: 10px; font-size: 18px;">📊 Total Trials</h4>
+                            <p style="font-size: 24px; font-weight: bold; color: #333; margin: 0;">${totalTrials}</p>
+                        </div>
+
+                        <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #28a745;">
+                            <h4 style="color: #28a745; margin-bottom: 10px; font-size: 18px;">⏱️ Total Time</h4>
+                            <p style="font-size: 24px; font-weight: bold; color: #333; margin: 0;">${totalTimeMinutes} min</p>
+                        </div>
+
+                        ${hasSinglePlayerTrials ? `
+                            <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #ffc107;">
+                                <h4 style="color: #ffc107; margin-bottom: 10px; font-size: 18px;">🎯 Single Player Success</h4>
+                                <p style="font-size: 24px; font-weight: bold; color: #333; margin: 0;">${singlePlayerSuccessRate}%</p>
+                                <p style="font-size: 14px; color: #666; margin: 5px 0 0 0;">(${gameData.allTrialsData.filter(t => t.experimentType && t.experimentType.includes('1P')).length} single player trials)</p>
+                            </div>
+                        ` : ''}
+
+                        ${hasCollaborationTrials ? `
+                            <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #dc3545;">
+                                <h4 style="color: #dc3545; margin-bottom: 10px; font-size: 18px;">🤝 Collaboration Success</h4>
+                                <p style="font-size: 24px; font-weight: bold; color: #333; margin: 0;">${collaborationSuccessRate}%</p>
+                                <p style="font-size: 14px; color: #666; margin: 5px 0 0 0;">(${gameData.allTrialsData.filter(t => t.experimentType && t.experimentType.includes('2P')).length} collaboration trials)</p>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+
+                <div style="background: #e8f5e8; border: 2px solid #28a745; border-radius: 8px; padding: 25px; margin-bottom: 30px;">
+                    <h3 style="color: #28a745; margin-bottom: 15px;">📝 Almost Done!</h3>
+                    <p style="font-size: 18px; color: #333; margin-bottom: 15px;">
+                        Thank you for completing the game trials!
+                    </p>
+                    <p style="font-size: 16px; color: #666; margin-bottom: 0;">
+                        To finish the experiment, we kindly ask you to fill out a short questionnaire about your experience.
+                        This will help us understand your thoughts and improve our research.
+                    </p>
+                </div>
+
+                <div style="text-align: center;">
+                    <button id="continueToQuestionnaireBtn" style="
+                        background: #28a745;
+                        color: white;
+                        border: none;
+                        padding: 15px 30px;
+                        font-size: 18px;
+                        border-radius: 8px;
+                        cursor: pointer;
+                        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+                        transition: all 0.3s ease;
+                    " onmouseover="this.style.background='#218838'" onmouseout="this.style.background='#28a745'">
+                        📋 Continue to Questionnaire
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+
+        // Handle button click to continue to questionnaire
+    document.getElementById('continueToQuestionnaireBtn').addEventListener('click', function() {
+        console.log('🎮 Game Feedback Stage: Continue button clicked');
+        // Add questionnaire stage to timeline if it doesn't exist
+        var hasQuestionnaireStage = timeline.stages.some(stage => stage.type === 'questionnaire');
+        if (!hasQuestionnaireStage) {
+            console.log('🎮 Game Feedback Stage: Adding questionnaire stage to timeline');
+            timeline.stages.push({
+                type: 'questionnaire',
+                handler: showQuestionnaireStage
+            });
+        }
+
+        // Proceed to next stage (which should be the questionnaire)
+        console.log('🎮 Game Feedback Stage: Proceeding to next stage');
+        nextStage();
+    });
+
+    console.log('🎮 Game Feedback Stage: Setup complete');
+}
+
+

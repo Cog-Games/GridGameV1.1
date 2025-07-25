@@ -50,6 +50,8 @@ let gameData = {
     currentGoals: null,
     stepCount: 0,
     gameStartTime: 0,
+    currentPlayerPos: null,
+    currentPartnerPos: null,
 
     // Success threshold tracking
     successThreshold: {
@@ -215,6 +217,7 @@ function initializeSocket() {
                     for (const [playerId, playerState] of Object.entries(playerStates)) {
                         if (playerId !== myPlayerId) {
                             gameData.partnerStartPos = playerState.position;
+                            gameData.currentPartnerPos = [...playerState.position];
                             gameData.partnerPlayerId = playerId; // Store in gameData for new goal logic
                             break;
                         }
@@ -319,6 +322,7 @@ function initializeSocket() {
                     for (const [playerId, playerState] of Object.entries(playerStates)) {
                         if (playerId !== myPlayerId) {
                             gameData.partnerStartPos = playerState.position;
+                            gameData.currentPartnerPos = [...playerState.position];
                             gameData.partnerPlayerId = playerId; // Store in gameData for new goal logic
                             // console.log('Updated partner position to:', gameData.partnerStartPos);
                             break;
@@ -353,6 +357,7 @@ function initializeSocket() {
                             gameData.currentPlayerPos = [...playerState.position];
                         } else {
                             gameData.partnerStartPos = playerState.position;
+                            gameData.currentPartnerPos = [...playerState.position];
                         }
                     }
                 }
@@ -431,7 +436,7 @@ function initializeSocket() {
                 newGoalPresented = true;
                 newGoalPosition = data.newGoal;
 
-                // Record in trial data
+                // Record in trial data with complete distance calculations
                 if (gameData.currentTrialData) {
                     gameData.currentTrialData.newGoalPresented = true;
                     gameData.currentTrialData.newGoalPosition = data.newGoal;
@@ -440,6 +445,36 @@ function initializeSocket() {
                     // Record distance condition from server
                     if (data.distanceCondition) {
                         gameData.currentTrialData.distanceCondition = data.distanceCondition;
+                        gameData.currentTrialData.newGoalConditionType = data.distanceCondition;
+                        gameData.currentTrialData.isNewGoalCloserToPlayer2 = data.distanceCondition === 'closer_to_player2';
+                    }
+
+                    // Calculate and record distance variables if player positions are available
+                    if (gameData.currentPlayerPos && gameData.currentPartnerPos && window.NodeGameHelpers && window.NodeGameHelpers.calculatetGirdDistance) {
+                        const calculateDistance = window.NodeGameHelpers.calculatetGirdDistance;
+
+                        // Determine which player is player1 vs player2 based on player order
+                        const isFirstPlayer = playerOrder.isFirstPlayer;
+                        const player1Pos = isFirstPlayer ? gameData.currentPlayerPos : gameData.currentPartnerPos;
+                        const player2Pos = isFirstPlayer ? gameData.currentPartnerPos : gameData.currentPlayerPos;
+
+                        // Calculate distances to new goal
+                        gameData.currentTrialData.newGoalDistanceToPlayer1 = calculateDistance(player1Pos, data.newGoal);
+                        gameData.currentTrialData.newGoalDistanceToPlayer2 = calculateDistance(player2Pos, data.newGoal);
+                        gameData.currentTrialData.newGoalDistanceSum = gameData.currentTrialData.newGoalDistanceToPlayer1 + gameData.currentTrialData.newGoalDistanceToPlayer2;
+
+                        // Calculate distances to old goal if available
+                        if (gameData.currentGoals && gameData.currentGoals.length >= 2) {
+                            const sharedGoalIndex = 0; // Use first goal as reference
+                            const oldGoal = gameData.currentGoals[sharedGoalIndex];
+
+                            gameData.currentTrialData.player1DistanceToOldGoal = calculateDistance(player1Pos, oldGoal);
+                            gameData.currentTrialData.player2DistanceToOldGoal = calculateDistance(player2Pos, oldGoal);
+                        }
+
+                        console.log('=== NEW GOAL PRESENTED DISTANCE CALCULATIONS ===');
+                        console.log('New goal distances - Player1:', gameData.currentTrialData.newGoalDistanceToPlayer1, 'Player2:', gameData.currentTrialData.newGoalDistanceToPlayer2);
+                        console.log('Distance sum:', gameData.currentTrialData.newGoalDistanceSum);
                     }
                 }
 
@@ -499,11 +534,39 @@ function initializeSocket() {
                 // Note: Pre-calculation moved to after visual presentation to avoid lag
                 // See updateGameVisualization() for the optimized pre-calculation timing
 
-                // Record in trial data
+                // Record in trial data with complete distance calculations
                 gameData.currentTrialData.isNewGoalCloserToPlayer2 = data.distanceCondition === 'closer_to_player2';
                 gameData.currentTrialData.newGoalPresentedTime = data.stepCount;
                 gameData.currentTrialData.newGoalPosition = newGoalPosition;
                 gameData.currentTrialData.newGoalConditionType = data.distanceCondition;
+
+                // Calculate and record distance variables if player positions are available
+                if (gameData.currentPlayerPos && gameData.currentPartnerPos && window.NodeGameHelpers && window.NodeGameHelpers.calculatetGirdDistance) {
+                    const calculateDistance = window.NodeGameHelpers.calculatetGirdDistance;
+
+                    // Determine which player is player1 vs player2 based on player order
+                    const isFirstPlayer = playerOrder.isFirstPlayer;
+                    const player1Pos = isFirstPlayer ? gameData.currentPlayerPos : gameData.currentPartnerPos;
+                    const player2Pos = isFirstPlayer ? gameData.currentPartnerPos : gameData.currentPlayerPos;
+
+                    // Calculate distances to new goal
+                    gameData.currentTrialData.newGoalDistanceToPlayer1 = calculateDistance(player1Pos, newGoalPosition);
+                    gameData.currentTrialData.newGoalDistanceToPlayer2 = calculateDistance(player2Pos, newGoalPosition);
+                    gameData.currentTrialData.newGoalDistanceSum = gameData.currentTrialData.newGoalDistanceToPlayer1 + gameData.currentTrialData.newGoalDistanceToPlayer2;
+
+                    // Calculate distances to old goal if available
+                    if (gameData.currentGoals && gameData.currentGoals.length >= 3) {
+                        const sharedGoalIndex = 0; // Use first goal as reference (adjust based on game logic)
+                        const oldGoal = gameData.currentGoals[sharedGoalIndex];
+
+                        gameData.currentTrialData.player1DistanceToOldGoal = calculateDistance(player1Pos, oldGoal);
+                        gameData.currentTrialData.player2DistanceToOldGoal = calculateDistance(player2Pos, oldGoal);
+                    }
+
+                    console.log('=== PARTNER NEW GOAL DISTANCE CALCULATIONS ===');
+                    console.log('New goal distances - Player1:', gameData.currentTrialData.newGoalDistanceToPlayer1, 'Player2:', gameData.currentTrialData.newGoalDistanceToPlayer2);
+                    console.log('Distance sum:', gameData.currentTrialData.newGoalDistanceSum);
+                }
 
                 console.log('=== PARTNER GOAL PROCESSED ===');
                 console.log('New goal position:', newGoalPosition);
@@ -540,14 +603,61 @@ function initializeSocket() {
                 gameData.gridMatrix[newGoalPosition[0]][newGoalPosition[1]] = 2; // OBJECT.goal
                 gameData.currentGoals.push(newGoalPosition);
 
-                // Note: Pre-calculation moved to after visual presentation to avoid lag
-                // See updateGameVisualization() for the optimized pre-calculation timing
+                // Calculate and record all distance variables needed for data analysis
+                if (gameData.currentTrialData && gameData.currentPlayerPos && gameData.currentPartnerPos) {
+                    // Map distance conditions to player2 closer flags for compatibility
+                    gameData.currentTrialData.isNewGoalCloserToPlayer2 = data.distanceCondition === 'closer_to_player2';
+                    gameData.currentTrialData.newGoalPresentedTime = data.stepCount;
+                    gameData.currentTrialData.newGoalPosition = newGoalPosition;
+                    gameData.currentTrialData.newGoalConditionType = data.distanceCondition;
 
-                // Record in trial data
-                gameData.currentTrialData.isNewGoalCloserToPlayer2 = data.distanceCondition === 'closer_to_player2';
-                gameData.currentTrialData.newGoalPresentedTime = data.stepCount;
-                gameData.currentTrialData.newGoalPosition = newGoalPosition;
-                gameData.currentTrialData.newGoalConditionType = data.distanceCondition;
+                    // Calculate distances from new goal to both players
+                    if (window.NodeGameHelpers && window.NodeGameHelpers.calculatetGirdDistance) {
+                        const calculateDistance = window.NodeGameHelpers.calculatetGirdDistance;
+
+                        // Determine which player is player1 vs player2 based on player order
+                        const isFirstPlayer = playerOrder.isFirstPlayer;
+                        const player1Pos = isFirstPlayer ? gameData.currentPlayerPos : gameData.currentPartnerPos;
+                        const player2Pos = isFirstPlayer ? gameData.currentPartnerPos : gameData.currentPlayerPos;
+
+                        // Calculate distances to new goal
+                        gameData.currentTrialData.newGoalDistanceToPlayer1 = calculateDistance(player1Pos, newGoalPosition);
+                        gameData.currentTrialData.newGoalDistanceToPlayer2 = calculateDistance(player2Pos, newGoalPosition);
+                        gameData.currentTrialData.newGoalDistanceSum = gameData.currentTrialData.newGoalDistanceToPlayer1 + gameData.currentTrialData.newGoalDistanceToPlayer2;
+
+                                                // Calculate distances to old goal (the shared goal players were heading to)
+                        if (gameData.currentGoals && gameData.currentGoals.length >= 3) {
+                            // Try to get the shared goal index from the request data or trial data
+                            let sharedGoalIndex = data.sharedGoalIndex;
+                            if (sharedGoalIndex === undefined || sharedGoalIndex === null) {
+                                // Fallback: check the last detected goal from players
+                                const player1CurrentGoal = gameData.currentTrialData.player1CurrentGoal?.length > 0 ?
+                                    gameData.currentTrialData.player1CurrentGoal[gameData.currentTrialData.player1CurrentGoal.length - 1] : null;
+                                sharedGoalIndex = player1CurrentGoal !== null ? player1CurrentGoal : 0;
+                            }
+
+                            if (sharedGoalIndex < gameData.currentGoals.length - 1) { // Don't use the new goal itself
+                                const oldGoal = gameData.currentGoals[sharedGoalIndex];
+                                gameData.currentTrialData.player1DistanceToOldGoal = calculateDistance(player1Pos, oldGoal);
+                                gameData.currentTrialData.player2DistanceToOldGoal = calculateDistance(player2Pos, oldGoal);
+
+                                console.log('Used shared goal index:', sharedGoalIndex, 'Goal position:', oldGoal);
+                            }
+                        }
+
+                        console.log('=== DISTANCE CALCULATIONS ===');
+                        console.log('New goal distances - Player1:', gameData.currentTrialData.newGoalDistanceToPlayer1, 'Player2:', gameData.currentTrialData.newGoalDistanceToPlayer2);
+                        console.log('Distance sum:', gameData.currentTrialData.newGoalDistanceSum);
+                        console.log('Old goal distances - Player1:', gameData.currentTrialData.player1DistanceToOldGoal, 'Player2:', gameData.currentTrialData.player2DistanceToOldGoal);
+                    } else {
+                        console.warn('Distance calculation function not available, using default values');
+                        gameData.currentTrialData.newGoalDistanceToPlayer1 = 0;
+                        gameData.currentTrialData.newGoalDistanceToPlayer2 = 0;
+                        gameData.currentTrialData.newGoalDistanceSum = 0;
+                        gameData.currentTrialData.player1DistanceToOldGoal = 0;
+                        gameData.currentTrialData.player2DistanceToOldGoal = 0;
+                    }
+                }
 
                 console.log('=== SERVER GOAL PROCESSED ===');
                 console.log('New goal position:', newGoalPosition);
@@ -658,6 +768,12 @@ function startMultiplayerTrial(trialIndex, design) {
         return false;
     }
 
+    console.log('=== SENDING MAP DESIGN TO SERVER ===');
+    console.log('Trial index:', trialIndex);
+    console.log('Experiment type:', gameData.currentExperiment);
+    console.log('Map design:', design);
+    console.log('Player ID:', myPlayerId);
+
     socket.emit('start_trial', {
         trialIndex: trialIndex,
         experimentType: gameData.currentExperiment,
@@ -665,6 +781,7 @@ function startMultiplayerTrial(trialIndex, design) {
         playerId: myPlayerId
     });
 
+    console.log('=== MAP DESIGN SENT TO SERVER ===');
     return true;
 }
 
@@ -717,8 +834,15 @@ function makeSinglePlayerMove(action) {
         // Check if goal is reached
         const goalReached = isGoalReached(gameData.currentPlayerPos, gameData.currentGoals);
 
+        // Debug logging
+        console.log('Player position:', gameData.currentPlayerPos);
+        console.log('Current goals:', gameData.currentGoals);
+        console.log('Goal reached:', goalReached);
+
         if (goalReached) {
             console.log('Goal reached in single-player mode!');
+            // Update visualization immediately to show final position
+            updateGameVisualization();
             // End trial after a short delay
             setTimeout(() => {
                 finalizeTrial(true);
@@ -748,6 +872,11 @@ function makeMultiplayerMove(action) {
 
     // Don't record the move here - wait for server confirmation
     // The move will be recorded in the 'move_made' event when the server confirms it
+    // Fix reaction time calculation: ensure gameStartTime is properly set
+    if (gameData.gameStartTime === 0) {
+        console.warn('gameStartTime not set, using current trial start time as fallback');
+        gameData.gameStartTime = gameData.currentTrialData?.trialStartTime || Date.now();
+    }
     const reactionTime = gameData.gameStartTime > 0 ? Date.now() - gameData.gameStartTime : 0;
 
     // Send move to server
@@ -823,8 +952,8 @@ function recordMove(data) {
 
         // Determine which player is which based on player order
         const isFirstPlayer = playerOrder.isFirstPlayer;
-        const firstPlayerPos = isFirstPlayer ? gameData.playerStartPos : gameData.partnerStartPos;
-        const secondPlayerPos = isFirstPlayer ? gameData.partnerStartPos : gameData.playerStartPos;
+        const firstPlayerPos = isFirstPlayer ? gameData.currentPlayerPos : gameData.currentPartnerPos;
+        const secondPlayerPos = isFirstPlayer ? gameData.currentPartnerPos : gameData.currentPlayerPos;
         const firstPlayerAction = isFirstPlayer ? currentPlayerAction : partnerAction;
         const secondPlayerAction = isFirstPlayer ? partnerAction : currentPlayerAction;
         const firstPlayerGoalHistory = isFirstPlayer ? player1InferredGoals : player2InferredGoals;
@@ -867,10 +996,10 @@ function recordMove(data) {
         }
 
         // Check for new goal presentation
-        checkNewGoalPresentation2P3G();
+        window.ExpDesign.checkNewGoalPresentation2P3G();
 
         // Check trial end for 2P3G
-        checkTrialEnd2P3G();
+        window.ExpDesign.checkTrialEnd2P3G();
     } else if (gameData.currentExperiment === '2P2G') {
         // Check trial end for 2P2G
         checkTrialEnd2P2G();
@@ -897,7 +1026,7 @@ function handleTrialComplete(data) {
             skipToNextExperimentOrCompletion();
         } else {
             // For collaboration games, check if we should continue to next trial
-            if (experimentType.includes('2P') && NODEGAME_HUMAN_HUMAN_CONFIG.successThreshold.enabled) {
+            if (experimentType.includes('2P') && NODEGAME_CONFIG.successThreshold.enabled) {
                 if (shouldContinueToNextTrial(experimentType, currentTrial)) {
                     // Skip post-trial stage and go directly to next fixation stage
                     skipToNextFixationStage();
@@ -909,7 +1038,7 @@ function handleTrialComplete(data) {
                 nextStage();
             }
         }
-    }, NODEGAME_HUMAN_HUMAN_CONFIG.timing.feedbackDisplayDuration);
+    }, NODEGAME_CONFIG.timing.feedbackDisplayDuration);
 }
 
 function shouldContinueToNextTrial(experimentType, trialIndex) {
@@ -925,7 +1054,7 @@ function shouldContinueToNextTrial(experimentType, trialIndex) {
     }
 
     // Check if we've reached the configured number of trials
-    var configuredTrials = NODEGAME_HUMAN_HUMAN_CONFIG.numTrials[experimentType];  // Fixed: Use correct config
+    var configuredTrials = NODEGAME_CONFIG.numTrials[experimentType];
     if (trialIndex >= configuredTrials - 1) {
         console.log(`Ending ${experimentType} experiment: Completed ${configuredTrials} trials`);
         return false;
@@ -979,7 +1108,7 @@ function startNodeGameHumanHumanExperiment(experimentType) {
     resetExperimentData();
 
     // Set current experiment
-    gameData.currentExperiment = NODEGAME_HUMAN_HUMAN_CONFIG.experimentOrder[0];
+    gameData.currentExperiment = NODEGAME_CONFIG.experimentOrder[0];
     gameData.currentExperimentIndex = 0;
     gameData.currentTrial = 0;
 
@@ -1001,12 +1130,12 @@ function createTimelineStagesForHumanHuman() {
     // EXPERIMENT SETUP - LOG CURRENT CONFIGURATION
     // =================================================================================================
     console.log('=== EXPERIMENT CONFIGURATION ===');
-    console.log('Experiments to run:', NODEGAME_HUMAN_HUMAN_CONFIG.experimentOrder);
-    console.log('Total experiments:', NODEGAME_HUMAN_HUMAN_CONFIG.experimentOrder.length);
+    console.log('Experiments to run:', NODEGAME_CONFIG.experimentOrder);
+    console.log('Total experiments:', NODEGAME_CONFIG.experimentOrder.length);
 
     var totalTrials = 0;
-    NODEGAME_HUMAN_HUMAN_CONFIG.experimentOrder.forEach(expType => {
-        var trials = NODEGAME_HUMAN_HUMAN_CONFIG.numTrials[expType];
+    NODEGAME_CONFIG.experimentOrder.forEach(expType => {
+        var trials = NODEGAME_CONFIG.numTrials[expType];
         totalTrials += trials;
         console.log(`- ${expType}: ${trials} trials`);
     });
@@ -1016,7 +1145,7 @@ function createTimelineStagesForHumanHuman() {
     // Add welcome screen for first experiment
     timeline.stages.push({
         type: 'welcome',
-        experimentType: NODEGAME_HUMAN_HUMAN_CONFIG.experimentOrder[0],
+        experimentType: NODEGAME_CONFIG.experimentOrder[0],
         experimentIndex: 0,
         handler: showWelcomeStage
     });
@@ -1025,7 +1154,7 @@ function createTimelineStagesForHumanHuman() {
     var singlePlayerExperiments = [];
     var multiplayerExperiments = [];
 
-    NODEGAME_HUMAN_HUMAN_CONFIG.experimentOrder.forEach((expType, expIndex) => {
+    NODEGAME_CONFIG.experimentOrder.forEach((expType, expIndex) => {
         if (expType.includes('1P')) {
             singlePlayerExperiments.push({ type: expType, index: expIndex });
         } else if (expType.includes('2P')) {
@@ -1035,13 +1164,15 @@ function createTimelineStagesForHumanHuman() {
 
     // Add single-player experiments first (1P1G, 1P2G)
     singlePlayerExperiments.forEach(({ type: experimentType, index: expIndex }) => {
-        var numTrials = NODEGAME_HUMAN_HUMAN_CONFIG.numTrials[experimentType];
+        var numTrials = NODEGAME_CONFIG.numTrials[experimentType];
 
         console.log(`Setting up single-player experiment ${expIndex + 1}: ${experimentType} (${numTrials} trials)`);
 
         // Select maps for this experiment
         var experimentMaps = getMapsForExperiment(experimentType);
+        console.log(`Single-player experiment maps for ${experimentType}:`, experimentMaps);
         var selectedMaps = selectRandomMaps(experimentMaps, numTrials);
+        console.log(`Selected single-player maps for ${experimentType}:`, selectedMaps);
         timeline.mapData[experimentType] = selectedMaps;
 
         // Generate randomized distance condition sequence for 1P2G experiments
@@ -1055,6 +1186,14 @@ function createTimelineStagesForHumanHuman() {
         }
     });
 
+    // Add instruction stage before multiplayer experiments
+    if (multiplayerExperiments.length > 0) {
+        timeline.stages.push({
+            type: 'multiplayer_instructions',
+            handler: showMultiplayerInstructionsStage
+        });
+    }
+
     // Add waiting for partner stage before multiplayer experiments
     if (multiplayerExperiments.length > 0) {
         timeline.stages.push({
@@ -1065,14 +1204,20 @@ function createTimelineStagesForHumanHuman() {
 
     // Add multiplayer experiments (2P2G, 2P3G)
     multiplayerExperiments.forEach(({ type: experimentType, index: expIndex }) => {
-        var numTrials = NODEGAME_HUMAN_HUMAN_CONFIG.numTrials[experimentType];
+        var numTrials = NODEGAME_CONFIG.numTrials[experimentType];
 
         console.log(`Setting up multiplayer experiment ${expIndex + 1}: ${experimentType} (${numTrials} trials)`);
 
         // Select maps for this experiment
         var experimentMaps = getMapsForExperiment(experimentType);
+        console.log(`=== MAP SELECTION FOR ${experimentType} ===`);
+        console.log(`Experiment maps loaded:`, experimentMaps ? `${Object.keys(experimentMaps).length} maps` : 'null');
+        console.log(`Experiment maps for ${experimentType}:`, experimentMaps);
         var selectedMaps = selectRandomMaps(experimentMaps, numTrials);
+        console.log(`Selected ${numTrials} maps for ${experimentType}:`, selectedMaps);
         timeline.mapData[experimentType] = selectedMaps;
+        console.log(`Timeline map data for ${experimentType}:`, timeline.mapData[experimentType]);
+        console.log(`=== END MAP SELECTION ===`);
 
         // Generate randomized distance condition sequence for 2P3G experiments
         if (experimentType === '2P3G') {
@@ -1080,7 +1225,7 @@ function createTimelineStagesForHumanHuman() {
         }
 
         // For collaboration games, we'll create stages dynamically based on success threshold
-        if (NODEGAME_HUMAN_HUMAN_CONFIG.successThreshold.enabled) {
+        if (NODEGAME_CONFIG.successThreshold.enabled) {
             // Add a single trial stage that will be repeated dynamically
             addCollaborationExperimentStages(experimentType, expIndex, 0);
         } else {
@@ -1112,6 +1257,54 @@ function createTimelineStagesForHumanHuman() {
     console.log('Timeline stages created:', timeline.stages.length, 'stages');
     console.log('Single-player experiments:', singlePlayerExperiments.map(e => e.type));
     console.log('Multiplayer experiments:', multiplayerExperiments.map(e => e.type));
+}
+
+/**
+ * Show multiplayer instructions stage
+ */
+function showMultiplayerInstructionsStage(stage) {
+    const container = document.getElementById('container');
+
+    container.innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
+            <div style="max-width: 800px; text-align: center; background: white; padding: 40px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                <h2 style="color: #007bff; margin-bottom: 30px;">Multiplayer Collaboration Instructions</h2>
+
+                <div style="text-align: left; margin-bottom: 30px;">
+                    <h3 style="color: #333; margin-bottom: 15px;">🎮 How to Play:</h3>
+                    <ul style="line-height: 1.6; color: #666;">
+                        <li><strong>You will be paired with another player</strong> - wait for them to join</li>
+                        <li><strong>Use arrow keys (↑ ↓ ← →)</strong> to move your character</li>
+                        <li><strong>Coordinate with your partner</strong> to reach the goals together</li>
+                        <li><strong>Communication is key!</strong> Work together to succeed</li>
+                    </ul>
+                </div>
+
+                <div style="text-align: left; margin-bottom: 30px;">
+                    <h3 style="color: #333; margin-bottom: 15px;">🎯 Game Types:</h3>
+                    <ul style="line-height: 1.6; color: #666;">
+                        <li><strong>2P2G:</strong> Two players, two goals - coordinate to reach goals</li>
+                        <li><strong>2P3G:</strong> Two players, three goals - a third goal appears during play</li>
+                    </ul>
+                </div>
+
+                <div style="text-align: left; margin-bottom: 30px;">
+                    <h3 style="color: #333; margin-bottom: 15px;">⚠️ Important Notes:</h3>
+                    <ul style="line-height: 1.6; color: #666;">
+                        <li>Both players must reach the <strong>same goal</strong> to succeed</li>
+                        <li>If you disconnect, you can reconnect and continue</li>
+                        <li>Take your time to plan your moves with your partner</li>
+                    </ul>
+                </div>
+
+                <div style="margin-top: 40px;">
+                    <button class="btn" onclick="nextStage()" style="background: #007bff; color: white; border: none; padding: 15px 30px; border-radius: 5px; cursor: pointer; font-size: 16px;">
+                        Continue to Multiplayer Games
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
 }
 
 /**
@@ -1366,7 +1559,7 @@ function renderGameBoardFallback() {
     if (gameData && gameData.currentExperiment && gameData.currentExperiment.includes('1P')) {
         // Single-player experiments (1P1G, 1P2G)
         if (gameData.currentPlayerPos && gameData.currentPlayerPos.length >= 2) {
-            // Draw single player in red
+            // Draw single player in red at current position
             drawCircleHumanHuman(ctx, COLORPOOL.player, 1 / 3 * EXPSETTINGS.padding,
                 gameData.currentPlayerPos[1], gameData.currentPlayerPos[0], 0, 2 * Math.PI);
         }
@@ -1470,7 +1663,21 @@ function generateRandomized1P2GDistanceSequence(numTrials) {
  * @returns {Array} - Array of maps for the experiment
  */
 function getMapsForExperiment(experimentType) {
-    return window.NodeGameHelpers.getMapsForExperiment(experimentType);
+    const maps = window.NodeGameHelpers.getMapsForExperiment(experimentType);
+    console.log(`Loading maps for ${experimentType}:`, maps);
+
+    // Check if maps are properly loaded
+    if (!maps || Object.keys(maps).length === 0) {
+        console.error(`No maps found for experiment type: ${experimentType}`);
+        console.log('Available map globals:', {
+            MapsFor1P1G: typeof window.MapsFor1P1G,
+            MapsFor1P2G: typeof window.MapsFor1P2G,
+            MapsFor2P2G: typeof window.MapsFor2P2G,
+            MapsFor2P3G: typeof window.MapsFor2P3G
+        });
+    }
+
+    return maps;
 }
 
 /**
@@ -1579,8 +1786,9 @@ function runTrialStage(stage) {
     // Initialize client-side trial data tracking
     initializeTrialData(trialIndex, experimentType);
 
-    // Set game start time
+    // Set game start time for reaction time calculations
     gameData.gameStartTime = Date.now();
+    console.log('Game start time set for trial:', gameData.gameStartTime);
 
     if (experimentType.includes('1P')) {
         // Single-player experiments (1P1G, 1P2G) - run locally
@@ -1593,7 +1801,24 @@ function runTrialStage(stage) {
     } else if (experimentType.includes('2P')) {
         // Multiplayer experiments (2P2G, 2P3G) - use server
         console.log('Running multiplayer experiment with server');
-        runMultiplayerTrial(experimentType, trialIndex);
+
+        // Get the map design for this trial
+        const mapDesign = timeline.mapData[experimentType][trialIndex];
+        console.log(`=== MULTIPLAYER TRIAL MAP DESIGN ===`);
+        console.log(`Experiment type: ${experimentType}`);
+        console.log(`Trial index: ${trialIndex}`);
+        console.log(`Map design for trial ${trialIndex}:`, mapDesign);
+        console.log(`Timeline map data for ${experimentType}:`, timeline.mapData[experimentType]);
+
+        if (!mapDesign) {
+            console.error('No map design found for multiplayer trial', trialIndex, 'in experiment', experimentType);
+            console.error('Available map data:', timeline.mapData);
+            console.error('Available experiment types:', Object.keys(timeline.mapData));
+            return;
+        }
+        console.log(`=== END MAP DESIGN CHECK ===`);
+
+        runMultiplayerTrial(experimentType, trialIndex, mapDesign);
 
         // For multiplayer, don't call updateGameVisualization here
         // The visualization will be updated when the server sends the game state
@@ -1607,11 +1832,17 @@ function runTrialStage(stage) {
  * Run single-player trial (1P1G, 1P2G)
  */
 function runSinglePlayerTrial(experimentType, trialIndex) {
+    console.log(`Running single-player trial: ${experimentType}, trial ${trialIndex}`);
+    console.log('Timeline map data:', timeline.mapData);
+    console.log(`Map data for ${experimentType}:`, timeline.mapData[experimentType]);
+
     // Get the map design for this trial
     const mapDesign = timeline.mapData[experimentType][trialIndex];
+    console.log(`Map design for trial ${trialIndex}:`, mapDesign);
 
     if (!mapDesign) {
         console.error('No map design found for trial', trialIndex, 'in experiment', experimentType);
+        console.error('Available map data:', timeline.mapData);
         return;
     }
 
@@ -1653,7 +1884,21 @@ function runSinglePlayerTrial(experimentType, trialIndex) {
 /**
  * Run multiplayer trial (2P2G, 2P3G)
  */
-function runMultiplayerTrial(experimentType, trialIndex) {
+function runMultiplayerTrial(experimentType, trialIndex, mapDesign) {
+    console.log(`Running multiplayer trial: ${experimentType}, trial ${trialIndex}`);
+    console.log('Timeline map data:', timeline.mapData);
+    console.log(`Map data for ${experimentType}:`, timeline.mapData[experimentType]);
+    console.log(`Map design for trial ${trialIndex}:`, mapDesign);
+
+    // Send the map design to the server to start the trial
+    if (mapDesign) {
+        console.log('Sending map design to server for multiplayer trial');
+        startMultiplayerTrial(trialIndex, mapDesign);
+    } else {
+        console.error('No map design provided for multiplayer trial');
+        return;
+    }
+
     // The game design and state are determined by the server and have already been
     // populated in the `game_started` event handler.
     // We just need to render it and enable controls.
@@ -1938,12 +2183,12 @@ function skipToNextFixationStage() {
  */
 function skipToNextExperimentOrCompletion() {
     const currentExpIndex = gameData.currentExperimentIndex;
-    const totalExperiments = NODEGAME_HUMAN_HUMAN_CONFIG.experimentOrder.length;
+    const totalExperiments = NODEGAME_CONFIG.experimentOrder.length;
 
     if (currentExpIndex + 1 < totalExperiments) {
         // Move to next experiment
         gameData.currentExperimentIndex++;
-        gameData.currentExperiment = NODEGAME_HUMAN_HUMAN_CONFIG.experimentOrder[gameData.currentExperimentIndex];
+        gameData.currentExperiment = NODEGAME_CONFIG.experimentOrder[gameData.currentExperimentIndex];
         gameData.currentTrial = 0;
 
         // Skip to next experiment stages in timeline
@@ -2032,6 +2277,7 @@ function initializeTrialData(trialIndex, experimentType) {
         aimAction: [],
         partnerAction: [],
         RT: [],
+        partnerRT: [],
         trialStartTime: Date.now(),
         completed: false,
         stepCount: 0,
@@ -2041,6 +2287,16 @@ function initializeTrialData(trialIndex, experimentType) {
         partnerStartPos: null,
         movementMode: movementMode
     };
+
+    // Ensure all arrays are properly initialized as arrays (not undefined or null)
+    console.log('Trial data initialized with arrays:', {
+        aimAction: Array.isArray(gameData.currentTrialData.aimAction),
+        partnerAction: Array.isArray(gameData.currentTrialData.partnerAction),
+        RT: Array.isArray(gameData.currentTrialData.RT),
+        partnerRT: Array.isArray(gameData.currentTrialData.partnerRT),
+        trajectory: Array.isArray(gameData.currentTrialData.trajectory),
+        partnerTrajectory: Array.isArray(gameData.currentTrialData.partnerTrajectory)
+    });
 
     // Initialize default values for multiplayer games to prevent undefined errors
     if (experimentType && experimentType.includes('2P')) {
@@ -2117,6 +2373,8 @@ function recordPlayerMove(action, reactionTime) {
     gameData.currentTrialData.aimAction.push(action);
     gameData.currentTrialData.RT.push(reactionTime);
 
+    console.log(`Player move recorded: action=${action}, RT=${reactionTime}, aimAction length=${gameData.currentTrialData.aimAction.length}, RT length=${gameData.currentTrialData.RT.length}`);
+
     // Safety check: ensure currentPlayerPos is defined and is an array
     if (gameData.currentPlayerPos && Array.isArray(gameData.currentPlayerPos)) {
         gameData.currentTrialData.trajectory.push([...gameData.currentPlayerPos]);
@@ -2155,16 +2413,32 @@ function recordPartnerMove(action, reactionTime) {
         console.warn('partnerTrajectory array not initialized, creating it');
         gameData.currentTrialData.partnerTrajectory = [];
     }
+    if (!gameData.currentTrialData.partnerRT) {
+        console.warn('partnerRT array not initialized, creating it');
+        gameData.currentTrialData.partnerRT = [];
+    }
 
-    // Record the move
+    // Record the move and reaction time
     gameData.currentTrialData.partnerAction.push(action);
+    gameData.currentTrialData.partnerRT.push(reactionTime);
 
-    // Safety check: ensure partnerStartPos is defined and is an array
-    if (gameData.partnerStartPos && Array.isArray(gameData.partnerStartPos)) {
-        gameData.currentTrialData.partnerTrajectory.push([...gameData.partnerStartPos]);
+    console.log(`Partner move recorded: action=${action}, RT=${reactionTime}, partnerAction length=${gameData.currentTrialData.partnerAction.length}, partnerRT length=${gameData.currentTrialData.partnerRT.length}`);
+
+    // Safety check: ensure currentPartnerPos is defined and is an array
+    if (gameData.currentPartnerPos && Array.isArray(gameData.currentPartnerPos)) {
+        gameData.currentTrialData.partnerTrajectory.push([...gameData.currentPartnerPos]);
     } else {
-        console.warn('partnerStartPos is not properly initialized:', gameData.partnerStartPos);
-        gameData.currentTrialData.partnerTrajectory.push([0, 0]); // Default fallback
+        console.warn('currentPartnerPos is not properly initialized:', gameData.currentPartnerPos);
+        console.log('Available fallbacks:');
+        console.log('  - partnerStartPos:', gameData.partnerStartPos);
+        console.log('  - gameData.currentPartnerPos:', gameData.currentPartnerPos);
+
+        // Use partnerStartPos as fallback if available
+        if (gameData.partnerStartPos && Array.isArray(gameData.partnerStartPos)) {
+            gameData.currentTrialData.partnerTrajectory.push([...gameData.partnerStartPos]);
+        } else {
+            gameData.currentTrialData.partnerTrajectory.push([0, 0]); // Default fallback
+        }
     }
 }
 
@@ -2177,6 +2451,46 @@ function finalizeTrial(success) {
         gameData.currentTrialData.trialDuration = gameData.currentTrialData.trialEndTime - gameData.currentTrialData.trialStartTime;
         gameData.currentTrialData.completed = success;
         gameData.currentTrialData.stepCount = gameData.stepCount;
+
+        // Copy important game state data to trial data
+        if (gameData.currentGoals) {
+            gameData.currentTrialData.goals = JSON.parse(JSON.stringify(gameData.currentGoals));
+        }
+        if (gameData.playerStartPos) {
+            gameData.currentTrialData.playerStartPos = JSON.parse(JSON.stringify(gameData.playerStartPos));
+        }
+        if (gameData.partnerStartPos) {
+            gameData.currentTrialData.partnerStartPos = JSON.parse(JSON.stringify(gameData.partnerStartPos));
+        }
+        if (gameData.gridMatrix) {
+            gameData.currentTrialData.gridMatrix = JSON.parse(JSON.stringify(gameData.gridMatrix));
+        }
+
+        // Ensure arrays are properly initialized and populated as actual arrays
+        if (!Array.isArray(gameData.currentTrialData.aimAction)) {
+            console.warn('aimAction was not an array, reinitializing');
+            gameData.currentTrialData.aimAction = [];
+        }
+        if (!Array.isArray(gameData.currentTrialData.partnerAction)) {
+            console.warn('partnerAction was not an array, reinitializing');
+            gameData.currentTrialData.partnerAction = [];
+        }
+        if (!Array.isArray(gameData.currentTrialData.RT)) {
+            console.warn('RT was not an array, reinitializing');
+            gameData.currentTrialData.RT = [];
+        }
+        if (!Array.isArray(gameData.currentTrialData.partnerRT)) {
+            console.warn('partnerRT was not an array, reinitializing');
+            gameData.currentTrialData.partnerRT = [];
+        }
+        if (!Array.isArray(gameData.currentTrialData.trajectory)) {
+            console.warn('trajectory was not an array, reinitializing');
+            gameData.currentTrialData.trajectory = [];
+        }
+        if (!Array.isArray(gameData.currentTrialData.partnerTrajectory)) {
+            console.warn('partnerTrajectory was not an array, reinitializing');
+            gameData.currentTrialData.partnerTrajectory = [];
+        }
 
         // Determine if trial was successful for collaboration games
         var trialSuccess = false;
@@ -2199,6 +2513,30 @@ function finalizeTrial(success) {
 
         console.log('Trial finalized:', gameData.currentTrialData);
         console.log(`Trial success: ${trialSuccess} (${gameData.currentExperiment})`);
+
+        // Debug logging for data recording issues
+        console.log('=== TRIAL DATA DEBUG ===');
+        console.log('aimAction array length:', gameData.currentTrialData.aimAction ? gameData.currentTrialData.aimAction.length : 'undefined');
+        console.log('partnerAction array length:', gameData.currentTrialData.partnerAction ? gameData.currentTrialData.partnerAction.length : 'undefined');
+        console.log('RT array length:', gameData.currentTrialData.RT ? gameData.currentTrialData.RT.length : 'undefined');
+        console.log('partnerRT array length:', gameData.currentTrialData.partnerRT ? gameData.currentTrialData.partnerRT.length : 'undefined');
+        console.log('goals saved:', gameData.currentTrialData.goals ? 'yes' : 'no');
+        console.log('playerStartPos saved:', gameData.currentTrialData.playerStartPos ? 'yes' : 'no');
+        console.log('partnerStartPos saved:', gameData.currentTrialData.partnerStartPos ? 'yes' : 'no');
+        console.log('========================');
+    }
+
+    // For single-player games, advance to next stage after a short delay
+    if (gameData.currentExperiment && gameData.currentExperiment.includes('1P')) {
+        setTimeout(() => {
+            // Check if showPostTrialStage is available, otherwise just advance
+            if (typeof showPostTrialStage === 'function') {
+                nextStage();
+            } else {
+                console.log('showPostTrialStage not available, advancing directly');
+                nextStage();
+            }
+        }, 1000); // 1 second delay before advancing
     }
 }
 
@@ -2209,7 +2547,7 @@ function finalizeTrial(success) {
  */
 function getRandomDistanceConditionFor2P3G(trialIndex) {
     // If we're past the random sampling threshold, use random sampling
-    if (trialIndex >= NODEGAME_HUMAN_HUMAN_CONFIG.successThreshold.randomSamplingAfterTrial) {
+    if (trialIndex >= NODEGAME_CONFIG.successThreshold.randomSamplingAfterTrial) {
         var allConditions = [
             TWOP3G_CONFIG.distanceConditions.CLOSER_TO_AI,
             TWOP3G_CONFIG.distanceConditions.CLOSER_TO_HUMAN,
@@ -2232,7 +2570,7 @@ function getRandomDistanceConditionFor2P3G(trialIndex) {
  */
 function getRandomDistanceConditionFor1P2G(trialIndex) {
     // If we're past the random sampling threshold, use random sampling
-    if (trialIndex >= NODEGAME_HUMAN_HUMAN_CONFIG.successThreshold.randomSamplingAfterTrial) {
+    if (trialIndex >= NODEGAME_CONFIG.successThreshold.randomSamplingAfterTrial) {
         var allConditions = [
             ONEP2G_CONFIG.distanceConditions.CLOSER_TO_HUMAN,
             ONEP2G_CONFIG.distanceConditions.FARTHER_TO_HUMAN,
@@ -2301,7 +2639,7 @@ function updateSuccessThresholdTracking(success, trialIndex) {
     }
 
     console.log(`Success threshold update - Trial ${trialIndex + 1}: ${success ? 'SUCCESS' : 'FAILURE'}`);
-    console.log(`  Consecutive successes: ${gameData.successThreshold.consecutiveSuccesses}/${NODEGAME_HUMAN_HUMAN_CONFIG.successThreshold.consecutiveSuccessesRequired}`);
+    console.log(`  Consecutive successes: ${gameData.successThreshold.consecutiveSuccesses}/${NODEGAME_CONFIG.successThreshold.consecutiveSuccessesRequired}`);
     console.log(`  Total trials: ${gameData.successThreshold.totalTrialsCompleted}/${NODEGAME_CONFIG.successThreshold.maxTrials}`);
 }
 
@@ -2317,11 +2655,11 @@ function shouldEndExperimentDueToSuccessThreshold() {
     }
 
     // Check if success threshold is enabled
-    if (!NODEGAME_HUMAN_HUMAN_CONFIG.successThreshold.enabled) {
+    if (!NODEGAME_CONFIG.successThreshold.enabled) {
         return false;
     }
 
-    var config = NODEGAME_HUMAN_HUMAN_CONFIG.successThreshold;  // Fixed: Use correct config
+    var config = NODEGAME_CONFIG.successThreshold;
     var tracking = gameData.successThreshold;
 
     // Check if we've reached the maximum trials
@@ -2368,13 +2706,13 @@ function saveExperimentData() {
             participantId: participantId,
             partnerId: partnerPlayerId || 'unknown',
             roomId: roomId || 'unknown',
-            experimentOrder: NODEGAME_HUMAN_HUMAN_CONFIG.experimentOrder,
+            experimentOrder: NODEGAME_CONFIG.experimentOrder,
             allTrialsData: gameData.allTrialsData || [],
             questionnaireData: gameData.questionnaireData || null,
             successThreshold: gameData.successThreshold || {},
             timestamp: Date.now(),
-            completionCode: NODEGAME_HUMAN_HUMAN_CONFIG.prolificCompletionCode,
-            version: NODEGAME_HUMAN_HUMAN_CONFIG.version,
+            completionCode: NODEGAME_CONFIG.prolificCompletionCode,
+            version: NODEGAME_CONFIG.version,
             experimentType: 'human-human',
             multiplayer: {
                 movementMode: movementMode || 'simultaneous',
@@ -2640,8 +2978,8 @@ function checkNewGoalPresentation2P3G() {
             sharedGoalIndex: player2CurrentGoal,
             stepCount: gameData.stepCount,
             trialIndex: gameData.currentTrialIndex,
-            player1Pos: gameData.playerStartPos,
-            player2Pos: gameData.partnerStartPos,
+            player1Pos: gameData.currentPlayerPos,
+            player2Pos: gameData.currentPartnerPos,
             currentGoals: gameData.currentGoals,
             distanceCondition: gameData.gameState?.distanceCondition
         });
@@ -2854,7 +3192,7 @@ console.log('NodeGame Human-Human Full experiments module loaded');
  * Disable success threshold for testing (run all trials)
  */
 function disableSuccessThreshold() {
-    NODEGAME_HUMAN_HUMAN_CONFIG.successThreshold.enabled = false;
+    NODEGAME_CONFIG.successThreshold.enabled = false;
     console.log('Success threshold disabled - will run all trials');
 }
 
@@ -2862,8 +3200,8 @@ function disableSuccessThreshold() {
  * Enable success threshold with custom settings
  */
 function enableSuccessThreshold(consecutiveSuccesses = 4, minTrials = 4) {
-    NODEGAME_HUMAN_HUMAN_CONFIG.successThreshold.enabled = true;
-    NODEGAME_HUMAN_HUMAN_CONFIG.successThreshold.consecutiveSuccessesRequired = consecutiveSuccesses;
-    NODEGAME_HUMAN_HUMAN_CONFIG.successThreshold.minTrialsBeforeCheck = minTrials;
+    NODEGAME_CONFIG.successThreshold.enabled = true;
+    NODEGAME_CONFIG.successThreshold.consecutiveSuccessesRequired = consecutiveSuccesses;
+    NODEGAME_CONFIG.successThreshold.minTrialsBeforeCheck = minTrials;
     console.log(`Success threshold enabled: ${consecutiveSuccesses} consecutive successes after ${minTrials} trials`);
 }

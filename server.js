@@ -192,9 +192,22 @@ class GameRoom {
     }
 
     initializeGameState() {
-        // Load map data based on game type
-        const mapData = this.loadMapData();
-        const selectedMap = this.selectRandomMap(mapData);
+        // Use stored map design if available, otherwise use random selection
+        let selectedMap;
+        if (this.currentTrialDesign) {
+            console.log('=== USING CLIENT-PROVIDED MAP DESIGN ===');
+            console.log('Client trial design:', this.currentTrialDesign);
+            selectedMap = this.convertClientDesignToServerMap(this.currentTrialDesign);
+            console.log('Converted to server map:', selectedMap);
+            this.currentTrialDesign = null; // Clear after use
+        } else {
+            console.log('=== USING RANDOM MAP SELECTION ===');
+            console.log('No client design available, falling back to random selection');
+            const mapData = this.loadMapData();
+            console.log('Available map data:', mapData ? `${mapData.length} maps` : 'null');
+            selectedMap = this.selectRandomMap(mapData);
+            console.log('Selected random map:', selectedMap);
+        }
 
         // Create grid matrix from map data
         const gridMatrix = this.createGridMatrix(selectedMap);
@@ -281,11 +294,24 @@ class GameRoom {
         const maps = [];
         for (const mapId in MapsFor2P2G) {
             const mapData = MapsFor2P2G[mapId][0];
+            const goals = [];
+
+            // Add all available goals
+            if (mapData.target1) {
+                goals.push(mapData.target1);
+            }
+            if (mapData.target2) {
+                goals.push(mapData.target2);
+            }
+            if (mapData.target3) {
+                goals.push(mapData.target3);
+            }
+
             maps.push({
                 gridMatrix: null, // Will be created dynamically
                 player1Pos: mapData.initPlayerGrid,
                 player2Pos: mapData.initAIGrid,
-                goals: [mapData.target1, mapData.target2],
+                goals: goals,
                 mapId: mapId
             });
         }
@@ -296,11 +322,24 @@ class GameRoom {
         const maps = [];
         for (const mapId in MapsFor2P3G) {
             const mapData = MapsFor2P3G[mapId][0];
+            const goals = [];
+
+            // Add all available goals
+            if (mapData.target1) {
+                goals.push(mapData.target1);
+            }
+            if (mapData.target2) {
+                goals.push(mapData.target2);
+            }
+            if (mapData.target3) {
+                goals.push(mapData.target3);
+            }
+
             maps.push({
                 gridMatrix: null, // Will be created dynamically
                 player1Pos: mapData.initPlayerGrid,
                 player2Pos: mapData.initAIGrid,
-                goals: [mapData.target1, mapData.target2],
+                goals: goals,
                 mapId: mapId
             });
         }
@@ -321,6 +360,37 @@ class GameRoom {
     selectRandomMap(mapData) {
         const randomIndex = Math.floor(Math.random() * mapData.length);
         return mapData[randomIndex];
+    }
+
+    convertClientDesignToServerMap(clientDesign) {
+        console.log('=== CONVERTING CLIENT DESIGN TO SERVER MAP ===');
+        console.log('Client design:', clientDesign);
+
+        // Convert client-side map design to server-side format
+        const serverMap = {
+            gridMatrix: null, // Will be created dynamically
+            player1Pos: clientDesign.initPlayerGrid,
+            player2Pos: clientDesign.initAIGrid,
+            goals: []
+        };
+
+        // Add goals based on what's available in the client design
+        if (clientDesign.target1) {
+            serverMap.goals.push(clientDesign.target1);
+            console.log('Added target1:', clientDesign.target1);
+        }
+        if (clientDesign.target2) {
+            serverMap.goals.push(clientDesign.target2);
+            console.log('Added target2:', clientDesign.target2);
+        }
+        if (clientDesign.target3) {
+            serverMap.goals.push(clientDesign.target3);
+            console.log('Added target3:', clientDesign.target3);
+        }
+
+        console.log('Converted client design to server map:', serverMap);
+        console.log('=== END CONVERSION ===');
+        return serverMap;
     }
 
     handleMove(playerId, moveData) {
@@ -387,6 +457,7 @@ class GameRoom {
             this.broadcastToRoom('move_made', {
                 playerId: playerId,
                 action: action,
+                reactionTime: moveData.reactionTime || 0,
                 oldPosition: oldPosition,
                 newPosition: newPosition,
                 goalReached: goalReached,
@@ -1201,6 +1272,24 @@ io.on('connection', (socket) => {
                 console.log(`❌ Invalid room or game type for goal generation request`);
             }
         }
+    });
+
+        // Handle start trial with map design
+    socket.on('start_trial', (data) => {
+        console.log(`=== SERVER RECEIVED START_TRIAL ===`);
+        console.log(`Player ${socket.id} starting trial with design:`, data);
+        console.log(`Trial index: ${data.trialIndex}`);
+        console.log(`Experiment type: ${data.experimentType}`);
+        console.log(`Map design:`, data.design);
+
+        if (currentRoom) {
+            // Store the map design for this trial
+            currentRoom.currentTrialDesign = data.design;
+            console.log(`Stored map design for trial ${data.trialIndex} in room ${currentRoom.roomId}`);
+        } else {
+            console.log(`No current room found for player ${socket.id}`);
+        }
+        console.log(`=== END START_TRIAL HANDLER ===`);
     });
 
     // Handle disconnection
