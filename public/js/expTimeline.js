@@ -1965,5 +1965,3 @@ function createCollaborationFeedbackOverlay(canvasContainer, collaborationSuccee
 
     return overlay;
 }
-
-

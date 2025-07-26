@@ -24,15 +24,15 @@ function drawGrid(c, currentGoals = null){
         WINSETTING.w + EXPSETTINGS.padding, WINSETTING.h + EXPSETTINGS.padding);
 
     // Get current player positions (if available)
-    let humanPos = null;
-    let aiPos = null;
+    let player1Pos = null;
+    let player2Pos = null;
 
     // Try to get positions from global variables if they exist
-    if (typeof playerState !== 'undefined') {
-        humanPos = playerState;
+    if (typeof player1 !== 'undefined') {
+        player1Pos = player1;
     }
-    if (typeof aiState !== 'undefined') {
-        aiPos = aiState;
+    if (typeof player2 !== 'undefined') {
+        player2Pos = player2;
     }
 
     // First pass: draw everything except goals and players
@@ -63,23 +63,23 @@ function drawGrid(c, currentGoals = null){
     }
 
     // Second pass: draw players with overlap detection
-    if (humanPos && aiPos) {
+    if (player1Pos && player2Pos) {
         // Check if players are in the same position
-        if (humanPos[0] === aiPos[0] && humanPos[1] === aiPos[1]) {
+        if (player1Pos[0] === player2Pos[0] && player1Pos[1] === player2Pos[1]) {
             // Draw overlapping circles
-            drawOverlappingCircles(context, humanPos[1], humanPos[0]);
+            drawOverlappingCircles(context, player1Pos[1], player1Pos[0]);
         } else {
             // Draw separate circles
             drawCircle(context, COLORPOOL.player, 1/3 * EXPSETTINGS.padding,
-                humanPos[1], humanPos[0], 0, 2 * Math.PI);
+                player1Pos[1], player1Pos[0], 0, 2 * Math.PI);
             drawCircle(context, "orange", 1/3 * EXPSETTINGS.padding,
-                aiPos[1], aiPos[0], 0, 2 * Math.PI);
+                player2Pos[1], player2Pos[0], 0, 2 * Math.PI);
         }
-        } else if (humanPos && !aiPos) {
+        } else if (player1Pos && !player2Pos) {
         // Single player case (1P1G, 1P2G) - draw player normally
         // Goals will be drawn in the third pass as background squares
         drawCircle(context, COLORPOOL.player, 1/3 * EXPSETTINGS.padding,
-            humanPos[1], humanPos[0], 0, 2 * Math.PI);
+            player1Pos[1], player1Pos[0], 0, 2 * Math.PI);
     } else {
         // Fallback to original method if positions not available
         for (let row = 0; row < gridMatrixList.length; row++) {
@@ -166,7 +166,7 @@ function drawOverlappingCircles(c, colPos, rowPos) {
     const centerY = rowPos * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding + EXPSETTINGS.cellSize/2;
     const offset = EXPSETTINGS.cellSize * 0.15; // Offset for overlap
 
-    // Draw human player circle (red) on the left
+    // Draw player1 circle (red) on the left
     c.beginPath();
     c.lineWidth = 1/3 * EXPSETTINGS.padding;
     c.strokeStyle = COLORPOOL.player;
@@ -175,7 +175,7 @@ function drawOverlappingCircles(c, colPos, rowPos) {
     c.fill();
     c.stroke();
 
-    // Draw AI player circle (orange) on the right
+    // Draw player2 circle (orange) on the right
     c.beginPath();
     c.strokeStyle = "orange";
     c.fillStyle = "orange";
@@ -282,8 +282,8 @@ function updateGameDisplay() {
     if (typeof drawGrid === 'function') {
         // Set global variables that drawGrid expects
         window.gridMatrixList = window.gameData ? window.gameData.gridMatrix : [];
-        window.playerState = window.gameData ? window.gameData.playerState : null;
-        window.aiState = window.gameData ? window.gameData.aiState : null;
+        window.player1 = window.gameData ? window.gameData.player1 : null;
+        window.player2 = window.gameData ? window.gameData.player2 : null;
 
         var canvas = document.querySelector('canvas') || createGameCanvas();
         var currentGoals = window.gameData ? window.gameData.currentGoals : null;
@@ -359,8 +359,8 @@ function nodeGameUpdateGameDisplay() {
     if (typeof drawGrid === 'function') {
         // Set global variables that drawGrid expects
         window.gridMatrixList = gameData.gridMatrix;
-        window.playerState = gameData.playerState;
-        window.aiState = gameData.aiState;
+        window.player1 = gameData.player1;
+        window.player2 = gameData.player2;
 
         var canvas = document.querySelector('canvas') || nodeGameCreateGameCanvas();
         drawGrid(canvas, gameData.currentGoals);
@@ -558,7 +558,7 @@ function drawOverlappingCirclesHumanHuman(context, colPos, rowPos) {
     const centerY = rowPos * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding + EXPSETTINGS.cellSize/2;
     const offset = EXPSETTINGS.cellSize * 0.15; // Offset for overlap
 
-    // Draw human player circle (red) on the left
+    // Draw player1 circle (red) on the left
     context.beginPath();
     context.lineWidth = 1/3 * EXPSETTINGS.padding;
     context.strokeStyle = COLORPOOL.player;
@@ -567,7 +567,7 @@ function drawOverlappingCirclesHumanHuman(context, colPos, rowPos) {
     context.fill();
     context.stroke();
 
-    // Draw partner player circle (orange) on the right
+    // Draw player2 circle (orange) on the right
     context.beginPath();
     context.strokeStyle = "orange";
     context.fillStyle = "orange";

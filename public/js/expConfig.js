@@ -5,20 +5,36 @@ const NODEGAME_CONFIG = {
     treatments: ['1P1G', '1P2G', '2P2G', '2P3G'],
 
     // =================================================================================================
+    // PLAYER CONFIGURATION
+    // =================================================================================================
+    playerConfig: {
+        player1: {
+            type: 'human',
+            color: 'red',
+            description: 'Human player (you)'
+        },
+        player2: {
+            type: 'ai', // Can be 'ai' or 'human'
+            color: 'orange',
+            description: 'AI agent or human partner'
+        }
+    },
+
+    // =================================================================================================
     // EXPERIMENT SELECTION
     // =================================================================================================
 
     // Current test configuration (2P3G only)
-    // experimentOrder: ['2P3G'],
+    experimentOrder: ['2P3G'],
 
     // Alternative configurations (uncomment to use):
     // experimentOrder: ['1P1G'],           // Test 1P1G only
     // experimentOrder: ['1P2G'],           // Test 1P2G only
     // experimentOrder: ['2P2G'],           // Test 2P2G only
     // experimentOrder: ['1P1G', '1P2G'],   // Test 1P1G and 1P2G
-    experimentOrder: ['2P2G', '2P3G'],   // Test 2P2G and 2P3G
+    // experimentOrder: ['2P2G', '2P3G'],   // Test 2P2G and 2P3G
     // experimentOrder: ['1P1G', '1P2G', '2P2G', '2P3G'], // Test all experiments
-    // experimentOrder: ['1P1G', '2P3G'],
+    // experimentOrder: ['1P2G', '2P3G'],
 
     // =================================================================================================
     // TRIAL COUNTS
@@ -81,10 +97,10 @@ var ONEP2G_CONFIG = {
 
     // Distance condition types for new goal generation
     distanceConditions: {
-        CLOSER_TO_HUMAN: 'closer_to_human',     // New goal is closer to human than first goal
-        FARTHER_TO_HUMAN: 'farther_to_human',   // New goal is farther to human than first goal
-        EQUAL_TO_HUMAN: 'equal_to_human',       // New goal is equal distance to human as first goal
-        NO_NEW_GOAL: 'no_new_goal'              // No new goal will be generated
+        CLOSER_TO_PLAYER1: 'closer_to_player1',     // New goal is closer to player1 than first goal
+        FARTHER_TO_PLAYER1: 'farther_to_player1',   // New goal is farther to player1 than first goal
+        EQUAL_TO_PLAYER1: 'equal_to_player1',       // New goal is equal distance to player1 as first goal
+        NO_NEW_GOAL: 'no_new_goal'                  // No new goal will be generated
     },
 
     // Distance condition sequence will be generated dynamically based on number of trials
@@ -117,9 +133,9 @@ var TWOP3G_CONFIG = {
 
     // Distance condition types for new goal generation
     distanceConditions: {
-        CLOSER_TO_AI: 'closer_to_ai',           // New goal closer to AI, equal joint distance
-        CLOSER_TO_HUMAN: 'closer_to_human',     // New goal closer to human, equal joint distance
-        EQUAL_TO_BOTH: 'equal_to_both',         // New goal equal distance to both human and AI
+        CLOSER_TO_PLAYER2: 'closer_to_player2',           // New goal closer to player2, equal joint distance
+        CLOSER_TO_PLAYER1: 'closer_to_player1',     // New goal closer to player1, equal joint distance
+        EQUAL_TO_BOTH: 'equal_to_both',         // New goal equal distance to both player1 and player2
         NO_NEW_GOAL: 'no_new_goal'              // No new goal will be generated
     },
 
@@ -141,5 +157,27 @@ var TWOP3G_CONFIG = {
         maintainDistanceSum: true,      // Maintain similar total distance sum
         blockPathCheck: false            // Check if goal blocks path
     }
+};
+
+/**
+ * Set player2 type configuration
+ * @param {string} type - 'ai' or 'human'
+ */
+function setPlayer2Type(type) {
+    if (type === 'ai' || type === 'human') {
+        NODEGAME_CONFIG.playerConfig.player2.type = type;
+        console.log(`Player2 type set to: ${type}`);
+    } else {
+        console.error('Invalid player2 type. Must be "ai" or "human"');
+    }
+}
+
+// Export configuration for module usage
+window.NodeGameConfig = {
+    NODEGAME_CONFIG: NODEGAME_CONFIG,
+    NODEGAME_HUMAN_HUMAN_CONFIG: NODEGAME_HUMAN_HUMAN_CONFIG,
+    ONEP2G_CONFIG: ONEP2G_CONFIG,
+    TWOP3G_CONFIG: TWOP3G_CONFIG,
+    setPlayer2Type: setPlayer2Type
 };
 

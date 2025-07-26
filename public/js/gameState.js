@@ -12,11 +12,17 @@ var gameData = {
     allTrialsData: [],
     currentTrialData: {},
     gridMatrix: null,
-    playerState: null,
-    aiState: null,
+    player1: null,  // Changed from playerState
+    player2: null,  // Changed from aiState
     currentGoals: null,
     stepCount: 0,
     gameStartTime: 0,
+
+    // Player configuration
+    playerConfig: {
+        player1Type: 'human',
+        player2Type: 'ai'  // Can be 'ai' or 'human'
+    },
 
     successThreshold: {
         consecutiveSuccesses: 0,      // Current consecutive successes
@@ -57,22 +63,22 @@ function initializeTrialData(trialIndex, experimentType, design) {
     gameData.currentTrialData = {
         trialIndex: trialIndex,
         experimentType: experimentType,
-        trajectory: [],
-        aiTrajectory: [],
-        aimAction: [],
-        aiAction: [],
-        RT: [],
+        player1Trajectory: [],  // Changed from trajectory
+        player2Trajectory: [],  // Changed from aiTrajectory
+        player1Actions: [],     // Changed from aimAction
+        player2Actions: [],     // Changed from aiAction
+        player1RT: [],          // Changed from RT
         trialStartTime: Date.now(),
-        humanGoalReachedStep: -1,  // Track when human reaches goal (-1 means not reached yet)
-        aiGoalReachedStep: -1,     // Track when AI reaches goal (-1 means not reached yet)
+        player1GoalReachedStep: -1,  // Track when player1 reaches goal (-1 means not reached yet)
+        player2GoalReachedStep: -1,  // Track when player2 reaches goal (-1 means not reached yet)
         // Initialize goal tracking variables for 2P experiments
-        humanCurrentGoal: [],
-        aiCurrentGoal: [],
+        player1CurrentGoal: [],      // Changed from humanCurrentGoal
+        player2CurrentGoal: [],      // Changed from aiCurrentGoal
         newGoalPresentedTime: null,
         newGoalPosition: null,
         newGoalConditionType: null,
         newGoalPresented: false,
-        isNewGoalCloserToAI: null,
+        isNewGoalCloserToPlayer2: null,  // Changed from isNewGoalCloserToAI
         collaborationSucceeded: undefined, // Will be set during trial
         ...design
     };
@@ -109,8 +115,8 @@ function getRandomDistanceConditionFor2P3G(trialIndex) {
     // If we're past the random sampling threshold, use random sampling
     if (trialIndex >= NODEGAME_CONFIG.successThreshold.randomSamplingAfterTrial) {
         var allConditions = [
-            TWOP3G_CONFIG.distanceConditions.CLOSER_TO_AI,
-            TWOP3G_CONFIG.distanceConditions.CLOSER_TO_HUMAN,
+                    TWOP3G_CONFIG.distanceConditions.CLOSER_TO_PLAYER2,
+        TWOP3G_CONFIG.distanceConditions.CLOSER_TO_PLAYER1,
             TWOP3G_CONFIG.distanceConditions.EQUAL_TO_BOTH,
             TWOP3G_CONFIG.distanceConditions.NO_NEW_GOAL
         ];
@@ -132,9 +138,9 @@ function getRandomDistanceConditionFor1P2G(trialIndex) {
     // If we're past the random sampling threshold, use random sampling
     if (trialIndex >= NODEGAME_CONFIG.successThreshold.randomSamplingAfterTrial) {
         var allConditions = [
-            ONEP2G_CONFIG.distanceConditions.CLOSER_TO_HUMAN,
-            ONEP2G_CONFIG.distanceConditions.FARTHER_TO_HUMAN,
-            ONEP2G_CONFIG.distanceConditions.EQUAL_TO_HUMAN,
+                    ONEP2G_CONFIG.distanceConditions.CLOSER_TO_PLAYER1,
+        ONEP2G_CONFIG.distanceConditions.FARTHER_TO_PLAYER1,
+        ONEP2G_CONFIG.distanceConditions.EQUAL_TO_PLAYER1,
             ONEP2G_CONFIG.distanceConditions.NO_NEW_GOAL
         ];
         var randomCondition = allConditions[Math.floor(Math.random() * allConditions.length)];

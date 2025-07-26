@@ -1076,8 +1076,8 @@ function getRandomDistanceConditionFor2P3G(trialIndex) {
     // If we're past the random sampling threshold, use random sampling
     if (trialIndex >= NODEGAME_CONFIG.successThreshold.randomSamplingAfterTrial) {
         var allConditions = [
-            TWOP3G_CONFIG.distanceConditions.CLOSER_TO_AI,
-            TWOP3G_CONFIG.distanceConditions.CLOSER_TO_HUMAN,
+                    TWOP3G_CONFIG.distanceConditions.CLOSER_TO_PLAYER2,
+        TWOP3G_CONFIG.distanceConditions.CLOSER_TO_PLAYER1,
             TWOP3G_CONFIG.distanceConditions.EQUAL_TO_BOTH,
             TWOP3G_CONFIG.distanceConditions.NO_NEW_GOAL
         ];
@@ -1099,9 +1099,9 @@ function getRandomDistanceConditionFor1P2G(trialIndex) {
     // If we're past the random sampling threshold, use random sampling
     if (trialIndex >= NODEGAME_CONFIG.successThreshold.randomSamplingAfterTrial) {
         var allConditions = [
-            ONEP2G_CONFIG.distanceConditions.CLOSER_TO_HUMAN,
-            ONEP2G_CONFIG.distanceConditions.FARTHER_TO_HUMAN,
-            ONEP2G_CONFIG.distanceConditions.EQUAL_TO_HUMAN,
+                    ONEP2G_CONFIG.distanceConditions.CLOSER_TO_PLAYER1,
+        ONEP2G_CONFIG.distanceConditions.FARTHER_TO_PLAYER1,
+        ONEP2G_CONFIG.distanceConditions.EQUAL_TO_PLAYER1,
             ONEP2G_CONFIG.distanceConditions.NO_NEW_GOAL
         ];
         var randomCondition = allConditions[Math.floor(Math.random() * allConditions.length)];

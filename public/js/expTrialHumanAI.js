@@ -136,8 +136,8 @@ function runTrial1P1G() {
         var key = event.code;
         if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(key)) return;
 
-        // Check if human has already reached a goal - if so, don't allow further movement
-        if (isGoalReached(gameData.playerState, gameData.currentGoals)) {
+        // Check if player1 has already reached a goal - if so, don't allow further movement
+        if (isGoalReached(gameData.player1, gameData.currentGoals)) {
             event.preventDefault();
             return;
         }
@@ -152,22 +152,22 @@ function runTrial1P1G() {
         var aimAction = DIRECTIONS[direction].movement;
 
         // Record move
-        window.DataRecording.recordPlayerMove(aimAction, Date.now() - gameData.gameStartTime);
+        window.DataRecording.recordPlayer1Move(aimAction, Date.now() - gameData.gameStartTime);
 
         // Execute move
-        var realAction = isValidMove(gameData.gridMatrix, gameData.playerState, aimAction);
-        var nextState = transition(gameData.playerState, realAction);
+        var realAction = isValidMove(gameData.gridMatrix, gameData.player1, aimAction);
+        var nextState = transition(gameData.player1, realAction);
 
         // Update grid using proper matrix update
-        gameData.gridMatrix = updateMatrix(gameData.gridMatrix, gameData.playerState[0], gameData.playerState[1], OBJECT.blank);
+        gameData.gridMatrix = updateMatrix(gameData.gridMatrix, gameData.player1[0], gameData.player1[1], OBJECT.blank);
         gameData.gridMatrix = updateMatrix(gameData.gridMatrix, nextState[0], nextState[1], OBJECT.player);
-        gameData.playerState = nextState;
+        gameData.player1 = nextState;
 
         gameData.stepCount++;
         nodeGameUpdateGameDisplay();
 
         // Check win condition
-        if (isGoalReached(gameData.playerState, gameData.currentGoals)) {
+        if (isGoalReached(gameData.player1, gameData.currentGoals)) {
             document.removeEventListener('keydown', handleKeyPress);
             if (gameLoopInterval) clearInterval(gameLoopInterval);
 
@@ -212,8 +212,8 @@ function runTrial1P2G() {
         var key = event.code;
         if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(key)) return;
 
-        // Check if human has already reached a goal - if so, don't allow further movement
-        if (isGoalReached(gameData.playerState, gameData.currentGoals)) {
+        // Check if player1 has already reached a goal - if so, don't allow further movement
+        if (isGoalReached(gameData.player1, gameData.currentGoals)) {
             event.preventDefault();
             return;
         }
@@ -228,20 +228,20 @@ function runTrial1P2G() {
         var aimAction = DIRECTIONS[direction].movement;
 
         // Record move
-        window.DataRecording.recordPlayerMove(aimAction, Date.now() - gameData.gameStartTime);
+        window.DataRecording.recordPlayer1Move(aimAction, Date.now() - gameData.gameStartTime);
 
         // Execute move
-        var realAction = isValidMove(gameData.gridMatrix, gameData.playerState, aimAction);
-        var nextState = transition(gameData.playerState, realAction);
+        var realAction = isValidMove(gameData.gridMatrix, gameData.player1, aimAction);
+        var nextState = transition(gameData.player1, realAction);
 
         // Update grid using proper matrix update
-        gameData.gridMatrix = updateMatrix(gameData.gridMatrix, gameData.playerState[0], gameData.playerState[1], OBJECT.blank);
+        gameData.gridMatrix = updateMatrix(gameData.gridMatrix, gameData.player1[0], gameData.player1[1], OBJECT.blank);
         gameData.gridMatrix = updateMatrix(gameData.gridMatrix, nextState[0], nextState[1], OBJECT.player);
-        gameData.playerState = nextState;
+        gameData.player1 = nextState;
 
         // Detect player goal with history tracking (similar to 2P3G)
-        var humanCurrentGoal = detectPlayerGoal(gameData.playerState, aimAction, gameData.currentGoals, gameData.currentTrialData.humanCurrentGoal);
-        gameData.currentTrialData.humanCurrentGoal.push(humanCurrentGoal);
+        var player1CurrentGoal = detectPlayerGoal(gameData.player1, aimAction, gameData.currentGoals, gameData.currentTrialData.player1CurrentGoal);
+        gameData.currentTrialData.player1CurrentGoal.push(player1CurrentGoal);
 
         gameData.stepCount++;
         nodeGameUpdateGameDisplay();
@@ -250,7 +250,7 @@ function runTrial1P2G() {
         window.ExpDesign.checkNewGoalPresentation1P2G();
 
         // Check win condition
-        if (isGoalReached(gameData.playerState, gameData.currentGoals)) {
+        if (isGoalReached(gameData.player1, gameData.currentGoals)) {
             document.removeEventListener('keydown', handleKeyPress);
             if (gameLoopInterval) clearInterval(gameLoopInterval);
 
@@ -284,24 +284,24 @@ function runTrial1P2G() {
  * Check trial end condition for 2P2G
  */
 function checkTrialEnd2P2G(callback) {
-    var humanAtGoal = isGoalReached(gameData.playerState, gameData.currentGoals);
-    var aiAtGoal = isGoalReached(gameData.aiState, gameData.currentGoals);
+    var player1AtGoal = isGoalReached(gameData.player1, gameData.currentGoals);
+    var player2AtGoal = isGoalReached(gameData.player2, gameData.currentGoals);
 
-    if (humanAtGoal && aiAtGoal) {
-        var humanGoal = whichGoalReached(gameData.playerState, gameData.currentGoals);
-        var aiGoal = whichGoalReached(gameData.aiState, gameData.currentGoals);
+    if (player1AtGoal && player2AtGoal) {
+        var player1Goal = whichGoalReached(gameData.player1, gameData.currentGoals);
+        var player2Goal = whichGoalReached(gameData.player2, gameData.currentGoals);
 
         // Collaboration is successful if both players reached the same goal
         // Note: Using 0-based indexing from gameHelpers.js (goal 0, 1, 2...)
-        var collaboration = (humanGoal === aiGoal && humanGoal !== null);
+        var collaboration = (player1Goal === player2Goal && player1Goal !== null);
 
-        console.log(`2P2G Collaboration check: Human goal=${humanGoal}, AI goal=${aiGoal}, Collaboration=${collaboration}`);
+        console.log(`2P2G Collaboration check: Player1 goal=${player1Goal}, Player2 goal=${player2Goal}, Collaboration=${collaboration}`);
 
         gameData.currentTrialData.collaborationSucceeded = collaboration;
         window.DataRecording.finalizeTrial(true);
         callback();
-    } else if (humanAtGoal && !aiAtGoal) {
-        // Show wait message when human reached goal but AI hasn't
+    } else if (player1AtGoal && !player2AtGoal) {
+        // Show wait message when player1 reached goal but player2 hasn't
         showWaitMessage();
     }
 }
@@ -312,7 +312,7 @@ function checkTrialEnd2P2G(callback) {
 function runTrial2P2G() {
     var gameLoopInterval = null;
     var aiMoveInterval = null;
-    var humanAtGoal = false;
+    var player1AtGoal = false;
 
     function handleKeyPress(event) {
         if (timeline.isMoving) {
@@ -323,8 +323,8 @@ function runTrial2P2G() {
         var key = event.code;
         if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(key)) return;
 
-        // Check if human has already reached a goal - if so, don't allow further movement
-        if (isGoalReached(gameData.playerState, gameData.currentGoals)) {
+        // Check if player1 has already reached a goal - if so, don't allow further movement
+        if (isGoalReached(gameData.player1, gameData.currentGoals)) {
             return;
         }
 
@@ -334,53 +334,53 @@ function runTrial2P2G() {
         var aimAction = DIRECTIONS[direction].movement;
 
         // Record move
-        window.DataRecording.recordPlayerMove(aimAction, Date.now() - gameData.gameStartTime);
+        window.DataRecording.recordPlayer1Move(aimAction, Date.now() - gameData.gameStartTime);
 
-        // Calculate human move
-        var realAction = isValidMove(gameData.gridMatrix, gameData.playerState, aimAction);
-        var humanNextState = transition(gameData.playerState, realAction);
+        // Calculate player1 move
+        var realAction = isValidMove(gameData.gridMatrix, gameData.player1, aimAction);
+        var player1NextState = transition(gameData.player1, realAction);
 
-        // Calculate AI move simultaneously (before updating the grid)
-        var aiAction = null;
-        var aiNextState = null;
-        if (!isGoalReached(gameData.aiState, gameData.currentGoals)) {
-            aiAction = getAIAction(gameData.gridMatrix, gameData.aiState, gameData.currentGoals, gameData.playerState);
-            var aiRealAction = isValidMove(gameData.gridMatrix, gameData.aiState, aiAction);
-            aiNextState = transition(gameData.aiState, aiRealAction);
+        // Calculate player2 move simultaneously (before updating the grid)
+        var player2Action = null;
+        var player2NextState = null;
+        if (!isGoalReached(gameData.player2, gameData.currentGoals)) {
+            player2Action = getAIAction(gameData.gridMatrix, gameData.player2, gameData.currentGoals, gameData.player1);
+            var player2RealAction = isValidMove(gameData.gridMatrix, gameData.player2, player2Action);
+            player2NextState = transition(gameData.player2, player2RealAction);
         }
 
         // Execute both moves simultaneously
-        // Update human position
-        gameData.gridMatrix = updateMatrix(gameData.gridMatrix, gameData.playerState[0], gameData.playerState[1], OBJECT.blank);
-        gameData.gridMatrix = updateMatrix(gameData.gridMatrix, humanNextState[0], humanNextState[1], OBJECT.player);
-        gameData.playerState = humanNextState;
+        // Update player1 position
+        gameData.gridMatrix = updateMatrix(gameData.gridMatrix, gameData.player1[0], gameData.player1[1], OBJECT.blank);
+        gameData.gridMatrix = updateMatrix(gameData.gridMatrix, player1NextState[0], player1NextState[1], OBJECT.player);
+        gameData.player1 = player1NextState;
 
-        // Update AI position if AI moved
-        if (aiNextState) {
-            gameData.gridMatrix = updateMatrix(gameData.gridMatrix, gameData.aiState[0], gameData.aiState[1], OBJECT.blank);
-            gameData.gridMatrix = updateMatrix(gameData.gridMatrix, aiNextState[0], aiNextState[1], OBJECT.ai_player);
-            gameData.aiState = aiNextState;
-            window.DataRecording.recordAIMove(aiAction); // Record AI move after position is updated
+        // Update player2 position if player2 moved
+        if (player2NextState) {
+            gameData.gridMatrix = updateMatrix(gameData.gridMatrix, gameData.player2[0], gameData.player2[1], OBJECT.blank);
+            gameData.gridMatrix = updateMatrix(gameData.gridMatrix, player2NextState[0], player2NextState[1], OBJECT.ai_player);
+            gameData.player2 = player2NextState;
+            window.DataRecording.recordPlayer2Move(player2Action); // Record player2 move after position is updated
 
-            // Check if AI reached goal and track when
-            var aiAtGoal = isGoalReached(gameData.aiState, gameData.currentGoals);
-            if (aiAtGoal && gameData.currentTrialData.aiGoalReachedStep === -1) {
-                // AI just reached goal - record the step
-                gameData.currentTrialData.aiGoalReachedStep = gameData.stepCount;
-                console.log(`AI reached goal at step ${gameData.stepCount}`);
+            // Check if player2 reached goal and track when
+            var player2AtGoal = isGoalReached(gameData.player2, gameData.currentGoals);
+            if (player2AtGoal && gameData.currentTrialData.player2GoalReachedStep === -1) {
+                // Player2 just reached goal - record the step
+                gameData.currentTrialData.player2GoalReachedStep = gameData.stepCount;
+                console.log(`Player2 reached goal at step ${gameData.stepCount}`);
             }
         }
 
         gameData.stepCount++;
         nodeGameUpdateGameDisplay();
 
-        // Check if human reached goal and track when
-        var wasHumanAtGoal = humanAtGoal;
-        humanAtGoal = isGoalReached(gameData.playerState, gameData.currentGoals);
-        if (!wasHumanAtGoal && humanAtGoal) {
-            // Human just reached goal - record the step
-            gameData.currentTrialData.humanGoalReachedStep = gameData.stepCount;
-            console.log(`Human reached goal at step ${gameData.stepCount}`);
+        // Check if player1 reached goal and track when
+        var wasPlayer1AtGoal = player1AtGoal;
+        player1AtGoal = isGoalReached(gameData.player1, gameData.currentGoals);
+        if (!wasPlayer1AtGoal && player1AtGoal) {
+            // Player1 just reached goal - record the step
+            gameData.currentTrialData.player1GoalReachedStep = gameData.stepCount;
+            console.log(`Player1 reached goal at step ${gameData.stepCount}`);
         }
 
         // Check win condition
@@ -394,38 +394,38 @@ function runTrial2P2G() {
         timeline.isMoving = false;
     }
 
-    // Independent AI movement when human has reached goal
-    function makeIndependentAIMove() {
+    // Independent player2 movement when player1 has reached goal
+    function makeIndependentPlayer2Move() {
         // Check if game data is valid
-        if (!gameData || !gameData.aiState || !gameData.currentGoals || !gameData.gridMatrix) {
+        if (!gameData || !gameData.player2 || !gameData.currentGoals || !gameData.gridMatrix) {
             return;
         }
 
-        // Don't move if AI has already reached a goal
-        if (isGoalReached(gameData.aiState, gameData.currentGoals)) {
+        // Don't move if player2 has already reached a goal
+        if (isGoalReached(gameData.player2, gameData.currentGoals)) {
             return;
         }
 
-        var aiAction = getAIAction(gameData.gridMatrix, gameData.aiState, gameData.currentGoals, gameData.playerState);
-        var aiRealAction = isValidMove(gameData.gridMatrix, gameData.aiState, aiAction);
-        var aiNextState = transition(gameData.aiState, aiRealAction);
+        var player2Action = getAIAction(gameData.gridMatrix, gameData.player2, gameData.currentGoals, gameData.player1);
+        var player2RealAction = isValidMove(gameData.gridMatrix, gameData.player2, player2Action);
+        var player2NextState = transition(gameData.player2, player2RealAction);
 
-        window.DataRecording.recordAIMove(aiAction);
+        window.DataRecording.recordPlayer2Move(player2Action);
 
-        // Update AI position
-        gameData.gridMatrix = updateMatrix(gameData.gridMatrix, gameData.aiState[0], gameData.aiState[1], OBJECT.blank);
-        gameData.gridMatrix = updateMatrix(gameData.gridMatrix, aiNextState[0], aiNextState[1], OBJECT.ai_player);
-        gameData.aiState = aiNextState;
+        // Update player2 position
+        gameData.gridMatrix = updateMatrix(gameData.gridMatrix, gameData.player2[0], gameData.player2[1], OBJECT.blank);
+        gameData.gridMatrix = updateMatrix(gameData.gridMatrix, player2NextState[0], player2NextState[1], OBJECT.ai_player);
+        gameData.player2 = player2NextState;
 
         gameData.stepCount++;
         nodeGameUpdateGameDisplay();
 
-        // Check if AI reached goal and track when
-        var aiAtGoal = isGoalReached(gameData.aiState, gameData.currentGoals);
-        if (aiAtGoal && gameData.currentTrialData.aiGoalReachedStep === -1) {
-            // AI just reached goal - record the step
-            gameData.currentTrialData.aiGoalReachedStep = gameData.stepCount;
-            console.log(`AI reached goal at step ${gameData.stepCount}`);
+        // Check if player2 reached goal and track when
+        var player2AtGoal = isGoalReached(gameData.player2, gameData.currentGoals);
+        if (player2AtGoal && gameData.currentTrialData.player2GoalReachedStep === -1) {
+            // Player2 just reached goal - record the step
+            gameData.currentTrialData.player2GoalReachedStep = gameData.stepCount;
+            console.log(`Player2 reached goal at step ${gameData.stepCount}`);
         }
 
         // Check win condition after AI move
@@ -437,8 +437,8 @@ function runTrial2P2G() {
         });
     }
 
-    // Start independent AI movement when human reaches goal
-    function startIndependentAIMovement() {
+    // Start independent player2 movement when player1 reaches goal
+    function startIndependentPlayer2Movement() {
         // Clear any existing interval
         if (aiMoveInterval) {
             clearInterval(aiMoveInterval);
@@ -447,8 +447,8 @@ function runTrial2P2G() {
 
         aiMoveInterval = setInterval(() => {
             // Check if game data is still valid
-            if (!gameData || !gameData.aiState || !gameData.currentGoals) {
-                console.log('Game data not available, clearing AI movement interval');
+            if (!gameData || !gameData.player2 || !gameData.currentGoals) {
+                console.log('Game data not available, clearing player2 movement interval');
                 if (aiMoveInterval) {
                     clearInterval(aiMoveInterval);
                     aiMoveInterval = null;
@@ -456,11 +456,11 @@ function runTrial2P2G() {
                 return;
             }
 
-            // Only move if AI hasn't reached goal and human has reached goal
-            if (!isGoalReached(gameData.aiState, gameData.currentGoals) && humanAtGoal) {
-                makeIndependentAIMove();
-            } else if (isGoalReached(gameData.aiState, gameData.currentGoals)) {
-                // AI reached goal, stop independent movement
+            // Only move if player2 hasn't reached goal and player1 has reached goal
+            if (!isGoalReached(gameData.player2, gameData.currentGoals) && player1AtGoal) {
+                makeIndependentPlayer2Move();
+            } else if (isGoalReached(gameData.player2, gameData.currentGoals)) {
+                // Player2 reached goal, stop independent movement
                 if (aiMoveInterval) {
                     clearInterval(aiMoveInterval);
                     aiMoveInterval = null;
@@ -485,23 +485,23 @@ function runTrial2P2G() {
         }
     }, 100);
 
-    // Monitor for when human reaches goal to start independent AI movement
+    // Monitor for when player1 reaches goal to start independent player2 movement
     var goalCheckInterval = setInterval(() => {
         // Check if game data is valid
-        if (!gameData || !gameData.playerState || !gameData.aiState || !gameData.currentGoals) {
+        if (!gameData || !gameData.player1 || !gameData.player2 || !gameData.currentGoals) {
             return;
         }
 
-        // Only start independent AI movement if:
-        // 1. Human has actually reached a goal (check current state, not just the flag)
-        // 2. AI hasn't reached a goal yet
-        // 3. Independent AI movement isn't already running
-        // 4. Human has made at least one move (stepCount > 0)
+        // Only start independent player2 movement if:
+        // 1. Player1 has actually reached a goal (check current state, not just the flag)
+        // 2. Player2 hasn't reached a goal yet
+        // 3. Independent player2 movement isn't already running
+        // 4. Player1 has made at least one move (stepCount > 0)
         if (gameData.stepCount > 0 &&
-            isGoalReached(gameData.playerState, gameData.currentGoals) &&
-            !isGoalReached(gameData.aiState, gameData.currentGoals) &&
+            isGoalReached(gameData.player1, gameData.currentGoals) &&
+            !isGoalReached(gameData.player2, gameData.currentGoals) &&
             !aiMoveInterval) {
-            startIndependentAIMovement();
+            startIndependentPlayer2Movement();
         }
     }, 100);
 }
@@ -512,7 +512,7 @@ function runTrial2P2G() {
 function runTrial2P3G() {
     var gameLoopInterval = null;
     var aiMoveInterval = null;
-    var humanAtGoal = false;
+    var player1AtGoal = false;
     var isFrozen = false; // Track if movement is frozen due to new goal
     var freezeTimeout = null; // Track freeze timeout
 
@@ -520,9 +520,9 @@ function runTrial2P3G() {
     // Use global variables from expDesign.js
     newGoalPresented = false;
     newGoalPosition = null;
-    isNewGoalCloserToAI = null;
-    humanInferredGoals = [];
-    aiInferredGoals = [];
+    isNewGoalCloserToPlayer2 = null;
+    player1InferredGoals = [];
+    player2InferredGoals = [];
 
     function handleKeyPress(event) {
         // Prevent multiple moves with more robust checking
@@ -540,8 +540,8 @@ function runTrial2P3G() {
             return;
         }
 
-        // Check if human has already reached a goal - if so, don't allow further movement
-        if (isGoalReached(gameData.playerState, gameData.currentGoals)) {
+        // Check if player1 has already reached a goal - if so, don't allow further movement
+        if (isGoalReached(gameData.player1, gameData.currentGoals)) {
             event.preventDefault();
             return;
         }
@@ -557,53 +557,53 @@ function runTrial2P3G() {
         var aimAction = DIRECTIONS[direction].movement;
 
         // Record move
-        window.DataRecording.recordPlayerMove(aimAction, Date.now() - gameData.gameStartTime);
+        window.DataRecording.recordPlayer1Move(aimAction, Date.now() - gameData.gameStartTime);
 
-        // Calculate human move
-        var realAction = isValidMove(gameData.gridMatrix, gameData.playerState, aimAction);
-        var humanNextState = transition(gameData.playerState, realAction);
+        // Calculate player1 move
+        var realAction = isValidMove(gameData.gridMatrix, gameData.player1, aimAction);
+        var player1NextState = transition(gameData.player1, realAction);
 
-        // Calculate AI move simultaneously (before updating the grid)
-        var aiAction = null;
-        var aiNextState = null;
-        if (!isGoalReached(gameData.aiState, gameData.currentGoals) && !isFrozen) {
-            aiAction = getAIAction(gameData.gridMatrix, gameData.aiState, gameData.currentGoals, gameData.playerState);
-            var aiRealAction = isValidMove(gameData.gridMatrix, gameData.aiState, aiAction);
-            aiNextState = transition(gameData.aiState, aiRealAction);
-            window.DataRecording.recordAIMove(aiAction);
+        // Calculate player2 move simultaneously (before updating the grid)
+        var player2Action = null;
+        var player2NextState = null;
+        if (!isGoalReached(gameData.player2, gameData.currentGoals) && !isFrozen) {
+            player2Action = getAIAction(gameData.gridMatrix, gameData.player2, gameData.currentGoals, gameData.player1);
+            var player2RealAction = isValidMove(gameData.gridMatrix, gameData.player2, player2Action);
+            player2NextState = transition(gameData.player2, player2RealAction);
+            window.DataRecording.recordPlayer2Move(player2Action);
         }
 
         // Execute both moves simultaneously
-        // Update human position
-        gameData.gridMatrix = updateMatrix(gameData.gridMatrix, gameData.playerState[0], gameData.playerState[1], OBJECT.blank);
-        gameData.gridMatrix = updateMatrix(gameData.gridMatrix, humanNextState[0], humanNextState[1], OBJECT.player);
-        gameData.playerState = humanNextState;
+        // Update player1 position
+        gameData.gridMatrix = updateMatrix(gameData.gridMatrix, gameData.player1[0], gameData.player1[1], OBJECT.blank);
+        gameData.gridMatrix = updateMatrix(gameData.gridMatrix, player1NextState[0], player1NextState[1], OBJECT.player);
+        gameData.player1 = player1NextState;
 
-        // Update AI position if AI moved
-        if (aiNextState) {
-            gameData.gridMatrix = updateMatrix(gameData.gridMatrix, gameData.aiState[0], gameData.aiState[1], OBJECT.blank);
-            gameData.gridMatrix = updateMatrix(gameData.gridMatrix, aiNextState[0], aiNextState[1], OBJECT.ai_player);
-            gameData.aiState = aiNextState;
-            window.DataRecording.recordAIMove(aiAction); // Record AI move after position is updated
+        // Update player2 position if player2 moved
+        if (player2NextState) {
+            gameData.gridMatrix = updateMatrix(gameData.gridMatrix, gameData.player2[0], gameData.player2[1], OBJECT.blank);
+            gameData.gridMatrix = updateMatrix(gameData.gridMatrix, player2NextState[0], player2NextState[1], OBJECT.ai_player);
+            gameData.player2 = player2NextState;
+            window.DataRecording.recordPlayer2Move(player2Action); // Record player2 move after position is updated
         }
 
         // Detect player goals with history tracking (matching original)
-        var humanCurrentGoal = detectPlayerGoal(gameData.playerState, aimAction, gameData.currentGoals, humanInferredGoals);
-        gameData.currentTrialData.humanCurrentGoal.push(humanCurrentGoal);
+        var player1CurrentGoal = detectPlayerGoal(gameData.player1, aimAction, gameData.currentGoals, player1InferredGoals);
+        gameData.currentTrialData.player1CurrentGoal.push(player1CurrentGoal);
 
         // Update goal history
-        if (humanCurrentGoal !== null) {
-            humanInferredGoals.push(humanCurrentGoal);
+        if (player1CurrentGoal !== null) {
+            player1InferredGoals.push(player1CurrentGoal);
         }
 
-        // Detect AI goals with history tracking (matching original)
-        if (aiAction) {
-            var aiCurrentGoal = detectPlayerGoal(gameData.aiState, aiAction, gameData.currentGoals, aiInferredGoals);
-            gameData.currentTrialData.aiCurrentGoal.push(aiCurrentGoal);
+        // Detect player2 goals with history tracking (matching original)
+        if (player2Action) {
+            var player2CurrentGoal = detectPlayerGoal(gameData.player2, player2Action, gameData.currentGoals, player2InferredGoals);
+            gameData.currentTrialData.player2CurrentGoal.push(player2CurrentGoal);
 
             // Update goal history
-            if (aiCurrentGoal !== null) {
-                aiInferredGoals.push(aiCurrentGoal);
+            if (player2CurrentGoal !== null) {
+                player2InferredGoals.push(player2CurrentGoal);
             }
         }
 
@@ -613,8 +613,8 @@ function runTrial2P3G() {
         // Check for new goal presentation (matching original logic)
         window.ExpDesign.checkNewGoalPresentation2P3G();
 
-        // Check if human reached goal
-        humanAtGoal = isGoalReached(gameData.playerState, gameData.currentGoals);
+        // Check if player1 reached goal
+        player1AtGoal = isGoalReached(gameData.player1, gameData.currentGoals);
 
         // Check win condition
         window.ExpDesign.checkTrialEnd2P3G(() => {
@@ -647,36 +647,36 @@ function runTrial2P3G() {
         }, NODEGAME_CONFIG.timing.newGoalMessageDuration); // Use message duration instead of separate freeze duration
     }
 
-    // Independent AI movement when human has reached goal
-    function makeIndependentAIMove() {
+    // Independent player2 movement when player1 has reached goal
+    function makeIndependentPlayer2Move() {
         // Check if game data is valid
-        if (!gameData || !gameData.aiState || !gameData.currentGoals || !gameData.gridMatrix) {
+        if (!gameData || !gameData.player2 || !gameData.currentGoals || !gameData.gridMatrix) {
             return;
         }
 
-        // Don't move if AI has already reached a goal or if movement is frozen
-        if (isGoalReached(gameData.aiState, gameData.currentGoals) || isFrozen) {
+        // Don't move if player2 has already reached a goal or if movement is frozen
+        if (isGoalReached(gameData.player2, gameData.currentGoals) || isFrozen) {
             return;
         }
 
-        var aiAction = getAIAction(gameData.gridMatrix, gameData.aiState, gameData.currentGoals, gameData.playerState);
-        var aiRealAction = isValidMove(gameData.gridMatrix, gameData.aiState, aiAction);
-        var aiNextState = transition(gameData.aiState, aiRealAction);
+        var player2Action = getAIAction(gameData.gridMatrix, gameData.player2, gameData.currentGoals, gameData.player1);
+        var player2RealAction = isValidMove(gameData.gridMatrix, gameData.player2, player2Action);
+        var player2NextState = transition(gameData.player2, player2RealAction);
 
-        window.DataRecording.recordAIMove(aiAction);
+        window.DataRecording.recordPlayer2Move(player2Action);
 
-        // Update AI position
-        gameData.gridMatrix = updateMatrix(gameData.gridMatrix, gameData.aiState[0], gameData.aiState[1], OBJECT.blank);
-        gameData.gridMatrix = updateMatrix(gameData.gridMatrix, aiNextState[0], aiNextState[1], OBJECT.ai_player);
-        gameData.aiState = aiNextState;
+        // Update player2 position
+        gameData.gridMatrix = updateMatrix(gameData.gridMatrix, gameData.player2[0], gameData.player2[1], OBJECT.blank);
+        gameData.gridMatrix = updateMatrix(gameData.gridMatrix, player2NextState[0], player2NextState[1], OBJECT.ai_player);
+        gameData.player2 = player2NextState;
 
-        // Detect AI goals with history tracking (matching original)
-        var aiCurrentGoal = detectPlayerGoal(gameData.aiState, aiAction, gameData.currentGoals, aiInferredGoals);
-        gameData.currentTrialData.aiCurrentGoal.push(aiCurrentGoal);
+        // Detect player2 goals with history tracking (matching original)
+        var player2CurrentGoal = detectPlayerGoal(gameData.player2, player2Action, gameData.currentGoals, player2InferredGoals);
+        gameData.currentTrialData.player2CurrentGoal.push(player2CurrentGoal);
 
         // Update goal history
-        if (aiCurrentGoal !== null) {
-            aiInferredGoals.push(aiCurrentGoal);
+        if (player2CurrentGoal !== null) {
+            player2InferredGoals.push(player2CurrentGoal);
         }
 
         gameData.stepCount++;
@@ -685,7 +685,7 @@ function runTrial2P3G() {
         // Check for new goal presentation (matching original logic)
         window.ExpDesign.checkNewGoalPresentation2P3G();
 
-        // Check win condition after AI move
+        // Check win condition after player2 move
         window.ExpDesign.checkTrialEnd2P3G(() => {
             document.removeEventListener('keydown', handleKeyPress);
             timeline.keyListenerActive = false;
@@ -696,8 +696,8 @@ function runTrial2P3G() {
         });
     }
 
-    // Start independent AI movement when human reaches goal
-    function startIndependentAIMovement() {
+    // Start independent player2 movement when player1 reaches goal
+    function startIndependentPlayer2Movement() {
         // Clear any existing interval
         if (aiMoveInterval) {
             clearInterval(aiMoveInterval);
@@ -706,8 +706,8 @@ function runTrial2P3G() {
 
         aiMoveInterval = setInterval(() => {
             // Check if game data is still valid
-            if (!gameData || !gameData.aiState || !gameData.currentGoals) {
-                console.log('Game data not available, clearing AI movement interval');
+            if (!gameData || !gameData.player2 || !gameData.currentGoals) {
+                console.log('Game data not available, clearing player2 movement interval');
                 if (aiMoveInterval) {
                     clearInterval(aiMoveInterval);
                     aiMoveInterval = null;
@@ -715,16 +715,16 @@ function runTrial2P3G() {
                 return;
             }
 
-            // Only move if AI hasn't reached goal, human has reached goal, and not frozen
-            if (!isGoalReached(gameData.aiState, gameData.currentGoals) && humanAtGoal && !isFrozen) {
-                makeIndependentAIMove();
-            } else if (isGoalReached(gameData.aiState, gameData.currentGoals)) {
-                // AI reached goal, stop independent movement
-                if (aiMoveInterval) {
-                    clearInterval(aiMoveInterval);
-                    aiMoveInterval = null;
-                }
+                    // Only move if player2 hasn't reached goal and player1 has reached goal
+        if (!isGoalReached(gameData.player2, gameData.currentGoals) && player1AtGoal) {
+            makeIndependentPlayer2Move();
+        } else if (isGoalReached(gameData.player2, gameData.currentGoals)) {
+            // Player2 reached goal, stop independent movement
+            if (aiMoveInterval) {
+                clearInterval(aiMoveInterval);
+                aiMoveInterval = null;
             }
+        }
         }, NODEGAME_CONFIG.independentAgentDelay);
     }
 
@@ -751,25 +751,23 @@ function runTrial2P3G() {
         }
     }, 100);
 
-    // Monitor for when human reaches goal to start independent AI movement
+    // Monitor for when player1 reaches goal to start independent player2 movement
     var goalCheckInterval = setInterval(() => {
         // Check if game data is valid
-        if (!gameData || !gameData.playerState || !gameData.aiState || !gameData.currentGoals) {
+        if (!gameData || !gameData.player1 || !gameData.player2 || !gameData.currentGoals) {
             return;
         }
-        // Only start independent AI movement if:
-        // 1. Human has actually reached a goal (check current state, not just the flag)
-        // 2. AI hasn't reached a goal yet
-        // 3. Independent AI movement isn't already running
-        // 4. Human has made at least one move (stepCount > 0)
-        // 5. Movement is not frozen
+        // Only start independent player2 movement if:
+        // 1. Player1 has actually reached a goal (check current state, not just the flag)
+        // 2. Player2 hasn't reached a goal yet
+        // 3. Independent player2 movement isn't already running
+        // 4. Player1 has made at least one move (stepCount > 0)
         if (gameData.stepCount > 0 &&
-            isGoalReached(gameData.playerState, gameData.currentGoals) &&
-            !isGoalReached(gameData.aiState, gameData.currentGoals) &&
-            !aiMoveInterval &&
-            !isFrozen) {
-            console.log('2P3G: Starting independent AI movement - human reached goal, AI has not (slower pace: ' + NODEGAME_CONFIG.independentAgentDelay + 'ms)');
-            startIndependentAIMovement();
+            isGoalReached(gameData.player1, gameData.currentGoals) &&
+            !isGoalReached(gameData.player2, gameData.currentGoals) &&
+            !aiMoveInterval) {
+            console.log('2P2G: Starting independent player2 movement - player1 reached goal, player2 has not (slower pace: ' + NODEGAME_CONFIG.independentAgentDelay + 'ms)');
+            startIndependentPlayer2Movement();
         }
     }, 100);
 

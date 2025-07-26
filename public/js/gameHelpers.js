@@ -44,14 +44,14 @@ function setupGridMatrixForTrial(design, experimentType) {
 
     gameData.gridMatrix = Array(EXPSETTINGS.matrixsize).fill(0).map(() => Array(EXPSETTINGS.matrixsize).fill(0));
 
-    // Add player
+    // Add player1
     gameData.gridMatrix[design.initPlayerGrid[0]][design.initPlayerGrid[1]] = OBJECT.player;
-    gameData.playerState = [...design.initPlayerGrid];
+    gameData.player1 = [...design.initPlayerGrid];
 
-    // Add AI player if needed
+    // Add player2 if needed (AI or human)
     if (experimentType.includes('2P')) {
         gameData.gridMatrix[design.initAIGrid[0]][design.initAIGrid[1]] = OBJECT.ai_player;
-        gameData.aiState = [...design.initAIGrid];
+        gameData.player2 = [...design.initAIGrid];
     }
 
     // Add goals
@@ -268,8 +268,8 @@ function getMapsForExperiment(experimentType) {
  */
 function generateRandomizedDistanceSequence(numTrials) {
     var allConditions = [
-        TWOP3G_CONFIG.distanceConditions.CLOSER_TO_AI,
-        TWOP3G_CONFIG.distanceConditions.CLOSER_TO_HUMAN,
+        TWOP3G_CONFIG.distanceConditions.CLOSER_TO_PLAYER2,
+        TWOP3G_CONFIG.distanceConditions.CLOSER_TO_PLAYER1,
         TWOP3G_CONFIG.distanceConditions.EQUAL_TO_BOTH,
         TWOP3G_CONFIG.distanceConditions.NO_NEW_GOAL
     ];
@@ -314,9 +314,9 @@ function generateRandomizedDistanceSequence(numTrials) {
  */
 function generateRandomized1P2GDistanceSequence(numTrials) {
     var allConditions = [
-        ONEP2G_CONFIG.distanceConditions.CLOSER_TO_HUMAN,
-        ONEP2G_CONFIG.distanceConditions.FARTHER_TO_HUMAN,
-        ONEP2G_CONFIG.distanceConditions.EQUAL_TO_HUMAN,
+        ONEP2G_CONFIG.distanceConditions.CLOSER_TO_PLAYER1,
+        ONEP2G_CONFIG.distanceConditions.FARTHER_TO_PLAYER1,
+        ONEP2G_CONFIG.distanceConditions.EQUAL_TO_PLAYER1,
         ONEP2G_CONFIG.distanceConditions.NO_NEW_GOAL
     ];
 

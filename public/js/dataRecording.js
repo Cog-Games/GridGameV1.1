@@ -1,27 +1,31 @@
 /**
  * Data Recording Module
- * 
+ *
  * Handles all data recording and trial finalization logic.
  * Extracted from human-AI-version.js for better organization.
  */
 
 /**
- * Record player move
+ * Record player1 move
  */
-function recordPlayerMove(action, reactionTime) {
-    gameData.currentTrialData.aimAction.push(action);
-    gameData.currentTrialData.RT.push(reactionTime);
-    gameData.currentTrialData.trajectory.push([...gameData.playerState]);
+function recordPlayer1Move(action, reactionTime) {
+    gameData.currentTrialData.player1Actions.push(action);
+    gameData.currentTrialData.player1RT.push(reactionTime);
+    gameData.currentTrialData.player1Trajectory.push([...gameData.player1]);
 }
 
 /**
- * Record AI move
+ * Record player2 move (AI or human)
  */
-function recordAIMove(action) {
-    gameData.currentTrialData.aiAction.push(action);
+function recordPlayer2Move(action, reactionTime = null) {
+    gameData.currentTrialData.player2Actions.push(action);
+    if (reactionTime !== null) {
+        gameData.currentTrialData.player2RT = gameData.currentTrialData.player2RT || [];
+        gameData.currentTrialData.player2RT.push(reactionTime);
+    }
     // Record the trajectory after the move (new position)
-    // This will be called after the AI position is updated
-    gameData.currentTrialData.aiTrajectory.push([...gameData.aiState]);
+    // This will be called after the player2 position is updated
+    gameData.currentTrialData.player2Trajectory.push([...gameData.player2]);
 }
 
 /**
@@ -58,7 +62,7 @@ function finalizeTrial(completed) {
 
 // Export functions for module usage
 window.DataRecording = {
-    recordPlayerMove: recordPlayerMove,
-    recordAIMove: recordAIMove,
+    recordPlayer1Move: recordPlayer1Move,
+    recordPlayer2Move: recordPlayer2Move,
     finalizeTrial: finalizeTrial
 };
