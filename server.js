@@ -1361,22 +1361,8 @@ app.get('/test-human-human', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'test_human_human.html'));
 });
 
-app.get('/test-fix', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'test_fix.html'));
-});
-
-app.get('/human-human-full', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'human_human_full_experiment.html'));
-});
-
-// Add route for the new experiment page
-app.get('/human-human-experiment', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'human_human_experiment_matching.html'));
-});
-
-// Add route for server goal generation test
-app.get('/test-server-goal-generation', (req, res) => {
-    res.sendFile(path.join(__dirname, 'test_server_goal_generation.html'));
+app.get('/test-human-human-refactored', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'test_human_human.html'));
 });
 
 // Health check endpoint

@@ -99,7 +99,7 @@
     <script src="js/setup.js"></script>
     <script src="js/utils.js"></script>
     <script src="js/mdp.js"></script>
-    <script src="js/vizWithAI.js"></script>
+    <script src="js/viz.js"></script>
     <script src="js/rlAgent.js"></script>
 
     <!-- Map data files -->
@@ -111,9 +111,10 @@
     <!-- SheetJS library for Excel export functionality -->
     <script src="https://cdn.sheetjs.com/xlsx-0.19.3/package/dist/xlsx.full.min.js"></script>
 
-    <!-- Human-Human NodeGame experiments -->
-    <script src="js/nodeGameHelpers.js"></script>
+    <!-- Human-Human specific modules -->
     <script src="js/expConfig.js"></script>
+    <script src="js/gameHelpers.js"></script>
+    <script src="js/dataRecording.js"></script>
     <script src="js/expDesign.js"></script>
     <script src="js/expTimeline.js"></script>
     <script src="js/nodeGameHumanHumanVersion.js"></script>
@@ -142,7 +143,7 @@
             if (typeof io === 'undefined') missing.push('Socket.io');
             if (typeof MapsFor2P2G === 'undefined') missing.push('2P2G Maps');
             if (typeof MapsFor2P3G === 'undefined') missing.push('2P3G Maps');
-            if (typeof NodeGameHumanHumanFull === 'undefined') missing.push('Human-Human Experiments');
+            if (typeof window.NodeGameHumanHumanFull === 'undefined') missing.push('Human-Human Experiments');
 
             return missing;
         }
@@ -151,39 +152,56 @@
         document.addEventListener('DOMContentLoaded', function() {
             console.log('Page loaded, checking dependencies...');
 
-            // Check for missing dependencies
-            const missingDeps = checkDependencies();
-            if (missingDeps.length > 0) {
-                showError(
-                    'Missing Dependencies',
-                    `The following required components could not be loaded: ${missingDeps.join(', ')}. Please ensure the server is running and all files are present.`
-                );
-                return;
-            }
+            // Add a small delay to ensure all scripts are loaded
+            setTimeout(function() {
+                // Log all available objects for debugging
+                console.log('Debugging - Available objects:', {
+                    io: typeof io,
+                    MapsFor2P2G: typeof MapsFor2P2G,
+                    MapsFor2P3G: typeof MapsFor2P3G,
+                    NodeGameHumanHumanFull: typeof window.NodeGameHumanHumanFull,
+                    gameData: typeof gameData,
+                    initializeTrialData: typeof initializeTrialData,
+                    recordPlayerMove: typeof recordPlayerMove,
+                    finalizeTrial: typeof finalizeTrial,
+                    MultiplayerHumanHuman: typeof window.MultiplayerHumanHuman
+                });
 
-            console.log('All dependencies loaded successfully');
-            console.log('Initializing NodeGame Human-Human experiments...');
-
-            try {
-                const initialized = window.NodeGameHumanHumanFull.initialize();
-                console.log('NodeGame Human-Human experiments initialized:', initialized);
-
-                if (initialized) {
-                    console.log('Starting human-human experiment flow...');
-                    window.NodeGameHumanHumanFull.start('1P1G');
-                } else {
+                // Check for missing dependencies
+                const missingDeps = checkDependencies();
+                if (missingDeps.length > 0) {
+                    console.error('Missing dependencies:', missingDeps);
                     showError(
-                        'Initialization Failed',
-                        'The experiment system could not be initialized. This may be because the server is not running or there is a configuration issue.'
+                        'Missing Dependencies',
+                        `The following required components could not be loaded: ${missingDeps.join(', ')}. Please ensure the server is running and all files are present.`
+                    );
+                    return;
+                }
+
+                console.log('All dependencies loaded successfully');
+                console.log('Initializing NodeGame Human-Human experiments...');
+
+                try {
+                    const initialized = window.NodeGameHumanHumanFull.initialize();
+                    console.log('NodeGame Human-Human experiments initialized:', initialized);
+
+                    if (initialized) {
+                        console.log('Starting human-human experiment flow...');
+                        window.NodeGameHumanHumanFull.start('2P2G');
+                    } else {
+                        showError(
+                            'Initialization Failed',
+                            'The experiment system could not be initialized. This may be because the server is not running or there is a configuration issue.'
+                        );
+                    }
+                } catch (error) {
+                    console.error('Error during initialization:', error);
+                    showError(
+                        'Initialization Error',
+                        `An error occurred while starting the experiment: ${error.message}`
                     );
                 }
-            } catch (error) {
-                console.error('Error during initialization:', error);
-                showError(
-                    'Initialization Error',
-                    `An error occurred while starting the experiment: ${error.message}`
-                );
-            }
+            }, 100); // 100ms delay to ensure scripts are loaded
         });
 
         // Global error handling

@@ -1,5 +1,21 @@
 /**
  * NodeGame Configuration and Setup for Human-Human Experiments
+ *
+ * REFACTORED VERSION - This file has been refactored to reuse functions from other modules:
+ * - gameHelpers.js: Game logic functions (transition, isValidPosition, isGoalReached, etc.)
+ * - expTimeline.js: Timeline management and stage functions
+ * - viz.js: Visualization functions (createGameCanvas, drawOverlappingCircles, etc.)
+ *
+ * Functions that have been replaced with references to existing modules:
+ * - generateRandomizedDistanceSequence, generateRandomized1P2GDistanceSequence
+ * - getMapsForExperiment, selectRandomMaps
+ * - isValidPosition, isGoalReached, transition, detectPlayerGoal, calculatetGirdDistance
+ * - whichGoalReached, getExperimentDisplayName, getExperimentInstructions
+ * - drawOverlappingCirclesHumanHuman, createTimelineStagesForHumanHuman
+ * - addTrialStages, addCollaborationExperimentStages, addNextTrialStages
+ * - runNextStage, nextStage, proceedToNextStage
+ * - showFixationStage, showPostTrialStage, showQuestionnaireStage, showCompletionStage
+ * - showEndExperimentInfoStage, calculateSuccessRate
  */
 
 // Import nodeGame if available
@@ -390,7 +406,7 @@ function initializeSocket() {
                 moveData.partnerAction = data.action;
             }
 
-            recordMove(moveData);
+            recordMoveMultiPlayer(moveData);
 
             // Update visualization
             updateGameVisualization();
@@ -897,13 +913,14 @@ function makeMultiplayerMove(action) {
 /**
  * Record a move and update game state
  */
-function recordMove(data) {
+function recordMoveMultiPlayer(data) {
     if (!gameData.currentTrialData) {
         console.warn('No current trial data available');
         return;
     }
 
     console.log('=== RECORD MOVE DEBUG ===');
+    console.log('Current experiment type:', gameData.currentExperiment);
     console.log('Move data:', data);
     console.log('myPlayerId:', myPlayerId);
     console.log('data.playerId:', data.playerId);
@@ -960,7 +977,8 @@ function recordMove(data) {
         const secondPlayerGoalHistory = isFirstPlayer ? player2InferredGoals : player1InferredGoals;
 
         // Detect first player's goal (always red player)
-        if (firstPlayerAction) {
+        if (firstPlayerAction && window.NodeGameHelpers && window.NodeGameHelpers.detectPlayerGoal) {
+            const detectPlayerGoal = window.NodeGameHelpers.detectPlayerGoal;
             const firstPlayerGoal = detectPlayerGoal(firstPlayerPos, firstPlayerAction, gameData.currentGoals, firstPlayerGoalHistory);
             gameData.currentTrialData.player1CurrentGoal.push(firstPlayerGoal);
             console.log('First player (red) moved, detected goal:', firstPlayerGoal);
@@ -978,7 +996,8 @@ function recordMove(data) {
         }
 
         // Detect second player's goal (always orange player)
-        if (secondPlayerAction && secondPlayerPos) {
+        if (secondPlayerAction && secondPlayerPos && window.NodeGameHelpers && window.NodeGameHelpers.detectPlayerGoal) {
+            const detectPlayerGoal = window.NodeGameHelpers.detectPlayerGoal;
             const secondPlayerGoal = detectPlayerGoal(secondPlayerPos, secondPlayerAction, gameData.currentGoals, secondPlayerGoalHistory);
             gameData.currentTrialData.player2CurrentGoal.push(secondPlayerGoal);
             console.log('Second player (orange) moved, detected goal:', secondPlayerGoal);
@@ -996,13 +1015,51 @@ function recordMove(data) {
         }
 
         // Check for new goal presentation
-        window.ExpDesign.checkNewGoalPresentation2P3G();
+        checkNewGoalPresentation2P3G();
 
         // Check trial end for 2P3G
-        window.ExpDesign.checkTrialEnd2P3G();
+        checkTrialEnd2P3G();
     } else if (gameData.currentExperiment === '2P2G') {
         // Check trial end for 2P2G
         checkTrialEnd2P2G();
+    } else if (gameData.currentExperiment === '1P2G') {
+        console.log('=== 1P2G LOGIC BLOCK ENTERED ===');
+        console.log('Current experiment confirmed as:', gameData.currentExperiment);
+
+        // Handle 1P2G specific logic (single-player with new goal presentation)
+        // Initialize goal tracking array if not already done
+        if (!gameData.currentTrialData.humanCurrentGoal) {
+            gameData.currentTrialData.humanCurrentGoal = [];
+            console.log('1P2G: Initialized humanCurrentGoal array');
+        }
+
+        console.log('1P2G: currentPlayerAction =', currentPlayerAction);
+        console.log('1P2G: NodeGameHelpers available?', !!window.NodeGameHelpers);
+        console.log('1P2G: detectPlayerGoal available?', !!(window.NodeGameHelpers && window.NodeGameHelpers.detectPlayerGoal));
+
+        // Detect human goal (only current player matters in single-player)
+        if (currentPlayerAction && window.NodeGameHelpers && window.NodeGameHelpers.detectPlayerGoal) {
+            const detectPlayerGoal = window.NodeGameHelpers.detectPlayerGoal;
+            const humanCurrentGoal = detectPlayerGoal(gameData.currentPlayerPos, currentPlayerAction, gameData.currentGoals, gameData.currentTrialData.humanCurrentGoal);
+            gameData.currentTrialData.humanCurrentGoal.push(humanCurrentGoal);
+            console.log('1P2G: Human moved, detected goal:', humanCurrentGoal);
+        } else {
+            console.log('1P2G: Skipping goal detection - missing action or functions');
+        }
+
+        // Check for new goal presentation
+        console.log('1P2G: About to check for new goal presentation');
+        console.log('1P2G Debug - stepCount:', gameData.stepCount, 'minSteps:', ONEP2G_CONFIG.minStepsBeforeNewGoal);
+        console.log('1P2G Debug - humanCurrentGoal array:', gameData.currentTrialData.humanCurrentGoal);
+        console.log('1P2G Debug - newGoalPresented:', gameData.currentTrialData.newGoalPresented);
+        checkNewGoalPresentation1P2G();
+
+        // Check trial end for 1P2G (single goal reached)
+        if (isGoalReached(gameData.currentPlayerPos, gameData.currentGoals)) {
+            console.log('1P2G: Goal reached, finalizing trial');
+            finalizeTrial(true);
+        }
+        console.log('=== 1P2G LOGIC BLOCK END ===');
     }
 }
 
@@ -1015,6 +1072,14 @@ function handleTrialComplete(data) {
 
     // Show collaboration feedback directly on the game board for 2P experiments
     const experimentType = gameData.currentExperiment;
+
+    // Show collaboration feedback overlay for 2P experiments
+    if (experimentType.includes('2P') && gameData.currentTrialData && gameData.currentTrialData.collaborationSucceeded !== undefined) {
+        const canvasContainer = document.getElementById('gameCanvas');
+        if (canvasContainer && typeof createCollaborationFeedbackOverlay === 'function') {
+            createCollaborationFeedbackOverlay(canvasContainer, gameData.currentTrialData.collaborationSucceeded, NODEGAME_CONFIG.timing.feedbackDisplayDuration - 100);
+        }
+    }
 
     // Use the same logic as post-trial stage for transitioning
     setTimeout(() => {
@@ -1040,6 +1105,8 @@ function handleTrialComplete(data) {
         }
     }, NODEGAME_CONFIG.timing.feedbackDisplayDuration);
 }
+
+
 
 function shouldContinueToNextTrial(experimentType, trialIndex) {
     // Only apply to collaboration games
@@ -1092,7 +1159,7 @@ function initializeNodeGameHumanHumanFullExperiments() {
     initializeSuccessThresholdTracking();
 
     // Create timeline stages
-    createTimelineStagesForHumanHuman();
+    createTimelineStages();
 
     console.log('Human-Human experiments initialized successfully');
     return true;
@@ -1119,363 +1186,9 @@ function startNodeGameHumanHumanExperiment(experimentType) {
     return true;
 }
 
-/**
- * Create timeline stages (using timeline.js functions)
- */
-function createTimelineStagesForHumanHuman() {
-    timeline.stages = [];
-    timeline.mapData = {};
 
-    // =================================================================================================
-    // EXPERIMENT SETUP - LOG CURRENT CONFIGURATION
-    // =================================================================================================
-    console.log('=== EXPERIMENT CONFIGURATION ===');
-    console.log('Experiments to run:', NODEGAME_CONFIG.experimentOrder);
-    console.log('Total experiments:', NODEGAME_CONFIG.experimentOrder.length);
-
-    var totalTrials = 0;
-    NODEGAME_CONFIG.experimentOrder.forEach(expType => {
-        var trials = NODEGAME_CONFIG.numTrials[expType];
-        totalTrials += trials;
-        console.log(`- ${expType}: ${trials} trials`);
-    });
-    console.log('Total trials:', totalTrials);
-    console.log('================================');
-
-    // Add welcome screen for first experiment
-    timeline.stages.push({
-        type: 'welcome',
-        experimentType: NODEGAME_CONFIG.experimentOrder[0],
-        experimentIndex: 0,
-        handler: showWelcomeStage
-    });
-
-    // Separate single-player and multiplayer experiments
-    var singlePlayerExperiments = [];
-    var multiplayerExperiments = [];
-
-    NODEGAME_CONFIG.experimentOrder.forEach((expType, expIndex) => {
-        if (expType.includes('1P')) {
-            singlePlayerExperiments.push({ type: expType, index: expIndex });
-        } else if (expType.includes('2P')) {
-            multiplayerExperiments.push({ type: expType, index: expIndex });
-        }
-    });
-
-    // Add single-player experiments first (1P1G, 1P2G)
-    singlePlayerExperiments.forEach(({ type: experimentType, index: expIndex }) => {
-        var numTrials = NODEGAME_CONFIG.numTrials[experimentType];
-
-        console.log(`Setting up single-player experiment ${expIndex + 1}: ${experimentType} (${numTrials} trials)`);
-
-        // Select maps for this experiment
-        var experimentMaps = getMapsForExperiment(experimentType);
-        console.log(`Single-player experiment maps for ${experimentType}:`, experimentMaps);
-        var selectedMaps = selectRandomMaps(experimentMaps, numTrials);
-        console.log(`Selected single-player maps for ${experimentType}:`, selectedMaps);
-        timeline.mapData[experimentType] = selectedMaps;
-
-        // Generate randomized distance condition sequence for 1P2G experiments
-        if (experimentType === '1P2G') {
-            ONEP2G_CONFIG.distanceConditionSequence = generateRandomized1P2GDistanceSequence(numTrials);
-        }
-
-        // Add trial stages for single-player experiments (fixed number)
-        for (var i = 0; i < numTrials; i++) {
-            addTrialStages(experimentType, expIndex, i);
-        }
-    });
-
-    // Add instruction stage before multiplayer experiments
-    if (multiplayerExperiments.length > 0) {
-        timeline.stages.push({
-            type: 'multiplayer_instructions',
-            handler: showMultiplayerInstructionsStage
-        });
-    }
-
-    // Add waiting for partner stage before multiplayer experiments
-    if (multiplayerExperiments.length > 0) {
-        timeline.stages.push({
-            type: 'waiting_for_partner',
-            handler: showWaitingForPartnerStage
-        });
-    }
-
-    // Add multiplayer experiments (2P2G, 2P3G)
-    multiplayerExperiments.forEach(({ type: experimentType, index: expIndex }) => {
-        var numTrials = NODEGAME_CONFIG.numTrials[experimentType];
-
-        console.log(`Setting up multiplayer experiment ${expIndex + 1}: ${experimentType} (${numTrials} trials)`);
-
-        // Select maps for this experiment
-        var experimentMaps = getMapsForExperiment(experimentType);
-        console.log(`=== MAP SELECTION FOR ${experimentType} ===`);
-        console.log(`Experiment maps loaded:`, experimentMaps ? `${Object.keys(experimentMaps).length} maps` : 'null');
-        console.log(`Experiment maps for ${experimentType}:`, experimentMaps);
-        var selectedMaps = selectRandomMaps(experimentMaps, numTrials);
-        console.log(`Selected ${numTrials} maps for ${experimentType}:`, selectedMaps);
-        timeline.mapData[experimentType] = selectedMaps;
-        console.log(`Timeline map data for ${experimentType}:`, timeline.mapData[experimentType]);
-        console.log(`=== END MAP SELECTION ===`);
-
-        // Generate randomized distance condition sequence for 2P3G experiments
-        if (experimentType === '2P3G') {
-            TWOP3G_CONFIG.distanceConditionSequence = generateRandomizedDistanceSequence(numTrials);
-        }
-
-        // For collaboration games, we'll create stages dynamically based on success threshold
-        if (NODEGAME_CONFIG.successThreshold.enabled) {
-            // Add a single trial stage that will be repeated dynamically
-            addCollaborationExperimentStages(experimentType, expIndex, 0);
-        } else {
-            // Add trial stages for this experiment (fixed number)
-            for (var i = 0; i < numTrials; i++) {
-                addTrialStages(experimentType, expIndex, i);
-            }
-        }
-    });
-
-    // Add post-questionnaire stage (only once at the end, before completion)
-    timeline.stages.push({
-        type: 'questionnaire',
-        handler: showQuestionnaireStage
-    });
-
-    // Add end experiment info stage (matching jsPsych version)
-    timeline.stages.push({
-        type: 'end-info',
-        handler: showEndExperimentInfoStage
-    });
-
-    // Add completion stage (only once at the end)
-    timeline.stages.push({
-        type: 'completion',
-        handler: showCompletionStage
-    });
-
-    console.log('Timeline stages created:', timeline.stages.length, 'stages');
-    console.log('Single-player experiments:', singlePlayerExperiments.map(e => e.type));
-    console.log('Multiplayer experiments:', multiplayerExperiments.map(e => e.type));
-}
-
-/**
- * Show multiplayer instructions stage
- */
-function showMultiplayerInstructionsStage(stage) {
-    const container = document.getElementById('container');
-
-    container.innerHTML = `
-        <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
-            <div style="max-width: 800px; text-align: center; background: white; padding: 40px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-                <h2 style="color: #007bff; margin-bottom: 30px;">Multiplayer Collaboration Instructions</h2>
-
-                <div style="text-align: left; margin-bottom: 30px;">
-                    <h3 style="color: #333; margin-bottom: 15px;">🎮 How to Play:</h3>
-                    <ul style="line-height: 1.6; color: #666;">
-                        <li><strong>You will be paired with another player</strong> - wait for them to join</li>
-                        <li><strong>Use arrow keys (↑ ↓ ← →)</strong> to move your character</li>
-                        <li><strong>Coordinate with your partner</strong> to reach the goals together</li>
-                        <li><strong>Communication is key!</strong> Work together to succeed</li>
-                    </ul>
-                </div>
-
-                <div style="text-align: left; margin-bottom: 30px;">
-                    <h3 style="color: #333; margin-bottom: 15px;">🎯 Game Types:</h3>
-                    <ul style="line-height: 1.6; color: #666;">
-                        <li><strong>2P2G:</strong> Two players, two goals - coordinate to reach goals</li>
-                        <li><strong>2P3G:</strong> Two players, three goals - a third goal appears during play</li>
-                    </ul>
-                </div>
-
-                <div style="text-align: left; margin-bottom: 30px;">
-                    <h3 style="color: #333; margin-bottom: 15px;">⚠️ Important Notes:</h3>
-                    <ul style="line-height: 1.6; color: #666;">
-                        <li>Both players must reach the <strong>same goal</strong> to succeed</li>
-                        <li>If you disconnect, you can reconnect and continue</li>
-                        <li>Take your time to plan your moves with your partner</li>
-                    </ul>
-                </div>
-
-                <div style="margin-top: 40px;">
-                    <button class="btn" onclick="nextStage()" style="background: #007bff; color: white; border: none; padding: 15px 30px; border-radius: 5px; cursor: pointer; font-size: 16px;">
-                        Continue to Multiplayer Games
-                    </button>
-                </div>
-            </div>
-        </div>
-    `;
-}
-
-/**
- * Show waiting for partner stage
- */
-function showWaitingForPartnerStage(stage) {
-    const container = document.getElementById('container');
-    container.innerHTML = `
-        <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
-            <div style="max-width: 600px; margin: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 40px; text-align: center;">
-                <h1 style="color: #333; margin-bottom: 30px;">Finding Your Partner...</h1>
-
-                <div style="margin: 40px 0;">
-                    <div class="spinner" style="border: 4px solid #f3f3f3; border-top: 4px solid #007bff; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 0 auto;"></div>
-                </div>
-
-                <div style="font-size: 18px; color: #666; margin-bottom: 20px;">
-                    <p>Please wait while we match you with another participant.</p>
-                    <p>This usually takes just a few moments...</p>
-                </div>
-
-                <div id="waitingStatus" style="font-size: 16px; color: #007bff; margin-bottom: 30px;">
-                    Connecting to matching service...
-                </div>
-
-                <div style="background: #e9ecef; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
-                    <p style="margin: 0; font-size: 14px; color: #6c757d;">
-                        <strong>Tip:</strong> Keep this window open and active. You'll automatically proceed once a partner is found.
-                    </p>
-                </div>
-
-                <button onclick="handleWaitingCancel()" style="background: #6c757d; color: white; border: none; padding: 10px 20px; font-size: 14px; border-radius: 5px; cursor: pointer;">
-                    Cancel and Exit
-                </button>
-            </div>
-        </div>
-
-        <style>
-            @keyframes spin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
-            }
-        </style>
-    `;
-
-    // Try to join multiplayer room
-    setTimeout(() => {
-        if (joinMultiplayerRoom()) {
-            updateWaitingStatus('Looking for another participant...');
-        } else {
-            updateWaitingStatus('Connection failed. Please refresh the page.');
-        }
-    }, 1000); // Wait a moment for socket to be ready
-
-    // Make function globally available
-    window.handleWaitingCancel = function () {
-        if (socket) {
-            socket.disconnect();
-        }
-        window.close();
-    };
-}
-
-
-/**
- * Add trial stages for a specific trial
- * @param {string} experimentType - Type of experiment
- * @param {number} experimentIndex - Index of experiment
- * @param {number} trialIndex - Index of trial
- */
-function addTrialStages(experimentType, experimentIndex, trialIndex) {
-    // Fixation screen (500ms, matching jsPsych) - first thing shown for each trial
-    timeline.stages.push({
-        type: 'fixation',
-        experimentType: experimentType,
-        experimentIndex: experimentIndex,
-        trialIndex: trialIndex,
-        handler: showFixationStage
-    });
-
-    // Main trial
-    timeline.stages.push({
-        type: 'trial',
-        experimentType: experimentType,
-        experimentIndex: experimentIndex,
-        trialIndex: trialIndex,
-        handler: runTrialStage
-    });
-
-    // Post-trial feedback
-    timeline.stages.push({
-        type: 'post-trial',
-        experimentType: experimentType,
-        experimentIndex: experimentIndex,
-        trialIndex: trialIndex,
-        handler: showPostTrialStage
-    });
-}
-
-/**
- * Add collaboration experiment stages (for 2P games with success threshold)
- */
-function addCollaborationExperimentStages(experimentType, experimentIndex, trialIndex) {
-    // Fixation screen
-    timeline.stages.push({
-        type: 'fixation',
-        experimentType: experimentType,
-        experimentIndex: experimentIndex,
-        trialIndex: trialIndex,
-        handler: showFixationStage
-    });
-
-    // Main trial
-    timeline.stages.push({
-        type: 'trial',
-        experimentType: experimentType,
-        experimentIndex: experimentIndex,
-        trialIndex: trialIndex,
-        handler: runTrialStage
-    });
-
-    // Post-trial feedback with dynamic continuation
-    timeline.stages.push({
-        type: 'post-trial',
-        experimentType: experimentType,
-        experimentIndex: experimentIndex,
-        trialIndex: trialIndex,
-        handler: showPostTrialStage
-    });
-}
-
-/**
- * Add next trial stages dynamically for collaboration games
- * @param {string} experimentType - Type of experiment
- * @param {number} experimentIndex - Index of experiment
- * @param {number} trialIndex - Index of trial
- */
-function addNextTrialStages(experimentType, experimentIndex, trialIndex) {
-    // Find the current post-trial stage index
-    var currentStageIndex = timeline.currentStage;
-
-    // Insert the next trial stages after the current post-trial stage
-    var stagesToInsert = [
-        {
-            type: 'fixation',
-            experimentType: experimentType,
-            experimentIndex: experimentIndex,
-            trialIndex: trialIndex,
-            handler: showFixationStage
-        },
-        {
-            type: 'trial',
-            experimentType: experimentType,
-            experimentIndex: experimentIndex,
-            trialIndex: trialIndex,
-            handler: runTrialStage
-        },
-        {
-            type: 'post-trial',
-            experimentType: experimentType,
-            experimentIndex: experimentIndex,
-            trialIndex: trialIndex,
-            handler: showPostTrialStage
-        }
-    ];
-
-    // Insert stages after current stage
-    timeline.stages.splice(currentStageIndex + 1, 0, ...stagesToInsert);
-
-    console.log(`Added next trial stages for ${experimentType} trial ${trialIndex + 1}`);
-}
+// Note: showWaitingForPartnerStage function is now defined in expTimeline.js
+// and supports both human-human and human-AI modes
 
 /**
  * Fallback rendering function using exact human-AI version parameters
@@ -1565,14 +1278,14 @@ function renderGameBoardFallback() {
         }
     } else {
         // Multiplayer experiments (2P2G, 2P3G)
-        if (gameData && gameData.playerStartPos && gameData.partnerStartPos &&
-            gameData.playerStartPos.length >= 2 && gameData.partnerStartPos.length >= 2) {
+        if (gameData && gameData.currentPlayerPos && gameData.currentPartnerPos &&
+            gameData.currentPlayerPos.length >= 2 && gameData.currentPartnerPos.length >= 2) {
 
             // Check if players are in the same position
-            if (gameData.playerStartPos[0] === gameData.partnerStartPos[0] &&
-                gameData.playerStartPos[1] === gameData.partnerStartPos[1]) {
+            if (gameData.currentPlayerPos[0] === gameData.currentPartnerPos[0] &&
+                gameData.currentPlayerPos[1] === gameData.currentPartnerPos[1]) {
                 // Draw overlapping circles
-                drawOverlappingCirclesHumanHuman(ctx, gameData.playerStartPos[1], gameData.playerStartPos[0]);
+                drawOverlappingCirclesHumanHuman(ctx, gameData.currentPlayerPos[1], gameData.currentPlayerPos[0]);
             } else {
                 // Determine colors based on player order (with fallback)
                 let myColor, partnerColor;
@@ -1590,24 +1303,24 @@ function renderGameBoardFallback() {
 
                 // Draw my player
                 drawCircleHumanHuman(ctx, myColor, 1 / 3 * EXPSETTINGS.padding,
-                    gameData.playerStartPos[1], gameData.playerStartPos[0], 0, 2 * Math.PI);
+                    gameData.currentPlayerPos[1], gameData.currentPlayerPos[0], 0, 2 * Math.PI);
 
                 // Draw partner
                 drawCircleHumanHuman(ctx, partnerColor, 1 / 3 * EXPSETTINGS.padding,
-                    gameData.partnerStartPos[1], gameData.partnerStartPos[0], 0, 2 * Math.PI);
+                    gameData.currentPartnerPos[1], gameData.currentPartnerPos[0], 0, 2 * Math.PI);
             }
-        } else if (gameData && gameData.playerStartPos && gameData.playerStartPos.length >= 2) {
+        } else if (gameData && gameData.currentPlayerPos && gameData.currentPlayerPos.length >= 2) {
             // Only draw player
             const playerOrder = window.playerOrder || { isFirstPlayer: true }; // Fallback to first player
             let myColor = playerOrder.isFirstPlayer ? COLORPOOL.player : "orange";
             drawCircleHumanHuman(ctx, myColor, 1 / 3 * EXPSETTINGS.padding,
-                gameData.playerStartPos[1], gameData.playerStartPos[0], 0, 2 * Math.PI);
-        } else if (gameData && gameData.partnerStartPos && gameData.partnerStartPos.length >= 2) {
+                gameData.currentPlayerPos[1], gameData.currentPlayerPos[0], 0, 2 * Math.PI);
+        } else if (gameData && gameData.currentPartnerPos && gameData.currentPartnerPos.length >= 2) {
             // Only draw partner
             const playerOrder = window.playerOrder || { isFirstPlayer: true }; // Fallback to first player
             let partnerColor = playerOrder.isFirstPlayer ? "orange" : COLORPOOL.player;
             drawCircleHumanHuman(ctx, partnerColor, 1 / 3 * EXPSETTINGS.padding,
-                gameData.partnerStartPos[1], gameData.partnerStartPos[0], 0, 2 * Math.PI);
+                gameData.currentPartnerPos[1], gameData.currentPartnerPos[0], 0, 2 * Math.PI);
         }
     }
 
@@ -1636,65 +1349,8 @@ function renderGameBoardFallback() {
     }
 }
 
-/**
- * Generate randomized distance condition sequence for 2P3G trials
- * Uses helper function from nodeGameHelpers.js
- * @param {number} numTrials - Number of 2P3G trials
- * @returns {Array} - Randomized array of distance conditions
- */
-function generateRandomizedDistanceSequence(numTrials) {
-    return window.NodeGameHelpers.generateRandomizedDistanceSequence(numTrials);
-}
-
-/**
- * Generate randomized distance condition sequence for 1P2G trials
- * Uses helper function from nodeGameHelpers.js
- * @param {number} numTrials - Number of 1P2G trials
- * @returns {Array} - Randomized array of distance conditions
- */
-function generateRandomized1P2GDistanceSequence(numTrials) {
-    return window.NodeGameHelpers.generateRandomized1P2GDistanceSequence(numTrials);
-}
-
-/**
- * Get maps for a specific experiment type
- * Uses helper function from nodeGameHelpers.js
- * @param {string} experimentType - Type of experiment
- * @returns {Array} - Array of maps for the experiment
- */
-function getMapsForExperiment(experimentType) {
-    const maps = window.NodeGameHelpers.getMapsForExperiment(experimentType);
-    console.log(`Loading maps for ${experimentType}:`, maps);
-
-    // Check if maps are properly loaded
-    if (!maps || Object.keys(maps).length === 0) {
-        console.error(`No maps found for experiment type: ${experimentType}`);
-        console.log('Available map globals:', {
-            MapsFor1P1G: typeof window.MapsFor1P1G,
-            MapsFor1P2G: typeof window.MapsFor1P2G,
-            MapsFor2P2G: typeof window.MapsFor2P2G,
-            MapsFor2P3G: typeof window.MapsFor2P3G
-        });
-    }
-
-    return maps;
-}
-
-/**
- * Select random maps for trials
- * Uses helper function from nodeGameHelpers.js
- * @param {Object} mapData - Object containing available maps
- * @param {number} nTrials - Number of trials
- * @returns {Array} - Array of selected maps
- */
-function selectRandomMaps(mapData, nTrials) {
-    return window.NodeGameHelpers.selectRandomMaps(mapData, nTrials);
-}
-
-/**
- * Run next stage in timeline
- */
-function runNextStage() {
+// Use existing timeline functions from expTimeline.js
+const runNextStage = window.runNextStage || function() {
     if (timeline.currentStage >= timeline.stages.length) {
         console.log('All stages completed');
         return;
@@ -1717,34 +1373,20 @@ function runNextStage() {
         console.warn(`No handler for stage: ${stage.name}`);
         nextStage();
     }
-}
+};
 
-/**
- * Proceed to next stage
- */
-function nextStage() {
+const nextStage = window.nextStage || function() {
     // Reset trial stage flag when moving to next stage
     timeline.inTrialStage = false;
     timeline.currentStage++;
     runNextStage();
-}
+};
 
-/**
- * Proceed to next stage (alias for compatibility)
- */
-function proceedToNextStage() {
+const proceedToNextStage = window.proceedToNextStage || function() {
     nextStage();
-}
+};
 
-/**
- * Update waiting status
- */
-function updateWaitingStatus(message) {
-    const statusElement = document.getElementById('waitingStatus');
-    if (statusElement) {
-        statusElement.textContent = message;
-    }
-}
+// Note: updateWaitingStatus function is now defined in expTimeline.js
 
 /**
  * Run trial stage
@@ -2081,7 +1723,7 @@ function handleKeyPress(event) {
         } else if (gameData.currentExperiment && gameData.currentExperiment.includes('2P')) {
         // Multiplayer experiments (2P2G, 2P3G)
         // Check if player has already reached a goal
-        if (isGoalReached(gameData.playerStartPos, gameData.currentGoals)) {
+        if (isGoalReached(gameData.currentPlayerPos, gameData.currentGoals)) {
             console.log('Player already reached goal, movement blocked');
             return;
         }
@@ -2093,20 +1735,9 @@ function handleKeyPress(event) {
     }
 }
 
-/**
- * Check if a position is valid (within grid bounds)
- */
-function isValidPosition(position) {
-    return window.NodeGameHelpers.isValidPosition(position);
-}
-
-/**
- * Check if a player has reached any goal
- * Uses helper function from nodeGameHelpers.js
- */
-function isGoalReached(playerPos, goals) {
-    return window.NodeGameHelpers.isGoalReached(playerPos, goals);
-}
+// Use existing helper functions from gameHelpers.js
+// const isValidPosition = window.NodeGameHelpers.isValidPosition;
+// const isGoalReached = window.NodeGameHelpers.isGoalReached;
 
 /**
  * Attempt to reconnect to the server
@@ -2132,6 +1763,9 @@ function attemptReconnection() {
 
 // Make functions globally available
 window.attemptReconnection = attemptReconnection;
+window.joinMultiplayerRoom = joinMultiplayerRoom;
+
+// Note: Global aliases are no longer needed since expDesign.js now supports both versions
 
 /**
  * Remove game board canvas (cleanup function)
@@ -2342,6 +1976,27 @@ function initializeTrialData(trialIndex, experimentType) {
         gameData.currentTrialData.player1DistanceToOldGoal = null;
     }
 
+    // Initialize 1P2G specific variables for new trial
+    if (experimentType === '1P2G') {
+        console.log(`=== 1P2G Trial ${trialIndex + 1} Setup ===`);
+        console.log(`Experiment type: ${experimentType}`);
+        console.log(`Trial index: ${trialIndex}`);
+        console.log(`========================================`);
+
+        // Initialize goal tracking array for human player
+        gameData.currentTrialData.humanCurrentGoal = [];
+        gameData.currentTrialData.newGoalPresentedTime = null;
+        gameData.currentTrialData.newGoalPosition = null;
+        gameData.currentTrialData.newGoalConditionType = null;
+        gameData.currentTrialData.newGoalPresented = false;
+        gameData.currentTrialData.humanDistanceToFirstGoal = null;
+        gameData.currentTrialData.humanDistanceToNewGoal = null;
+
+        // Set distance condition for this trial
+        gameData.currentTrialData.distanceCondition = getRandomDistanceConditionFor1P2G(trialIndex);
+        console.log(`Distance condition: ${gameData.currentTrialData.distanceCondition}`);
+    }
+
     console.log('Trial data initialized for trial', trialIndex);
 }
 
@@ -2391,6 +2046,44 @@ function recordPlayerMove(action, reactionTime) {
         } else {
             gameData.currentTrialData.trajectory.push([0, 0]); // Default fallback
         }
+    }
+
+    // Handle 1P2G goal detection and new goal presentation for single-player moves
+    if (gameData.currentExperiment === '1P2G') {
+        console.log('=== 1P2G SINGLE-PLAYER LOGIC ===');
+        console.log('Current experiment confirmed as:', gameData.currentExperiment);
+
+        // Initialize goal tracking array if not already done
+        if (!gameData.currentTrialData.humanCurrentGoal) {
+            gameData.currentTrialData.humanCurrentGoal = [];
+            console.log('1P2G: Initialized humanCurrentGoal array in recordPlayerMove');
+        }
+
+        console.log('1P2G: action =', action);
+        console.log('1P2G: NodeGameHelpers available?', !!window.NodeGameHelpers);
+        console.log('1P2G: detectPlayerGoal available?', !!(window.NodeGameHelpers && window.NodeGameHelpers.detectPlayerGoal));
+
+        // Detect human goal (only current player matters in single-player)
+        if (action && window.NodeGameHelpers && window.NodeGameHelpers.detectPlayerGoal) {
+            const detectPlayerGoal = window.NodeGameHelpers.detectPlayerGoal;
+            const humanCurrentGoal = detectPlayerGoal(gameData.currentPlayerPos, action, gameData.currentGoals, gameData.currentTrialData.humanCurrentGoal);
+            gameData.currentTrialData.humanCurrentGoal.push(humanCurrentGoal);
+            console.log('1P2G: Human moved, detected goal:', humanCurrentGoal);
+        } else {
+            console.log('1P2G: Skipping goal detection - missing action or functions');
+        }
+
+        // Update step count for new goal presentation logic
+        gameData.stepCount++;
+
+        // Check for new goal presentation
+        console.log('1P2G: About to check for new goal presentation (from recordPlayerMove)');
+        console.log('1P2G Debug - stepCount:', gameData.stepCount, 'minSteps:', ONEP2G_CONFIG.minStepsBeforeNewGoal);
+        console.log('1P2G Debug - humanCurrentGoal array:', gameData.currentTrialData.humanCurrentGoal);
+        console.log('1P2G Debug - newGoalPresented:', gameData.currentTrialData.newGoalPresented);
+        checkNewGoalPresentation1P2G();
+
+        console.log('=== 1P2G SINGLE-PLAYER LOGIC END ===');
     }
 }
 
@@ -2540,12 +2233,8 @@ function finalizeTrial(success) {
     }
 }
 
-/**
- * Get random distance condition for 2P3G after trial 12
- * @param {number} trialIndex - Current trial index
- * @returns {string} - Distance condition
- */
-function getRandomDistanceConditionFor2P3G(trialIndex) {
+// Use existing helper functions from gameHelpers.js
+const getRandomDistanceConditionFor2P3G = window.getRandomDistanceConditionFor2P3G || function(trialIndex) {
     // If we're past the random sampling threshold, use random sampling
     if (trialIndex >= NODEGAME_CONFIG.successThreshold.randomSamplingAfterTrial) {
         var allConditions = [
@@ -2561,14 +2250,9 @@ function getRandomDistanceConditionFor2P3G(trialIndex) {
         // Use the pre-selected condition from sequence
         return TWOP3G_CONFIG.distanceConditionSequence[trialIndex];
     }
-}
+};
 
-/**
- * Get random distance condition for 1P2G after trial 12
- * @param {number} trialIndex - Current trial index
- * @returns {string} - Distance condition
- */
-function getRandomDistanceConditionFor1P2G(trialIndex) {
+const getRandomDistanceConditionFor1P2G = window.getRandomDistanceConditionFor1P2G || function(trialIndex) {
     // If we're past the random sampling threshold, use random sampling
     if (trialIndex >= NODEGAME_CONFIG.successThreshold.randomSamplingAfterTrial) {
         var allConditions = [
@@ -2584,7 +2268,7 @@ function getRandomDistanceConditionFor1P2G(trialIndex) {
         // Use the pre-selected condition from sequence
         return ONEP2G_CONFIG.distanceConditionSequence[trialIndex];
     }
-}
+};
 
 /**
  * Initialize success threshold tracking
@@ -2826,10 +2510,8 @@ function testDataSaving() {
 // UTILITY FUNCTIONS
 // =================================================================================================
 
-/**
- * Get experiment display name (matching human-AI version exactly)
- */
-function getExperimentDisplayName(experimentType) {
+// Use existing helper functions from expTimeline.js
+const getExperimentDisplayName = window.getExperimentDisplayName || function(experimentType) {
     switch (experimentType) {
         case '1P1G': return '1-Player-1-Goal Task';
         case '1P2G': return '1-Player-2-Goals Task';
@@ -2837,12 +2519,9 @@ function getExperimentDisplayName(experimentType) {
         case '2P3G': return '2-Player-3-Goals Task';
         default: return experimentType;
     }
-}
+};
 
-/**
- * Get experiment instructions (matching human-AI version exactly)
- */
-function getExperimentInstructions(experimentType) {
+const getExperimentInstructions = window.getExperimentInstructions || function(experimentType) {
     switch (experimentType) {
         case '1P1G': return 'Navigate to reach the goal';
         case '1P2G': return 'Navigate to reach both goals';
@@ -2850,9 +2529,8 @@ function getExperimentInstructions(experimentType) {
         case '2P3G': return 'Work together to reach all three goals';
         default: return 'Navigate to reach the goal(s)';
     }
-}
+};
 
-// Note: getMapsForExperiment() is already defined in nodeGameHelpers.js
 
 // Note: selectRandomMaps() is already defined in nodeGameHelpers.js
 
@@ -2868,148 +2546,119 @@ function getExperimentInstructions(experimentType) {
 // - setExperimentCollaboration()
 // - setCustomExperimentOrder()
 
-/**
- * Draw overlapping circles function matching exact human-AI version parameters
- */
-function drawOverlappingCirclesHumanHuman(context, colPos, rowPos) {
-    // First draw white background
-    context.fillStyle = COLORPOOL.map;
-    context.fillRect(colPos * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding,
-        rowPos * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding,
-        EXPSETTINGS.cellSize, EXPSETTINGS.cellSize);
+// // Use existing visualization function from viz.js
+// const drawOverlappingCirclesHumanHuman = window.drawOverlappingCirclesHumanHuman || function(context, colPos, rowPos) {
+//     // First draw white background
+//     context.fillStyle = COLORPOOL.map;
+//     context.fillRect(colPos * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding,
+//         rowPos * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding,
+//         EXPSETTINGS.cellSize, EXPSETTINGS.cellSize);
 
-    const circleRadius = EXPSETTINGS.cellSize * 0.35; // Slightly smaller for overlap
-    const centerX = colPos * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding + EXPSETTINGS.cellSize/2;
-    const centerY = rowPos * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding + EXPSETTINGS.cellSize/2;
-    const offset = EXPSETTINGS.cellSize * 0.15; // Offset for overlap
+//     const circleRadius = EXPSETTINGS.cellSize * 0.35; // Slightly smaller for overlap
+//     const centerX = colPos * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding + EXPSETTINGS.cellSize/2;
+//     const centerY = rowPos * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding + EXPSETTINGS.cellSize/2;
+//     const offset = EXPSETTINGS.cellSize * 0.15; // Offset for overlap
 
-    // Draw human player circle (red) on the left
-    context.beginPath();
-    context.lineWidth = 1/3 * EXPSETTINGS.padding;
-    context.strokeStyle = COLORPOOL.player;
-    context.fillStyle = COLORPOOL.player;
-    context.arc(centerX - offset, centerY, circleRadius, 0, 2 * Math.PI);
-    context.fill();
-    context.stroke();
+//     // Draw human player circle (red) on the left
+//     context.beginPath();
+//     context.lineWidth = 1/3 * EXPSETTINGS.padding;
+//     context.strokeStyle = COLORPOOL.player;
+//     context.fillStyle = COLORPOOL.player;
+//     context.arc(centerX - offset, centerY, circleRadius, 0, 2 * Math.PI);
+//     context.fill();
+//     context.stroke();
 
-    // Draw partner player circle (orange) on the right
-    context.beginPath();
-    context.strokeStyle = "orange";
-    context.fillStyle = "orange";
-    context.arc(centerX + offset, centerY, circleRadius, 0, 2 * Math.PI);
-    context.fill();
-    context.stroke();
-}
+//     // Draw partner player circle (orange) on the right
+//     context.beginPath();
+//     context.strokeStyle = "orange";
+//     context.fillStyle = "orange";
+//     context.arc(centerX + offset, centerY, circleRadius, 0, 2 * Math.PI);
+//     context.fill();
+//     context.stroke();
+// };
 
 // =================================================================================================
 // GOAL DETECTION AND NEW GOAL PRESENTATION (matching human-AI version)
 // =================================================================================================
 
-/**
- * Transition function (matching human-AI version)
- */
-function transition(state, action) {
-    return window.NodeGameHelpers.transition(state, action);
-}
-
-/**
- * Detect which goal a player is heading towards (matching human-AI version exactly)
- */
-function detectPlayerGoal(playerPos, action, goals, goalHistory) {
-    console.log('=== DETECT PLAYER GOAL DEBUG ===');
-    console.log('playerPos:', playerPos, 'action:', action, 'goals:', goals, 'goalHistory:', goalHistory);
-
-    const result = window.NodeGameHelpers.detectPlayerGoal(playerPos, action, goals, goalHistory);
-    console.log('Returning closest goal:', result);
-    return result;
-}
-
-/**
- * Calculate grid distance between two positions
- * Uses helper function from nodeGameHelpers.js
- */
-function calculatetGirdDistance(pos1, pos2) {
-    return window.NodeGameHelpers.calculatetGirdDistance(pos1, pos2);
-}
+// Use existing helper functions from gameHelpers.js
+// const transition = window.NodeGameHelpers.transition;
+// const detectPlayerGoal = window.NodeGameHelpers.detectPlayerGoal;
+// const calculatetGirdDistance = window.NodeGameHelpers.calculatetGirdDistance;
 
 /**
  * Check for new goal presentation in 2P3G (using server-side logic)
  */
 function checkNewGoalPresentation2P3G() {
-    // Reset goal history for new trial if needed
-    if (!gameData.currentTrialData.player1CurrentGoal) {
-        gameData.currentTrialData.player1CurrentGoal = [];
-        gameData.currentTrialData.player2CurrentGoal = [];
-        player1InferredGoals = [];
-        player2InferredGoals = [];
-    }
+    console.log('=== HUMAN-HUMAN 2P3G NEW GOAL CHECK ===');
 
-    // Check minimum steps requirement
-    if (gameData.stepCount < TWOP3G_CONFIG.minStepsBeforeNewGoal) {
-        console.log('=== MIN STEPS NOT MET ===');
-        console.log('Current step:', gameData.stepCount, 'Required:', TWOP3G_CONFIG.minStepsBeforeNewGoal);
-        return;
-    }
+    // Use the unified function from ExpDesign.js
+    if (window.ExpDesign && window.ExpDesign.checkNewGoalPresentation2P3G) {
+        console.log('Using unified ExpDesign function for 2P3G');
 
-    // Get current goals for both players
-    var player1CurrentGoal = gameData.currentTrialData.player1CurrentGoal.length > 0 ?
-        gameData.currentTrialData.player1CurrentGoal[gameData.currentTrialData.player1CurrentGoal.length - 1] : null;
-    var player2CurrentGoal = gameData.currentTrialData.player2CurrentGoal.length > 0 ?
-        gameData.currentTrialData.player2CurrentGoal[gameData.currentTrialData.player2CurrentGoal.length - 1] : null;
+        window.ExpDesign.checkNewGoalPresentation2P3G({
+            isHumanHuman: true,
+            displayUpdater: updateGameVisualization,
+            serverRequestHandler: function(requestData) {
+                console.log('=== SENDING SERVER REQUEST VIA HANDLER ===');
+                console.log('Request data:', requestData);
 
-    console.log('=== GOAL DETECTION DEBUG ===');
-    console.log('Step:', gameData.stepCount);
-    console.log('First player (red) goal:', player1CurrentGoal, 'Second player (orange) goal:', player2CurrentGoal);
-    console.log('newGoalPresented:', newGoalPresented);
-    console.log('Distance condition:', gameData.gameState?.distanceCondition);
-    console.log('First player goal history:', player1InferredGoals);
-    console.log('Second player goal history:', player2InferredGoals);
-
-    // Check if both players have detected goals AND they are the same AND new goal hasn't been presented yet
-    if (player1CurrentGoal !== null && player2CurrentGoal !== null &&
-        player1CurrentGoal === player2CurrentGoal && !newGoalPresented) {
-
-        console.log('=== BOTH PLAYERS HEADING TO SAME GOAL ===');
-        console.log('Requesting server to generate new goal...');
-        console.log('My player ID:', myPlayerId);
-
-        // Send request to server to generate new goal
-        socket.emit('request_new_goal', {
-            sharedGoalIndex: player2CurrentGoal,
-            stepCount: gameData.stepCount,
-            trialIndex: gameData.currentTrialIndex,
-            player1Pos: gameData.currentPlayerPos,
-            player2Pos: gameData.currentPartnerPos,
-            currentGoals: gameData.currentGoals,
-            distanceCondition: gameData.gameState?.distanceCondition
+                if (socket && isConnected) {
+                    socket.emit('request_new_goal', requestData);
+                    console.log('Server request sent successfully');
+                } else {
+                    console.error('Socket not available for server request');
+                }
+            },
+            callback: function() {
+                console.log('2P3G new goal presentation completed');
+            }
         });
-
-        console.log('=== SERVER REQUEST SENT ===');
-        console.log('Shared goal index:', player2CurrentGoal);
-        console.log('Step count:', gameData.stepCount);
-        console.log('Distance condition:', gameData.gameState?.distanceCondition);
     } else {
-        console.log('=== NEW GOAL CONDITIONS NOT MET ===');
-        console.log('  - Player1 goal null?', player1CurrentGoal === null);
-        console.log('  - Player2 goal null?', player2CurrentGoal === null);
-        console.log('  - Goals same?', player1CurrentGoal === player2CurrentGoal);
-        console.log('  - Already presented?', newGoalPresented);
+        console.error('ExpDesign.checkNewGoalPresentation2P3G not available');
+        console.log('Available ExpDesign functions:', window.ExpDesign ? Object.keys(window.ExpDesign) : 'ExpDesign not available');
     }
 }
 
+/**
+ * Check for new goal presentation in 1P2G (uses the generic function from expDesign.js)
+ */
+function checkNewGoalPresentation1P2G() {
+    console.log('1P2G Human-Human: Function called');
+    console.log('1P2G Human-Human: window.ExpDesign available?', !!window.ExpDesign);
+    console.log('1P2G Human-Human: ExpDesign.checkNewGoalPresentation1P2G available?', !!(window.ExpDesign && window.ExpDesign.checkNewGoalPresentation1P2G));
 
+    // Use the generic function from expDesign.js
+    if (window.ExpDesign && window.ExpDesign.checkNewGoalPresentation1P2G) {
+        console.log('1P2G Human-Human: Calling ExpDesign function with options');
+        window.ExpDesign.checkNewGoalPresentation1P2G({
+            playerPosition: gameData.currentPlayerPos,
+            distanceCalculator: window.NodeGameHelpers ? window.NodeGameHelpers.calculatetGirdDistance : null,
+            displayUpdater: updateGameVisualization,
+            callback: function() {
+                console.log('1P2G: New goal presentation completed for human-human version');
+            }
+        });
+    } else {
+        console.error('1P2G: ExpDesign.checkNewGoalPresentation1P2G not available');
+        console.error('  - window.ExpDesign:', window.ExpDesign);
+        console.error('  - Available ExpDesign functions:', window.ExpDesign ? Object.keys(window.ExpDesign) : 'N/A');
+    }
+}
 
 /**
  * Check trial end for 2P2G (matching human-AI version)
  */
 function checkTrialEnd2P2G() {
-    var player1AtGoal = isGoalReached(gameData.playerStartPos, gameData.currentGoals);
-    var player2AtGoal = isGoalReached(gameData.partnerStartPos, gameData.currentGoals);
+    var player1AtGoal = isGoalReached(gameData.currentPlayerPos, gameData.currentGoals);
+    var player2AtGoal = isGoalReached(gameData.currentPartnerPos, gameData.currentGoals);
 
     if (player1AtGoal && player2AtGoal) {
-        var player1Goal = whichGoalReached(gameData.playerStartPos, gameData.currentGoals);
-        var player2Goal = whichGoalReached(gameData.partnerStartPos, gameData.currentGoals);
-        var collaboration = (player1Goal === player2Goal && player1Goal !== 0);
+        var player1Goal = whichGoalReached(gameData.currentPlayerPos, gameData.currentGoals);
+        var player2Goal = whichGoalReached(gameData.currentPartnerPos, gameData.currentGoals);
+        var collaboration = (player1Goal === player2Goal && player1Goal !== null);
+
+        console.log(`2P2G Collaboration check: Player1 goal=${player1Goal}, Player2 goal=${player2Goal}, Collaboration=${collaboration}`);
 
         gameData.currentTrialData.collaborationSucceeded = collaboration;
         finalizeTrial(true);
@@ -3020,13 +2669,15 @@ function checkTrialEnd2P2G() {
  * Check trial end for 2P3G (matching human-AI version)
  */
 function checkTrialEnd2P3G() {
-    var player1AtGoal = isGoalReached(gameData.playerStartPos, gameData.currentGoals);
-    var player2AtGoal = isGoalReached(gameData.partnerStartPos, gameData.currentGoals);
+    var player1AtGoal = isGoalReached(gameData.currentPlayerPos, gameData.currentGoals);
+    var player2AtGoal = isGoalReached(gameData.currentPartnerPos, gameData.currentGoals);
 
     if (player1AtGoal && player2AtGoal) {
-        var player1Goal = whichGoalReached(gameData.playerStartPos, gameData.currentGoals);
-        var player2Goal = whichGoalReached(gameData.partnerStartPos, gameData.currentGoals);
-        var collaboration = (player1Goal === player2Goal && player1Goal !== 0);
+        var player1Goal = whichGoalReached(gameData.currentPlayerPos, gameData.currentGoals);
+        var player2Goal = whichGoalReached(gameData.currentPartnerPos, gameData.currentGoals);
+        var collaboration = (player1Goal === player2Goal && player1Goal !== null);
+
+        console.log(`2P3G Collaboration check: Player1 goal=${player1Goal}, Player2 goal=${player2Goal}, Collaboration=${collaboration}`);
 
         gameData.currentTrialData.collaborationSucceeded = collaboration;
         finalizeTrial(true);
@@ -3040,13 +2691,8 @@ function checkTrialEnd2P3G() {
     }
 }
 
-/**
- * Check which goal a player has reached
- * Uses helper function from nodeGameHelpers.js
- */
-function whichGoalReached(playerPos, goals) {
-    return window.NodeGameHelpers.whichGoalReached(playerPos, goals);
-}
+// Use existing helper function from gameHelpers.js
+// const whichGoalReached = window.NodeGameHelpers.whichGoalReached;
 
 /**
  * Start freeze period when new goal appears (matching human-AI version)
@@ -3195,7 +2841,6 @@ function disableSuccessThreshold() {
     NODEGAME_CONFIG.successThreshold.enabled = false;
     console.log('Success threshold disabled - will run all trials');
 }
-
 /**
  * Enable success threshold with custom settings
  */

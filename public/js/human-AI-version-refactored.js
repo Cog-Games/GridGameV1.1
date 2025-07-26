@@ -1,9 +1,9 @@
 /**
  * Human-AI Version - Main Entry Point (Refactored)
- *
- * This file has been refactored to use modular components.
- * Game state, trial handlers, and data recording have been moved to separate modules.
- *
+ * 
+ * This is the refactored version of human-AI-version.js with improved organization.
+ * Functions have been moved to appropriate modules for better maintainability.
+ * 
  * Dependencies:
  * - gameState.js - Game state and data management
  * - trialHandlers.js - Trial execution functions

@@ -471,95 +471,7 @@ function showPostTrialStage(stage) {
         trialCountDisplay = `Trial ${trialIndex + 1} of ${NODEGAME_CONFIG.numTrials[experimentType]}`;
     }
 
-    // Collaboration feedback for 2P2G and 2P3G experiments with visual feedback
-    var collaborationFeedback = '';
-    var visualFeedback = '';
-
-    if (experimentType.includes('2P') && lastTrialData.collaborationSucceeded !== undefined) {
-        if (lastTrialData.collaborationSucceeded) {
-            collaborationFeedback = '<p style="font-size:32px;text-align: center; color: #28a745; font-weight: bold; margin-bottom: 20px;">Collaboration succeeded!</p>';
-            // Original checkmark symbol (commented out)
-            // visualFeedback = `
-            //     <div style="display: flex; justify-content: center; margin: 30px 0;">
-            //         <div style="
-            //             width: 120px;
-            //             height: 120px;
-            //             background-color: #28a745;
-            //             border-radius: 50%;
-            //             display: flex;
-            //             align-items: center;
-            //             justify-content: center;
-            //             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-            //         ">
-            //             <svg width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            //                 <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" fill="white"/>
-            //             </svg>
-            //         </div>
-            //     </div>
-            // `;
-
-            // New smile face symbol
-            visualFeedback = `
-                <div style="display: flex; justify-content: center; margin: 30px 0;">
-                    <div style="
-                        width: 120px;
-                        height: 120px;
-                        background-color: #28a745;
-                        border-radius: 50%;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-                    ">
-                        <svg width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M12,1A11,11,0,1,0,23,12,11.013,11.013,0,0,0,12,1Zm0,20a9,9,0,1,1,9-9A9.011,9.011,0,0,1,12,21Zm6-8A6,6,0,0,1,6,13a1,1,0,0,1,2,0,4,4,0,0,0,8,0,1,1,0,0,1,2,0ZM8,10V9a1,1,0,0,1,2,0v1a1,1,0,0,1-2,0Zm6,0V9a1,1,0,0,1,2,0v1a1,1,0,0,1-2,0Z" fill="white"/>
-                        </svg>
-                    </div>
-                </div>
-            `;
-        } else {
-            collaborationFeedback = '<p style="font-size:32px;text-align: center; color: #dc3545; font-weight: bold; margin-bottom: 20px;">Collaboration failed!</p>';
-            // Original X symbol (commented out)
-            // visualFeedback = `
-            //     <div style="display: flex; justify-content: center; margin: 30px 0;">
-            //         <div style="
-            //             width: 120px;
-            //             height: 120px;
-            //             background-color: #dc3545;
-            //             border-radius: 50%;
-            //             display: flex;
-            //             align-items: center;
-            //             justify-content: center;
-            //             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-            //         ">
-            //             <svg width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            //             <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" fill="white"/>
-            //             </svg>
-            //         </div>
-            //     </div>
-            // `;
-
-            // New sad face symbol
-            visualFeedback = `
-                <div style="display: flex; justify-content: center; margin: 30px 0;">
-                    <div style="
-                        width: 120px;
-                        height: 120px;
-                        background-color: #dc3545;
-                        border-radius: 50%;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-                    ">
-                        <svg width="80" height="80" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M19.5 10c.277 0 .5.223.5.5v3c0 .277-.223.5-.5.5s-.5-.223-.5-.5v-3c0-.277.223-.5.5-.5zm-9 0c.277 0 .5.223.5.5v3c0 .277-.223.5-.5.5s-.5-.223-.5-.5v-3c0-.277.223-.5.5-.5zM15 20c-2.104 0-4.186.756-5.798 2.104-.542.4.148 1.223.638.76C11.268 21.67 13.137 21 15 21s3.732.67 5.16 1.864c.478.45 1.176-.364.638-.76C19.186 20.756 17.104 20 15 20zm0-20C6.722 0 0 6.722 0 15c0 8.278 6.722 15 15 15 8.278 0 15-6.722 15-15 0-8.278-6.722-15-15-15zm0 1c7.738 0 14 6.262 14 14s-6.262 14-14 14S1 22.738 1 15 7.262 1 15 1z" fill="white"/>
-                        </svg>
-                    </div>
-                </div>
-            `;
-        }
-    }
+    // Removed duplicate collaboration feedback code - now using createCollaborationFeedbackOverlay() function instead
 
     container.innerHTML = `
         <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
@@ -600,39 +512,8 @@ function showPostTrialStage(stage) {
     }
 
     // Add visual feedback overlay on top of the canvas if collaboration feedback exists
-    if (visualFeedback && experimentType.includes('2P') && lastTrialData.collaborationSucceeded !== undefined) {
-        // Create overlay div positioned absolutely over the canvas
-        var overlay = document.createElement('div');
-        overlay.innerHTML = `
-            <div style="
-                text-align: center;
-                background: rgba(255, 255, 255, 0.95);
-                border: 3px solid ${lastTrialData.collaborationSucceeded ? '#28a745' : '#dc3545'};
-                border-radius: 15px;
-                padding: 30px 40px;
-                box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
-                backdrop-filter: blur(5px);
-            ">
-                <div style="font-size: 32px; font-weight: bold; margin-bottom: 20px; color: ${lastTrialData.collaborationSucceeded ? '#28a745' : '#dc3545'};">
-                    ${lastTrialData.collaborationSucceeded ? 'Collaboration succeeded!' : 'Collaboration failed!'}
-                </div>
-                ${visualFeedback}
-            </div>
-        `;
-        overlay.style.cssText = `
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 1000;
-            pointer-events: none;
-            width: auto;
-            height: auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        `;
-        canvasContainer.appendChild(overlay);
+    if (experimentType.includes('2P') && lastTrialData.collaborationSucceeded !== undefined) {
+        createCollaborationFeedbackOverlay(canvasContainer, lastTrialData.collaborationSucceeded);
     }
 
     // Auto-advance after configurable duration
@@ -1512,8 +1393,10 @@ function getInstructionsForExperiment(experimentType) {
 }
 
 /**
- * Show waiting for partner stage (simulated for human-AI version)
- * This shows a waiting screen and then prompts for space bar to start
+ * Show waiting for partner stage (unified for both human-AI and human-human versions)
+ * This shows a waiting screen and either:
+ * - For human-human: Actually connects to find a real partner
+ * - For human-AI: Simulates waiting and then prompts for space bar to start
  */
 function showWaitingForPartnerStage(stage) {
     const container = document.getElementById('container');
@@ -1540,6 +1423,12 @@ function showWaitingForPartnerStage(stage) {
                         <strong>Tip:</strong> Keep this window open and active. You'll automatically proceed once a partner is found.
                     </p>
                 </div>
+
+                <div id="cancelButtonContainer" style="display: none;">
+                    <button onclick="handleWaitingCancel()" style="background: #6c757d; color: white; border: none; padding: 10px 20px; font-size: 14px; border-radius: 5px; cursor: pointer;">
+                        Cancel and Exit
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -1551,75 +1440,134 @@ function showWaitingForPartnerStage(stage) {
         </style>
     `;
 
-    // Simulate waiting process with status updates
-    const statusMessages = [
-        'Connecting to matching service...',
-        'Looking for another participant...',
-        'Found a participant!',
-        'Establishing connection...',
-        'Connection established!'
-    ];
+    // Check if this is human-human mode (socket.io available) or human-AI mode (simulated)
+    const isHumanHumanMode = typeof io !== 'undefined';
 
-    let messageIndex = 0;
-    const statusElement = document.getElementById('waitingStatus');
+    if (isHumanHumanMode) {
+        // Human-human mode: Actually try to connect to multiplayer
+        console.log('Human-human mode detected: Attempting real multiplayer connection');
 
-    const updateStatus = () => {
-        if (statusElement && messageIndex < statusMessages.length) {
-            statusElement.textContent = statusMessages[messageIndex];
-            messageIndex++;
+        // Show cancel button for human-human mode
+        const cancelButtonContainer = document.getElementById('cancelButtonContainer');
+        if (cancelButtonContainer) {
+            cancelButtonContainer.style.display = 'block';
         }
-    };
 
-    // Update status every 2 seconds
-    const statusInterval = setInterval(updateStatus, 2000);
+        // Make cancel function globally available
+        window.handleWaitingCancel = function () {
+            if (window.socket) {
+                window.socket.disconnect();
+            }
+            window.close();
+        };
 
-    // After 5 seconds or when partner is found, show "Game is ready" message and wait for space bar
-    setTimeout(() => {
-        clearInterval(statusInterval);
+        // Try to join multiplayer room
+        setTimeout(() => {
+            // Access the global joinMultiplayerRoom function if available
+            if (typeof window.joinMultiplayerRoom === 'function') {
+                if (window.joinMultiplayerRoom()) {
+                    updateWaitingStatus('Looking for another participant...');
+                } else {
+                    updateWaitingStatus('Connection failed. Please refresh the page.');
+                }
+            } else if (typeof joinMultiplayerRoom === 'function') {
+                if (joinMultiplayerRoom()) {
+                    updateWaitingStatus('Looking for another participant...');
+                } else {
+                    updateWaitingStatus('Connection failed. Please refresh the page.');
+                }
+            } else {
+                console.warn('joinMultiplayerRoom function not available');
+                updateWaitingStatus('Connection failed. Please refresh the page.');
+            }
+        }, 1000); // Wait a moment for socket to be ready
 
-        // Update the display to show "Game is ready" message
-        container.innerHTML = `
-            <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
-                <div style="max-width: 600px; margin: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 40px; text-align: center;">
-                    <h1 style="color: #28a745; margin-bottom: 30px;">✅ Game is Ready!</h1>
+        // Note: For human-human mode, the advancement to next stage is handled by
+        // socket events (game_started, room_full, etc.) rather than a timer
 
-                    <div style="margin: 40px 0;">
-                        <div style="width: 80px; height: 80px; background-color: #28a745; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
-                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" fill="white"/>
-                            </svg>
+    } else {
+        // Human-AI mode: Simulate waiting process
+        console.log('Human-AI mode detected: Simulating partner matching');
+
+        // Simulate waiting process with status updates
+        const statusMessages = [
+            'Connecting to matching service...',
+            'Looking for another participant...',
+            'Found a participant!',
+            'Establishing connection...',
+            'Connection established!'
+        ];
+
+        let messageIndex = 0;
+        const statusElement = document.getElementById('waitingStatus');
+
+        const updateStatus = () => {
+            if (statusElement && messageIndex < statusMessages.length) {
+                statusElement.textContent = statusMessages[messageIndex];
+                messageIndex++;
+            }
+        };
+
+        // Update status every 2 seconds
+        const statusInterval = setInterval(updateStatus, 2000);
+
+        // After configured duration, show "Game is ready" message and wait for space bar
+        setTimeout(() => {
+            clearInterval(statusInterval);
+
+            // Update the display to show "Game is ready" message
+            container.innerHTML = `
+                <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
+                    <div style="max-width: 600px; margin: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 40px; text-align: center;">
+                        <h1 style="color: #28a745; margin-bottom: 30px;">✅ Game is Ready!</h1>
+
+                        <div style="margin: 40px 0;">
+                            <div style="width: 80px; height: 80px; background-color: #28a745; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" fill="white"/>
+                                </svg>
+                            </div>
+                        </div>
+
+                        <div style="font-size: 20px; color: #333; margin-bottom: 20px;">
+                            <p><strong>Partner found and connection established!</strong></p>
+                            <p>The game is ready to begin.</p>
+                        </div>
+
+                        <div style="background: #d4edda; border: 1px solid #c3e6cb; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+                            <p style="margin: 0; font-size: 16px; color: #155724;">
+                                <strong>Press the space bar to start the game.</strong>
+                            </p>
                         </div>
                     </div>
-
-                    <div style="font-size: 20px; color: #333; margin-bottom: 20px;">
-                        <p><strong>Partner found and connection established!</strong></p>
-                        <p>The game is ready to begin.</p>
-                    </div>
-
-                    <div style="background: #d4edda; border: 1px solid #c3e6cb; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
-                        <p style="margin: 0; font-size: 16px; color: #155724;">
-                            <strong>Press the space bar to start the game.</strong>
-                        </p>
-                    </div>
                 </div>
-            </div>
-        `;
+            `;
 
-        // Add event listener for space bar to continue
-        function handleSpacebar(event) {
-            if (event.code === 'Space' || event.key === ' ') {
-                event.preventDefault();
-                document.removeEventListener('keydown', handleSpacebar);
-                nextStage();
+            // Add event listener for space bar to continue
+            function handleSpacebar(event) {
+                if (event.code === 'Space' || event.key === ' ') {
+                    event.preventDefault();
+                    document.removeEventListener('keydown', handleSpacebar);
+                    nextStage();
+                }
             }
-        }
 
-        document.addEventListener('keydown', handleSpacebar);
-        document.body.focus();
+            document.addEventListener('keydown', handleSpacebar);
+            document.body.focus();
 
-    }, 5000);
+        }, NODEGAME_CONFIG.timing.waitingForPartnerDuration);
+    }
 }
 
+/**
+ * Update waiting status message
+ */
+function updateWaitingStatus(message) {
+    const statusElement = document.getElementById('waitingStatus');
+    if (statusElement) {
+        statusElement.textContent = message;
+    }
+}
 
 /**
  * Show connection lost message and provide reconnection option
@@ -1715,6 +1663,7 @@ window.showGameFeedbackStage = showGameFeedbackStage;
 window.showEndExperimentInfoStage = showEndExperimentInfoStage;
 window.showProlificRedirectStage = showProlificRedirectStage;
 window.showWaitingForPartnerStage = showWaitingForPartnerStage;
+window.updateWaitingStatus = updateWaitingStatus;
 window.showGameReadyMessage = showGameReadyMessage;
 window.showConnectionLostMessage = showConnectionLostMessage;
 window.exportExperimentData = exportExperimentData;
@@ -1911,6 +1860,110 @@ function showGameFeedbackStage(stage) {
     });
 
     console.log('🎮 Game Feedback Stage: Setup complete');
+}
+
+/**
+ * Create collaboration feedback overlay
+ * @param {HTMLElement} canvasContainer - Container to append overlay to
+ * @param {boolean} collaborationSucceeded - Whether collaboration succeeded
+ * @param {number} duration - How long to show overlay (optional, defaults to not auto-remove)
+ * @returns {HTMLElement} - The created overlay element
+ */
+function createCollaborationFeedbackOverlay(canvasContainer, collaborationSucceeded, duration = null) {
+    if (!canvasContainer) {
+        console.warn('No canvas container provided for collaboration feedback overlay');
+        return null;
+    }
+
+    // Create visual feedback based on collaboration success
+    let visualFeedback;
+    if (collaborationSucceeded) {
+        // Smile face for success
+        visualFeedback = `
+            <div style="display: flex; justify-content: center; margin: 30px 0;">
+                <div style="
+                    width: 120px;
+                    height: 120px;
+                    background-color: #28a745;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+                ">
+                    <svg width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12,1A11,11,0,1,0,23,12,11.013,11.013,0,0,0,12,1Zm0,20a9,9,0,1,1,9-9A9.011,9.011,0,0,1,12,21Zm6-8A6,6,0,0,1,6,13a1,1,0,0,1,2,0,4,4,0,0,0,8,0,1,1,0,0,1,2,0ZM8,10V9a1,1,0,0,1,2,0v1a1,1,0,0,1-2,0Zm6,0V9a1,1,0,0,1,2,0v1a1,1,0,0,1-2,0Z" fill="white"/>
+                    </svg>
+                </div>
+            </div>
+        `;
+    } else {
+        // Sad face for failure
+        visualFeedback = `
+            <div style="display: flex; justify-content: center; margin: 30px 0;">
+                <div style="
+                    width: 120px;
+                    height: 120px;
+                    background-color: #dc3545;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+                ">
+                    <svg width="80" height="80" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M19.5 10c.277 0 .5.223.5.5v3c0 .277-.223.5-.5.5s-.5-.223-.5-.5v-3c0-.277.223-.5.5-.5zm-9 0c.277 0 .5.223.5.5v3c0 .277-.223.5-.5.5s-.5-.223-.5-.5v-3c0-.277.223-.5.5-.5zM15 20c-2.104 0-4.186.756-5.798 2.104-.542.4.148 1.223.638.76C11.268 21.67 13.137 21 15 21s3.732.67 5.16 1.864c.478.45 1.176-.364.638-.76C19.186 20.756 17.104 20 15 20zm0-20C6.722 0 0 6.722 0 15c0 8.278 6.722 15 15 15 8.278 0 15-6.722 15-15 0-8.278-6.722-15-15-15zm0 1c7.738 0 14 6.262 14 14s-6.262 14-14 14S1 22.738 1 15 7.262 1 15 1z" fill="white"/>
+                    </svg>
+                </div>
+            </div>
+        `;
+    }
+
+    // Create overlay div positioned absolutely over the canvas
+    const overlay = document.createElement('div');
+    overlay.innerHTML = `
+        <div style="
+            text-align: center;
+            background: rgba(255, 255, 255, 0.95);
+            border: 3px solid ${collaborationSucceeded ? '#28a745' : '#dc3545'};
+            border-radius: 15px;
+            padding: 30px 40px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(5px);
+        ">
+            <div style="font-size: 32px; font-weight: bold; margin-bottom: 20px; color: ${collaborationSucceeded ? '#28a745' : '#dc3545'};">
+                ${collaborationSucceeded ? 'Collaboration succeeded!' : 'Collaboration failed!'}
+            </div>
+            ${visualFeedback}
+        </div>
+    `;
+    overlay.style.cssText = `
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 1000;
+        pointer-events: none;
+        width: auto;
+        height: auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    `;
+
+    // Add overlay to canvas container
+    canvasContainer.appendChild(overlay);
+
+    // Auto-remove after duration if specified
+    if (duration && duration > 0) {
+        setTimeout(() => {
+            if (overlay && overlay.parentNode) {
+                overlay.parentNode.removeChild(overlay);
+            }
+        }, duration);
+    }
+
+    return overlay;
 }
 
 
