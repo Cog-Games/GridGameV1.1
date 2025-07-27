@@ -57,14 +57,6 @@ function createTimelineStages() {
             handler: showWelcomeStage
         });
 
-        // Add waiting for partner stage only for 2P experiments (2P2G and 2P3G)
-        if (experimentType.includes('2P2G')) {
-            timeline.stages.push({
-                type: 'waiting_for_partner',
-                handler: showWaitingForPartnerStage
-            });
-        }
-
         // Add instructions stage for this experiment (uncomment if needed)
         timeline.stages.push({
             type: 'instructions',
@@ -72,6 +64,16 @@ function createTimelineStages() {
             experimentIndex: expIndex,
             handler: showInstructionsStage
         });
+
+        // Add waiting for partner stage only for 2P experiments (2P2G and 2P3G)
+        if (experimentType.includes('2P2G')) {
+            timeline.stages.push({
+                type: 'waiting_for_partner',
+                experimentType: experimentType,
+                experimentIndex: expIndex,
+                handler: showWaitingForPartnerStage
+            });
+        }
 
         // For collaboration games, create stages dynamically based on success threshold
         if (experimentType.includes('2P') && NODEGAME_CONFIG.successThreshold.enabled) {
@@ -277,6 +279,20 @@ function showInstructionsStage(stage) {
     // Update current experiment state
     gameData.currentExperiment = experimentType;
     gameData.currentExperimentIndex = experimentIndex;
+
+    // Initialize success threshold tracking for collaboration games
+    if (experimentType.includes('2P')) {
+        console.log(`Initializing success threshold tracking for ${experimentType}`);
+
+        // Try to find the appropriate initialization function
+        if (typeof initializeSuccessThresholdTracking === 'function') {
+            initializeSuccessThresholdTracking();
+        } else if (window.ExpDesign && typeof window.ExpDesign.initializeSuccessThresholdTracking === 'function') {
+            window.ExpDesign.initializeSuccessThresholdTracking();
+        } else {
+            console.warn('initializeSuccessThresholdTracking function not available');
+        }
+    }
 
     var instructions = getInstructionsForExperiment(experimentType);
 
@@ -521,14 +537,38 @@ function showPostTrialStage(stage) {
         console.log(`Post-trial auto-advance: experimentType=${experimentType}, trialIndex=${trialIndex}`);
 
         // Check if we should end the experiment early due to success threshold
-        if (shouldEndExperimentDueToSuccessThreshold()) {
+        var shouldEndDueToThreshold = false;
+        if (typeof shouldEndExperimentDueToSuccessThreshold === 'function') {
+            shouldEndDueToThreshold = shouldEndExperimentDueToSuccessThreshold();
+        } else if (window.ExpDesign && typeof window.ExpDesign.shouldEndExperimentDueToSuccessThreshold === 'function') {
+            shouldEndDueToThreshold = window.ExpDesign.shouldEndExperimentDueToSuccessThreshold();
+        }
+
+        console.log(`=== POST-TRIAL DECISION LOGIC ===`);
+        console.log(`Experiment type: ${experimentType}, Trial index: ${trialIndex}`);
+        console.log(`Success threshold enabled: ${NODEGAME_CONFIG.successThreshold.enabled}`);
+        console.log(`Should end due to threshold: ${shouldEndDueToThreshold}`);
+        console.log(`Current game data:`, gameData.successThreshold);
+        console.log(`All trials data length: ${gameData.allTrialsData.length}`);
+        console.log(`==============================`);
+
+        if (shouldEndDueToThreshold) {
             console.log('Ending experiment due to success threshold - will skip to game-feedback or next experiment');
             // Skip to the end of this experiment by finding the next experiment or completion stage
             skipToNextExperimentOrCompletion();
         } else {
             // For collaboration games, check if we should continue to next trial
             if (experimentType.includes('2P') && NODEGAME_CONFIG.successThreshold.enabled) {
-                if (shouldContinueToNextTrial(experimentType, trialIndex)) {
+                var shouldContinue = true;
+                if (typeof shouldContinueToNextTrial === 'function') {
+                    shouldContinue = shouldContinueToNextTrial(experimentType, trialIndex);
+                } else if (window.ExpDesign && typeof window.ExpDesign.shouldContinueToNextTrial === 'function') {
+                    shouldContinue = window.ExpDesign.shouldContinueToNextTrial(experimentType, trialIndex);
+                }
+
+                console.log(`Should continue to next trial: ${shouldContinue}`);
+
+                if (shouldContinue) {
                     console.log('Continuing to next trial for collaboration game');
                     // Add the next trial stages dynamically
                     addNextTrialStages(experimentType, experimentIndex, trialIndex + 1);
@@ -583,7 +623,15 @@ function skipToNextExperimentOrCompletion() {
         var nextStage = timeline.stages[timeline.currentStage];
         if (nextStage.experimentType && nextStage.experimentType !== currentExperimentType) {
             console.log(`Switching from ${currentExperimentType} to ${nextStage.experimentType} - resetting success threshold`);
-            initializeSuccessThresholdTracking();
+
+            // Try to find the appropriate initialization function
+            if (typeof initializeSuccessThresholdTracking === 'function') {
+                initializeSuccessThresholdTracking();
+            } else if (window.ExpDesign && typeof window.ExpDesign.initializeSuccessThresholdTracking === 'function') {
+                window.ExpDesign.initializeSuccessThresholdTracking();
+            } else {
+                console.warn('initializeSuccessThresholdTracking function not available');
+            }
         }
         console.log(`Skipped to stage ${timeline.currentStage}: ${nextStage.type}`);
         if (nextStage.handler) {
@@ -1463,6 +1511,19 @@ function showWaitingForPartnerStage(stage) {
 
         // Try to join multiplayer room
         setTimeout(() => {
+            // Set the experiment type from the stage before joining
+            if (stage && stage.experimentType) {
+                console.log('🎮 Setting experiment type from stage:', stage.experimentType);
+                if (typeof gameData !== 'undefined') {
+                    gameData.currentExperiment = stage.experimentType;
+                    gameData.currentExperimentIndex = stage.experimentIndex;
+                }
+                if (typeof window.gameData !== 'undefined') {
+                    window.gameData.currentExperiment = stage.experimentType;
+                    window.gameData.currentExperimentIndex = stage.experimentIndex;
+                }
+            }
+
             // Access the global joinMultiplayerRoom function if available
             if (typeof window.joinMultiplayerRoom === 'function') {
                 if (window.joinMultiplayerRoom()) {

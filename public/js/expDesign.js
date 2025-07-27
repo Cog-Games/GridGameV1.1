@@ -60,7 +60,6 @@ function generateNewGoal(player2Pos, player1Pos, oldGoals, player2CurrentGoalInd
         return null;
     }
 
-
     var player2CurrentGoal = oldGoals[player2CurrentGoalIndex];
     var oldDistanceSum = calculatetGirdDistance(player2Pos, player2CurrentGoal) +
                         calculatetGirdDistance(player1Pos, player2CurrentGoal);
@@ -147,7 +146,6 @@ function generateNewGoal(player2Pos, player1Pos, oldGoals, player2CurrentGoalInd
             distanceSum: selectedGoalData.distanceSum
         };
     }
-
 
     var relaxedValidPositions = [];
     for (var row = 0; row < EXPSETTINGS.matrixsize; row++) {
@@ -300,6 +298,13 @@ function checkNewGoalPresentation2P3G(options) {
 
     console.log('=== UNIFIED 2P3G NEW GOAL CHECK START ===');
     console.log('Options:', options);
+    console.log('Current experiment:', gameData.currentExperiment);
+
+    // Only proceed if this is actually a 2P3G experiment
+    if (gameData.currentExperiment !== '2P3G') {
+        console.log('🚫 Skipping 2P3G new goal check - not a 2P3G experiment');
+        return;
+    }
 
     // Detect version automatically if not specified
     var isHumanHuman = options.isHumanHuman;
@@ -315,35 +320,18 @@ function checkNewGoalPresentation2P3G(options) {
     // Get goal tracking arrays based on version
     var player1Goals, player2Goals, player1InferredGoals, player2InferredGoals;
 
-    if (isHumanHuman) {
-        // Human-Human version: Use player1/player2 naming
-        if (!gameData.currentTrialData.player1CurrentGoal) {
-            gameData.currentTrialData.player1CurrentGoal = [];
-            gameData.currentTrialData.player2CurrentGoal = [];
-            if (typeof window !== 'undefined') {
-                window.player1InferredGoals = window.player1InferredGoals || [];
-                window.player2InferredGoals = window.player2InferredGoals || [];
-            }
+    if (!gameData.currentTrialData.player1CurrentGoal) {
+        gameData.currentTrialData.player1CurrentGoal = [];
+        gameData.currentTrialData.player2CurrentGoal = [];
+        if (typeof window !== 'undefined') {
+            window.player1InferredGoals = window.player1InferredGoals || [];
+            window.player2InferredGoals = window.player2InferredGoals || [];
         }
-        player1Goals = gameData.currentTrialData.player1CurrentGoal;
-        player2Goals = gameData.currentTrialData.player2CurrentGoal;
-        player1InferredGoals = (typeof window !== 'undefined') ? window.player1InferredGoals : [];
-        player2InferredGoals = (typeof window !== 'undefined') ? window.player2InferredGoals : [];
-    } else {
-        // Human-AI version: Use human/AI naming
-        if (!gameData.currentTrialData.player1CurrentGoal) {
-            gameData.currentTrialData.player1CurrentGoal = [];
-            gameData.currentTrialData.player2CurrentGoal = [];
-            if (typeof window !== 'undefined') {
-                window.player1InferredGoals = window.player1InferredGoals || [];
-                window.player2InferredGoals = window.player2InferredGoals || [];
-            }
-        }
-        player1Goals = gameData.currentTrialData.player1CurrentGoal;
-        player2Goals = gameData.currentTrialData.player2CurrentGoal;
-        player1InferredGoals = (typeof window !== 'undefined') ? window.player1InferredGoals : [];
-        player2InferredGoals = (typeof window !== 'undefined') ? window.player2InferredGoals : [];
     }
+    player1Goals = gameData.currentTrialData.player1CurrentGoal;
+    player2Goals = gameData.currentTrialData.player2CurrentGoal;
+    player1InferredGoals = (typeof window !== 'undefined') ? window.player1InferredGoals : [];
+    player2InferredGoals = (typeof window !== 'undefined') ? window.player2InferredGoals : [];
 
     // Check minimum steps requirement
     if (gameData.stepCount < TWOP3G_CONFIG.minStepsBeforeNewGoal) {
@@ -365,7 +353,7 @@ function checkNewGoalPresentation2P3G(options) {
     console.log('Step count:', gameData.stepCount, 'Min required:', TWOP3G_CONFIG.minStepsBeforeNewGoal);
 
     // Check if both players are heading to the same goal and new goal hasn't been presented yet
-        console.log('Condition check:');
+    console.log('Condition check:');
     console.log('  - Player1 goal null?', player1CurrentGoal === null);
     console.log('  - Player2 goal null?', player2CurrentGoal === null);
     console.log('  - Goals same?', player1CurrentGoal === player2CurrentGoal);
@@ -376,7 +364,7 @@ function checkNewGoalPresentation2P3G(options) {
     // Check if new goal has already been presented (check all possible sources)
     var alreadyPresented = (typeof newGoalPresented !== 'undefined' && newGoalPresented) ||
                           (typeof window.newGoalPresented !== 'undefined' && window.newGoalPresented) ||
-                          gameData.currentTrialData.newGoalPresented;
+                          (gameData.currentTrialData.newGoalPresented === true);
 
     if (player1CurrentGoal !== null && player2CurrentGoal !== null &&
         player1CurrentGoal === player2CurrentGoal &&
@@ -405,8 +393,17 @@ function checkNewGoalPresentation2P3G(options) {
 
             // Get or generate distance condition
             var distanceCondition = gameData.currentTrialData.distanceCondition;
+
             if (!distanceCondition) {
-                distanceCondition = getRandomDistanceConditionFor2P3G(gameData.currentTrial);
+                // Try to get the function from various sources
+                var getRandomDistanceCondition = window.getRandomDistanceConditionFor2P3G ||
+                                               (window.GameState && window.GameState.getRandomDistanceConditionFor2P3G) ||
+                                               function(trialIndex) {
+                                                   // Fallback: return a default condition
+                                                   console.warn('getRandomDistanceConditionFor2P3G not available, using fallback');
+                                                   return TWOP3G_CONFIG.distanceConditions.CLOSER_TO_PLAYER2;
+                                               };
+                distanceCondition = getRandomDistanceCondition(gameData.currentTrial);
                 gameData.currentTrialData.distanceCondition = distanceCondition;
                 console.log('Generated distance condition:', distanceCondition);
             }
@@ -637,7 +634,7 @@ function checkNewGoalPresentation1P2G(options) {
     console.log('1P2G: newGoalPresented:', gameData.currentTrialData.newGoalPresented);
 
     // Check if player1 goal is detected and new goal hasn't been presented yet
-    if (player1CurrentGoal !== null && !gameData.currentTrialData.newGoalPresented) {
+    if (player1CurrentGoal !== null && gameData.currentTrialData.newGoalPresented !== true) {
         console.log('1P2G: Conditions met for new goal presentation!');
         // Get distance condition for this trial
         var distanceCondition = gameData.currentTrialData.distanceCondition || ONEP2G_CONFIG.distanceConditions.CLOSER_TO_PLAYER1;

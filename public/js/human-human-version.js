@@ -59,6 +59,7 @@ let gameData = {
     currentExperiment: null,
     currentExperimentIndex: 0,
     currentTrial: 0,
+    currentTrialIndex: 0,
     allTrialsData: [],
     currentTrialData: {},
     questionnaireData: null,
@@ -417,6 +418,11 @@ function initializeSocket() {
             handleTrialComplete(data);
         });
 
+        socket.on('trial_started', (data) => {
+            console.log('New trial started by server:', data);
+            handleTrialStarted(data);
+        });
+
         socket.on('new_goal_presented', (data) => {
             console.log('=== SERVER NEW GOAL PRESENTED ===');
             console.log('Server new goal data:', data);
@@ -521,23 +527,41 @@ function initializeSocket() {
         });
 
         // Handle server-generated new goal (new server-side logic)
+                socket.on('share_fallback_goal', (data) => {
+            console.log('🎯 === FALLBACK GOAL RECEIVED FROM PARTNER ===');
+            console.log('🎯 Partner generated fallback goal:', data);
+            console.log('🎯 Current newGoalPresented:', newGoalPresented);
+            console.log('🎯 Current trial data newGoalPresented:', gameData.currentTrialData.newGoalPresented);
+            console.log('🎯 My player ID:', myPlayerId);
+            console.log('🎯 Player order:', playerOrder);
+
+            // Apply the fallback goal received from partner
+            if (!newGoalPresented && gameData.currentTrialData.newGoalPresented !== true) {
+                console.log('🎯 Applying fallback goal from partner...');
+                applyNewGoal(data.newGoalPosition, data);
+                console.log('✅ Applied fallback goal from partner');
+            } else {
+                console.log('⚠️ Goal already presented, ignoring partner fallback');
+                console.log('⚠️ newGoalPresented:', newGoalPresented);
+                console.log('⚠️ trial newGoalPresented:', gameData.currentTrialData.newGoalPresented);
+            }
+        });
+
         socket.on('server_new_goal', (data) => {
-            console.log('=== SERVER NEW GOAL RECEIVED ===');
-            console.log('Server generated new goal:', data);
-            console.log('Local newGoalPresented:', newGoalPresented);
-            console.log('My player ID:', myPlayerId);
+            console.log('🎯 === SERVER NEW GOAL RECEIVED ===');
+            console.log('🎯 Server generated new goal:', data);
+            console.log('🎯 Timestamp:', new Date().toISOString());
+            console.log('🎯 Local newGoalPresented:', newGoalPresented);
+            console.log('🎯 My player ID:', myPlayerId);
+            console.log('🎯 Current goals before update:', gameData.currentGoals);
+            console.log('🎯 Current grid matrix at new goal position:', data.newGoalPosition ? gameData.gridMatrix[data.newGoalPosition[0]][data.newGoalPosition[1]] : 'N/A');
 
             // Only process if we haven't already presented a new goal
             if (!newGoalPresented) {
                 console.log('=== PROCESSING SERVER GOAL ===');
 
-                // Update local state with server's goal
-                newGoalPosition = data.newGoalPosition;
-                newGoalPresented = true;
-
-                // Add new goal to the grid and goals list
-                gameData.gridMatrix[newGoalPosition[0]][newGoalPosition[1]] = 2; // OBJECT.goal
-                gameData.currentGoals.push(newGoalPosition);
+                // Use the unified applyNewGoal function
+                applyNewGoal(data.newGoalPosition, data);
 
                 // Calculate and record all distance variables needed for data analysis
                 if (gameData.currentTrialData && gameData.currentPlayerPos && gameData.currentPartnerPos) {
@@ -604,10 +628,45 @@ function initializeSocket() {
                 // showNewGoalMessage();
 
                 // Update visualization
+                console.log('🎨 Updating game visualization after server new goal...');
                 updateGameVisualization();
+                console.log('🎨 Game visualization update completed');
+                console.log('🎯 Final state - Goals:', gameData.currentGoals);
+                console.log('🎯 Final state - newGoalPresented:', newGoalPresented);
             } else {
                 console.log('=== IGNORING SERVER GOAL ===');
                 console.log('Already have a new goal locally:', newGoalPosition);
+            }
+        });
+
+        socket.on('server_new_goal_failed', (data) => {
+            console.log('🚫 Server failed to generate new goal:', data);
+            // Trigger fallback immediately instead of waiting for timeout
+            if (!newGoalPresented && gameData.currentTrialData.newGoalPresented !== true) {
+                console.log('🚫 Triggering immediate fallback due to server failure');
+                if (playerOrder.isFirstPlayer) {
+                    const requestData = {
+                        player2Pos: gameData.playerStates.player2.position,
+                        player1Pos: gameData.playerStates.player1.position,
+                        currentGoals: gameData.currentGoals,
+                        sharedGoalIndex: gameData.sharedGoalIndex,
+                        distanceCondition: data.distanceCondition || getDistanceCondition(gameData.currentTrialData.trialIndex),
+                        stepCount: gameData.currentTrialData.stepCount,
+                        trialIndex: gameData.currentTrialData.trialIndex
+                    };
+                    const newGoal = generateFallbackGoal(requestData);
+                    if (newGoal) {
+                        if (socket && isConnected) {
+                            socket.emit('share_fallback_goal', {
+                                newGoalPosition: newGoal,
+                                distanceCondition: requestData.distanceCondition,
+                                stepCount: requestData.stepCount,
+                                trialIndex: requestData.trialIndex
+                            });
+                        }
+                        applyNewGoal(newGoal, requestData);
+                    }
+                }
             }
         });
 
@@ -688,6 +747,13 @@ function joinMultiplayerRoom() {
     }
 
     const experimentType = gameData.currentExperiment;
+    console.log('🎮 Joining multiplayer room with experiment type:', experimentType);
+    console.log('🎮 Full gameData.currentExperiment:', gameData.currentExperiment);
+    console.log('🎮 Current timeline stage:', timeline.currentStage);
+    if (timeline.stages[timeline.currentStage]) {
+        console.log('🎮 Current stage info:', timeline.stages[timeline.currentStage]);
+    }
+
     socket.emit('join_game', {
         gameType: experimentType,
         playerId: myPlayerId
@@ -881,6 +947,7 @@ function recordMoveMultiPlayer(data) {
     gameData.stepCount++;
 
     // Handle 2P3G specific logic
+    console.log('🔍 Current experiment type:', gameData.currentExperiment);
     if (gameData.currentExperiment === '2P3G') {
         // Initialize goal tracking arrays if not already done
         if (!gameData.currentTrialData.player1CurrentGoal) {
@@ -935,12 +1002,13 @@ function recordMoveMultiPlayer(data) {
             console.log('Second player (orange) didn\'t move, maintaining previous goal:', previousSecondPlayerGoal);
         }
 
-        // Check for new goal presentation
+        // Check for new goal presentation in 2P3G only
         checkNewGoalPresentation2P3G();
 
         // Check trial end for 2P3G
         checkTrialEnd2P3G();
     } else if (gameData.currentExperiment === '2P2G') {
+        // 2P2G doesn't have dynamic new goal generation
         // Check trial end for 2P2G
         checkTrialEnd2P2G();
     } else if (gameData.currentExperiment === '1P2G') {
@@ -985,6 +1053,62 @@ function recordMoveMultiPlayer(data) {
 }
 
 /**
+ * Show collaboration feedback on the game board
+ */
+function showCollaborationFeedback() {
+    if (!gameData.currentTrialData) {
+        console.warn('No trial data available for collaboration feedback');
+        return;
+    }
+
+    const collaborationSucceeded = gameData.currentTrialData.collaborationSucceeded;
+    console.log('Showing collaboration feedback:', collaborationSucceeded ? 'SUCCESS' : 'FAILURE');
+
+    // Find the canvas container
+    const canvasContainer = document.getElementById('gameCanvas');
+    if (!canvasContainer) {
+        console.warn('No canvas container found for collaboration feedback');
+        return;
+    }
+
+    // Use the createCollaborationFeedbackOverlay function from expTimeline.js
+    if (typeof createCollaborationFeedbackOverlay === 'function') {
+        createCollaborationFeedbackOverlay(canvasContainer, collaborationSucceeded, NODEGAME_CONFIG.timing.feedbackDisplayDuration);
+    } else {
+        // Fallback: create a simple overlay
+        const overlay = document.createElement('div');
+        overlay.innerHTML = `
+            <div style="
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(255, 255, 255, 0.95);
+                border: 3px solid ${collaborationSucceeded ? '#28a745' : '#dc3545'};
+                border-radius: 15px;
+                padding: 30px 40px;
+                text-align: center;
+                font-size: 24px;
+                font-weight: bold;
+                color: ${collaborationSucceeded ? '#28a745' : '#dc3545'};
+                z-index: 1000;
+                box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            ">
+                ${collaborationSucceeded ? 'Collaboration succeeded!' : 'Collaboration failed!'}
+            </div>
+        `;
+        canvasContainer.appendChild(overlay);
+
+        // Auto-remove after duration
+        setTimeout(() => {
+            if (overlay && overlay.parentNode) {
+                overlay.parentNode.removeChild(overlay);
+            }
+        }, NODEGAME_CONFIG.timing.feedbackDisplayDuration);
+    }
+}
+
+/**
  * Handle trial complete
  */
 function handleTrialComplete(data) {
@@ -1016,10 +1140,66 @@ function handleTrialComplete(data) {
         finalizeTrial(data.success);
     }
 
-    // Collaboration feedback is now shown in the post-trial stage instead of here
-    // to avoid duplication. The post-trial stage will handle showing the feedback overlay.
+    // For multiplayer games, show collaboration feedback immediately then handle progression
+    if (gameData.currentExperiment && gameData.currentExperiment.includes('2P')) {
+        console.log('=== 2P GAME: Showing collaboration feedback ===');
+        console.log('🔍 Trial completion context check:');
+        console.log('  - Game active:', isGameActive);
+        console.log('  - Trial data exists:', !!gameData.currentTrialData);
+        console.log('  - Collaboration data:', gameData.currentTrialData?.collaborationSucceeded);
+        console.log('  - Server success:', data.success);
 
-    // Use the same logic as post-trial stage for transitioning
+        // Only show feedback if we have valid trial data and this is actually a trial completion
+        if (gameData.currentTrialData &&
+            typeof gameData.currentTrialData.collaborationSucceeded !== 'undefined' &&
+            gameData.currentTrialData.trialIndex !== undefined &&
+            gameData.currentTrialData.experimentType === gameData.currentExperiment) {
+            console.log('✅ Valid trial completion - showing collaboration feedback');
+            // Show collaboration feedback immediately
+            showCollaborationFeedback();
+        } else {
+            console.log('⚠️ Invalid trial completion context - skipping collaboration feedback');
+            console.log('  - Experiment mismatch?', gameData.currentTrialData?.experimentType, 'vs', gameData.currentExperiment);
+        }
+
+        // Then handle progression after feedback display duration
+        setTimeout(() => {
+            const currentTrial = gameData.currentTrial;
+            const experimentType = gameData.currentExperiment;
+            const experimentIndex = gameData.currentExperimentIndex;
+
+            // Check if we should end the experiment early due to success threshold
+            if (shouldEndExperimentDueToSuccessThreshold()) {
+                console.log('Ending experiment due to success threshold');
+                skipToNextExperimentOrCompletion();
+            } else {
+                                // For collaboration games, check if we should continue to next trial
+                if (experimentType.includes('2P') && NODEGAME_CONFIG.successThreshold.enabled) {
+                    // Ensure both clients make the same decision by using deterministic logic
+                    console.log('=== MULTIPLAYER PROGRESSION DECISION ===');
+                    console.log('Current trial:', currentTrial);
+                    console.log('Experiment type:', experimentType);
+                    console.log('Success threshold state:', gameData.successThreshold);
+
+                    if (shouldContinueToNextTrial(experimentType, currentTrial)) {
+                        console.log('Continuing to next trial for collaboration game');
+                        // Add the next trial stages dynamically
+                        addNextTrialStages(experimentType, experimentIndex, currentTrial + 1);
+                        nextStage();
+                    } else {
+                        console.log('Ending collaboration experiment - will skip to next experiment');
+                        skipToNextExperimentOrCompletion();
+                    }
+                } else {
+                    console.log('Continuing to next stage normally');
+                    nextStage();
+                }
+            }
+        }, NODEGAME_CONFIG.timing.feedbackDisplayDuration);
+        return;
+    }
+
+    // For single-player games, use the same logic as post-trial stage for transitioning
     setTimeout(() => {
         const currentTrial = gameData.currentTrial;
 
@@ -1033,6 +1213,61 @@ function handleTrialComplete(data) {
     }, NODEGAME_CONFIG.timing.feedbackDisplayDuration);
 }
 
+/**
+ * Handle trial started (new trial coordination from server)
+ */
+function handleTrialStarted(data) {
+    console.log('=== HANDLE TRIAL STARTED DEBUG ===');
+    console.log('Server data:', data);
+    console.log('Current trial before update:', gameData.currentTrial);
+    console.log('Server current trial:', data.currentTrial);
+    console.log('Current experiment:', gameData.currentExperiment);
+
+    // Check if we're still in the same experiment type
+    // If the client has moved to a different experiment, ignore this server event
+    const currentStage = timeline.stages[timeline.currentStage];
+    if (!currentStage || currentStage.experimentType !== gameData.currentExperiment) {
+        console.log('=== IGNORING TRIAL_STARTED: Client has moved to different experiment ===');
+        console.log('Current stage experiment:', currentStage?.experimentType);
+        console.log('Current game experiment:', gameData.currentExperiment);
+        return;
+    }
+
+    // Update game state and trial tracking only if we're still in the right experiment
+    if (data.gameState) {
+        gameState = data.gameState;
+        gameData.gameState = data.gameState;
+        gameData.gridMatrix = data.gameState.gridMatrix;
+        gameData.currentGoals = data.gameState.goals;
+
+        // Update player positions
+        if (data.gameState.playerStates) {
+            for (const [playerId, playerState] of Object.entries(data.gameState.playerStates)) {
+                if (playerId === myPlayerId) {
+                    gameData.playerStartPos = playerState.position;
+                    gameData.currentPlayerPos = [...playerState.position];
+                } else {
+                    gameData.partnerStartPos = playerState.position;
+                    gameData.currentPartnerPos = [...playerState.position];
+                }
+            }
+        }
+    }
+
+    // Update visualization if we're in a trial stage
+    if (currentStage && currentStage.type === 'trial') {
+        updateGameVisualization();
+
+        // Re-enable game controls
+        isGameActive = true;
+        setupKeyboardControls();
+
+        console.log('=== UPDATED EXISTING TRIAL WITH SERVER DATA ===');
+    } else {
+        console.log('=== NOT IN TRIAL STAGE, IGNORING SERVER UPDATE ===');
+    }
+}
+
 
 function shouldContinueToNextTrial(experimentType, trialIndex) {
     // Only apply to collaboration games
@@ -1040,17 +1275,35 @@ function shouldContinueToNextTrial(experimentType, trialIndex) {
         return true; // Always continue for non-collaboration games
     }
 
-    // Check if experiment should end due to success threshold
-    if (shouldEndExperimentDueToSuccessThreshold()) {
-        console.log(`Ending ${experimentType} experiment due to success threshold`);
-        return false;
-    }
-
-    // Check if we've reached the configured number of trials
+    // Check if we've reached the configured number of trials first
     var configuredTrials = NODEGAME_CONFIG.numTrials[experimentType];
     if (trialIndex >= configuredTrials - 1) {
         console.log(`Ending ${experimentType} experiment: Completed ${configuredTrials} trials`);
         return false;
+    }
+
+    // For multiplayer games, use deterministic success calculation based on trial data
+    // rather than potentially inconsistent gameData.successThreshold state
+    if (NODEGAME_CONFIG.successThreshold.enabled) {
+        const consecutiveSuccessesNeeded = NODEGAME_CONFIG.successThreshold.consecutiveSuccessesRequired;
+        const minTrialsBeforeCheck = NODEGAME_CONFIG.successThreshold.minTrialsBeforeCheck;
+
+        // Calculate success history from trial data deterministically
+        const currentExperimentTrials = gameData.allTrialsData.filter(trial =>
+            trial.experimentType === experimentType
+        );
+
+        if (currentExperimentTrials.length >= minTrialsBeforeCheck) {
+            // Check the last N trials for consecutive successes
+            const recentTrials = currentExperimentTrials.slice(-consecutiveSuccessesNeeded);
+            const allRecentSuccessful = recentTrials.length === consecutiveSuccessesNeeded &&
+                recentTrials.every(trial => trial.collaborationSucceeded === true);
+
+            if (allRecentSuccessful) {
+                console.log(`Ending ${experimentType} experiment due to ${consecutiveSuccessesNeeded} consecutive successes`);
+                return false;
+            }
+        }
     }
 
     return true;
@@ -1104,6 +1357,7 @@ function startNodeGameHumanHumanExperiment(experimentType) {
     gameData.currentExperiment = NODEGAME_CONFIG.experimentOrder[0];
     gameData.currentExperimentIndex = 0;
     gameData.currentTrial = 0;
+    gameData.currentTrialIndex = 0;
 
     // Start timeline
     timeline.currentStage = 0;
@@ -1115,6 +1369,70 @@ function startNodeGameHumanHumanExperiment(experimentType) {
 
 // Note: showWaitingForPartnerStage function is now defined in expTimeline.js
 // and supports both human-human and human-AI modes
+
+/**
+ * Draw a circle for human-human visualization
+ */
+function drawCircleHumanHuman(ctx, color, lineWidth, colPos, rowPos, startAngle, endAngle) {
+    const centerX = colPos * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding + EXPSETTINGS.cellSize/2;
+    const centerY = rowPos * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding + EXPSETTINGS.cellSize/2;
+    const radius = EXPSETTINGS.cellSize * 0.4; // Adjust size as needed
+
+    ctx.beginPath();
+    ctx.lineWidth = lineWidth;
+    ctx.strokeStyle = color;
+    ctx.fillStyle = color;
+    ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+    ctx.fill();
+    ctx.stroke();
+}
+
+/**
+ * Draw overlapping circles for when players are in the same position
+ */
+function drawOverlappingCirclesHumanHuman(ctx, colPos, rowPos) {
+    // First draw white background
+    ctx.fillStyle = COLORPOOL.map;
+    ctx.fillRect(colPos * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding,
+        rowPos * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding,
+        EXPSETTINGS.cellSize, EXPSETTINGS.cellSize);
+
+    const circleRadius = EXPSETTINGS.cellSize * 0.35; // Slightly smaller for overlap
+    const centerX = colPos * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding + EXPSETTINGS.cellSize/2;
+    const centerY = rowPos * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding + EXPSETTINGS.cellSize/2;
+    const offset = EXPSETTINGS.cellSize * 0.15; // Offset for overlap
+
+    // Determine colors based on player order (with fallback)
+    const playerOrder = window.playerOrder || { isFirstPlayer: true }; // Fallback to first player
+    let firstColor, secondColor;
+
+    if (playerOrder.isFirstPlayer) {
+        // I am the first player (red), partner is second (orange)
+        firstColor = COLORPOOL.player; // red
+        secondColor = "orange";
+    } else {
+        // I am the second player (orange), partner is first (red)
+        firstColor = "orange";
+        secondColor = COLORPOOL.player; // red
+    }
+
+    // Draw first player circle on the left
+    ctx.beginPath();
+    ctx.lineWidth = 1/3 * EXPSETTINGS.padding;
+    ctx.strokeStyle = firstColor;
+    ctx.fillStyle = firstColor;
+    ctx.arc(centerX - offset, centerY, circleRadius, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.stroke();
+
+    // Draw second player circle on the right
+    ctx.beginPath();
+    ctx.strokeStyle = secondColor;
+    ctx.fillStyle = secondColor;
+    ctx.arc(centerX + offset, centerY, circleRadius, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.stroke();
+}
 
 /**
  * Fallback rendering function using exact human-AI version parameters
@@ -1290,6 +1608,7 @@ const runNextStage = window.runNextStage || function() {
         gameData.currentExperiment = stage.experimentType;
         gameData.currentExperimentIndex = stage.experimentIndex;
         gameData.currentTrial = stage.trialIndex;
+    gameData.currentTrialIndex = stage.trialIndex;
     }
 
     // Run stage handler
@@ -1515,6 +1834,7 @@ function runMultiplayerTrial(experimentType, trialIndex, mapDesign) {
         // Initialize goal tracking arrays
         gameData.currentTrialData.player1CurrentGoal = [];
         gameData.currentTrialData.player2CurrentGoal = [];
+        gameData.currentTrialData.newGoalPresented = false;  // Explicitly set to false
         gameData.currentTrialData.newGoalPresentedTime = null;
         gameData.currentTrialData.newGoalPosition = null;
         gameData.currentTrialData.isNewGoalCloserToPlayer2 = null;
@@ -1749,6 +2069,7 @@ function skipToNextExperimentOrCompletion() {
         gameData.currentExperimentIndex++;
         gameData.currentExperiment = NODEGAME_CONFIG.experimentOrder[gameData.currentExperimentIndex];
         gameData.currentTrial = 0;
+        gameData.currentTrialIndex = 0;
 
         // Skip to next experiment stages in timeline
         skipToNextExperiment();
@@ -1762,21 +2083,39 @@ function skipToNextExperimentOrCompletion() {
  * Skip to next experiment in timeline
  */
 function skipToNextExperiment() {
-    // Find the first stage of the next experiment
+    // Find the first stage of the next experiment (prefer instructions stage)
     const nextExperimentType = gameData.currentExperiment;
     const nextExperimentIndex = gameData.currentExperimentIndex;
 
+    console.log('🔄 Skipping to next experiment:', nextExperimentType, 'index:', nextExperimentIndex);
+
+    // First, look for the instructions stage of the next experiment
     for (let i = timeline.currentStage; i < timeline.stages.length; i++) {
         const stage = timeline.stages[i];
         if (stage.experimentType === nextExperimentType &&
             stage.experimentIndex === nextExperimentIndex &&
-            stage.trialIndex === 0) {
+            stage.type === 'instructions') {
+            console.log('📖 Found instructions stage at index:', i);
             timeline.currentStage = i;
             runNextStage();
             return;
         }
     }
 
+    // If no instructions stage found, look for waiting_for_partner or first trial stage
+    for (let i = timeline.currentStage; i < timeline.stages.length; i++) {
+        const stage = timeline.stages[i];
+        if (stage.experimentType === nextExperimentType &&
+            stage.experimentIndex === nextExperimentIndex &&
+            (stage.type === 'waiting_for_partner' || stage.trialIndex === 0)) {
+            console.log('🎮 Found first stage at index:', i, 'type:', stage.type);
+            timeline.currentStage = i;
+            runNextStage();
+            return;
+        }
+    }
+
+    console.log('❌ No next experiment stage found, going to questionnaire');
     // If not found, go to questionnaire
     skipToQuestionnaire();
 }
@@ -1821,6 +2160,7 @@ function skipToCompletion() {
  */
 function initializeTrialData(trialIndex, experimentType) {
     gameData.currentTrial = trialIndex;
+    gameData.currentTrialIndex = trialIndex;
     gameData.stepCount = 0;
 
     // Ensure current experiment is set
@@ -1844,7 +2184,9 @@ function initializeTrialData(trialIndex, experimentType) {
         goals: null,
         playerStartPos: null,
         partnerStartPos: null,
-        movementMode: movementMode
+        movementMode: movementMode,
+        newGoalPresented: false,  // Initialize as false instead of undefined
+        collaborationSucceeded: false  // Initialize as false instead of undefined
     };
 
     // Ensure all arrays are properly initialized as arrays (not undefined or null)
@@ -1874,6 +2216,8 @@ function initializeTrialData(trialIndex, experimentType) {
         console.log(`Trial index: ${trialIndex}`);
         console.log(`Distance condition: Will be provided by server`);
         console.log(`========================================`);
+        var distanceCondition = getRandomDistanceConditionFor2P3G(trialIndex);
+        gameData.currentTrialData.distanceCondition = distanceCondition;
 
         // Reset 2P3G specific variables for new trial (matching human-AI version)
         newGoalPresented = false;
@@ -2122,6 +2466,11 @@ function finalizeTrial(success) {
             console.log('collaborationSucceeded value:', gameData.currentTrialData.collaborationSucceeded);
             console.log('collaborationSucceeded type:', typeof gameData.currentTrialData.collaborationSucceeded);
             console.log('trialSuccess calculated as:', trialSuccess);
+            console.log('Current trial index:', gameData.currentTrial);
+            console.log('Total trials so far:', gameData.allTrialsData.length);
+            console.log('Success threshold enabled:', NODEGAME_CONFIG.successThreshold.enabled);
+            console.log('Success threshold config:', NODEGAME_CONFIG.successThreshold);
+            console.log('Success threshold tracking:', gameData.successThreshold);
             console.log('=========================================');
         } else {
             // For single player games, success is based on completion
@@ -2166,13 +2515,17 @@ function finalizeTrial(success) {
     }
 }
 
-// Use existing helper functions from gameHelpers.js
-const getRandomDistanceConditionFor2P3G = window.getRandomDistanceConditionFor2P3G || function(trialIndex) {
+/**
+ * Get random distance condition for 2P3G after trial 12
+ * @param {number} trialIndex - Current trial index
+ * @returns {string} - Distance condition
+ */
+function getRandomDistanceConditionFor2P3G(trialIndex) {
     // If we're past the random sampling threshold, use random sampling
     if (trialIndex >= NODEGAME_CONFIG.successThreshold.randomSamplingAfterTrial) {
         var allConditions = [
-                    TWOP3G_CONFIG.distanceConditions.CLOSER_TO_PLAYER2,
-        TWOP3G_CONFIG.distanceConditions.CLOSER_TO_PLAYER1,
+            TWOP3G_CONFIG.distanceConditions.CLOSER_TO_PLAYER2,
+            TWOP3G_CONFIG.distanceConditions.CLOSER_TO_PLAYER1,
             TWOP3G_CONFIG.distanceConditions.EQUAL_TO_BOTH,
             TWOP3G_CONFIG.distanceConditions.NO_NEW_GOAL
         ];
@@ -2183,15 +2536,20 @@ const getRandomDistanceConditionFor2P3G = window.getRandomDistanceConditionFor2P
         // Use the pre-selected condition from sequence
         return TWOP3G_CONFIG.distanceConditionSequence[trialIndex];
     }
-};
+}
 
-const getRandomDistanceConditionFor1P2G = window.getRandomDistanceConditionFor1P2G || function(trialIndex) {
+/**
+ * Get random distance condition for 1P2G after trial 12
+ * @param {number} trialIndex - Current trial index
+ * @returns {string} - Distance condition
+ */
+function getRandomDistanceConditionFor1P2G(trialIndex) {
     // If we're past the random sampling threshold, use random sampling
     if (trialIndex >= NODEGAME_CONFIG.successThreshold.randomSamplingAfterTrial) {
         var allConditions = [
-                    ONEP2G_CONFIG.distanceConditions.CLOSER_TO_PLAYER1,
-        ONEP2G_CONFIG.distanceConditions.FARTHER_TO_PLAYER1,
-        ONEP2G_CONFIG.distanceConditions.EQUAL_TO_PLAYER1,
+            ONEP2G_CONFIG.distanceConditions.CLOSER_TO_PLAYER1,
+            ONEP2G_CONFIG.distanceConditions.FARTHER_TO_PLAYER1,
+            ONEP2G_CONFIG.distanceConditions.EQUAL_TO_PLAYER1,
             ONEP2G_CONFIG.distanceConditions.NO_NEW_GOAL
         ];
         var randomCondition = allConditions[Math.floor(Math.random() * allConditions.length)];
@@ -2201,21 +2559,7 @@ const getRandomDistanceConditionFor1P2G = window.getRandomDistanceConditionFor1P
         // Use the pre-selected condition from sequence
         return ONEP2G_CONFIG.distanceConditionSequence[trialIndex];
     }
-};
-
-/**
- * Initialize success threshold tracking
- */
-function initializeSuccessThresholdTracking() {
-    gameData.successThreshold = {
-        consecutiveSuccesses: 0,
-        totalTrialsCompleted: 0,
-        experimentEndedEarly: false,
-        lastSuccessTrial: -1,
-        successHistory: []
-    };
 }
-
 
 // =================================================================================================
 // SUCCESS THRESHOLD HELPER FUNCTIONS - FOR COLLABORATION GAMES
@@ -2225,13 +2569,17 @@ function initializeSuccessThresholdTracking() {
  * Initialize success threshold tracking for a new experiment
  */
 function initializeSuccessThresholdTracking() {
+    if (!gameData.successThreshold) {
+        gameData.successThreshold = {};
+    }
+
     gameData.successThreshold.consecutiveSuccesses = 0;
     gameData.successThreshold.totalTrialsCompleted = 0;
     gameData.successThreshold.experimentEndedEarly = false;
     gameData.successThreshold.lastSuccessTrial = -1;
     gameData.successThreshold.successHistory = [];
 
-    console.log('Success threshold tracking initialized');
+    console.log('Success threshold tracking initialized:', gameData.successThreshold);
 }
 
 /**
@@ -2242,7 +2590,19 @@ function initializeSuccessThresholdTracking() {
 function updateSuccessThresholdTracking(success, trialIndex) {
     // Only track for collaboration games
     if (!gameData.currentExperiment || !gameData.currentExperiment.includes('2P')) {
+        console.log('Skipping success threshold tracking - not a 2P game');
         return;
+    }
+
+    if (!NODEGAME_CONFIG.successThreshold.enabled) {
+        console.log('Skipping success threshold tracking - disabled');
+        return;
+    }
+
+    // Initialize if not done yet
+    if (!gameData.successThreshold) {
+        console.warn('Success threshold not initialized, initializing now');
+        initializeSuccessThresholdTracking();
     }
 
     gameData.successThreshold.totalTrialsCompleted++;
@@ -2255,44 +2615,64 @@ function updateSuccessThresholdTracking(success, trialIndex) {
         gameData.successThreshold.consecutiveSuccesses = 0;
     }
 
-    console.log(`Success threshold update - Trial ${trialIndex + 1}: ${success ? 'SUCCESS' : 'FAILURE'}`);
-    console.log(`  Consecutive successes: ${gameData.successThreshold.consecutiveSuccesses}/${NODEGAME_CONFIG.successThreshold.consecutiveSuccessesRequired}`);
-    console.log(`  Total trials: ${gameData.successThreshold.totalTrialsCompleted}/${NODEGAME_CONFIG.successThreshold.maxTrials}`);
+    console.log(`=== SUCCESS THRESHOLD UPDATE ===`);
+    console.log(`Trial ${trialIndex + 1}: ${success ? 'SUCCESS' : 'FAILURE'}`);
+    console.log(`Consecutive successes: ${gameData.successThreshold.consecutiveSuccesses}/${NODEGAME_CONFIG.successThreshold.consecutiveSuccessesRequired}`);
+    console.log(`Total trials: ${gameData.successThreshold.totalTrialsCompleted}/${NODEGAME_CONFIG.successThreshold.maxTrials}`);
+    console.log(`Min trials before check: ${NODEGAME_CONFIG.successThreshold.minTrialsBeforeCheck}`);
+    console.log(`Success history: [${gameData.successThreshold.successHistory.join(', ')}]`);
+    console.log(`Should end due to threshold? ${shouldEndExperimentDueToSuccessThreshold()}`);
+    console.log(`===============================`);
 }
 
 /**
  * Check if experiment should end due to success threshold
  * @returns {boolean} - True if experiment should end
  */
-
 function shouldEndExperimentDueToSuccessThreshold() {
+    console.log('=== CHECKING IF SHOULD END DUE TO SUCCESS THRESHOLD ===');
+
     // Only apply to collaboration games
     if (!gameData.currentExperiment || !gameData.currentExperiment.includes('2P')) {
+        console.log('Not a 2P game, no threshold check needed');
         return false;
     }
 
     // Check if success threshold is enabled
     if (!NODEGAME_CONFIG.successThreshold.enabled) {
+        console.log('Success threshold disabled, no threshold check needed');
         return false;
+    }
+
+    // Initialize if not done yet
+    if (!gameData.successThreshold) {
+        console.warn('Success threshold not initialized, initializing now');
+        initializeSuccessThresholdTracking();
     }
 
     var config = NODEGAME_CONFIG.successThreshold;
     var tracking = gameData.successThreshold;
 
+    console.log('Success threshold config:', config);
+    console.log('Success threshold tracking:', tracking);
+
     // Check if we've reached the maximum trials
     if (tracking.totalTrialsCompleted >= config.maxTrials) {
-        console.log(`Experiment ending: Reached maximum trials (${config.maxTrials})`);
+        console.log(`✅ Experiment ending: Reached maximum trials (${config.maxTrials})`);
         return true;
     }
 
     // Check if we have enough trials and consecutive successes
     if (tracking.totalTrialsCompleted >= config.minTrialsBeforeCheck &&
         tracking.consecutiveSuccesses >= config.consecutiveSuccessesRequired) {
-        console.log(`Experiment ending: Success threshold met (${tracking.consecutiveSuccesses} consecutive successes after ${tracking.totalTrialsCompleted} trials)`);
+        console.log(`✅ Experiment ending: Success threshold met (${tracking.consecutiveSuccesses} consecutive successes after ${tracking.totalTrialsCompleted} trials)`);
         gameData.successThreshold.experimentEndedEarly = true;
         return true;
     }
 
+    console.log(`❌ Continue experiment: ${tracking.totalTrialsCompleted} trials, ${tracking.consecutiveSuccesses} consecutive successes`);
+    console.log(`Need ${config.minTrialsBeforeCheck} min trials and ${config.consecutiveSuccessesRequired} consecutive successes`);
+    console.log('==================================================');
     return false;
 }
 /**
@@ -2301,6 +2681,7 @@ function shouldEndExperimentDueToSuccessThreshold() {
 function resetExperimentData() {
     gameData.currentExperiment = null;
     gameData.currentExperimentIndex = 0;
+    gameData.currentTrialIndex = 0;
     gameData.currentTrial = 0;
     gameData.allTrialsData = [];
     gameData.currentTrialData = {};
@@ -2524,32 +2905,303 @@ const getExperimentInstructions = window.getExperimentInstructions || function(e
  */
 function checkNewGoalPresentation2P3G() {
     console.log('=== HUMAN-HUMAN 2P3G NEW GOAL CHECK ===');
+    console.log('Current experiment:', gameData.currentExperiment);
+    console.log('Socket connected:', isConnected);
+    console.log('Socket exists:', !!socket);
 
-    // Use the unified function from ExpDesign.js
+    // Use the unified function from ExpDesign.js if available
     if (window.ExpDesign && window.ExpDesign.checkNewGoalPresentation2P3G) {
-        console.log('Using unified ExpDesign function for 2P3G');
+        console.log('✅ Using unified ExpDesign function for 2P3G');
 
         window.ExpDesign.checkNewGoalPresentation2P3G({
             isHumanHuman: true,
             displayUpdater: updateGameVisualization,
             serverRequestHandler: function(requestData) {
-                console.log('=== SENDING SERVER REQUEST VIA HANDLER ===');
+                console.log('=== 🚀 SENDING SERVER REQUEST VIA HANDLER ===');
                 console.log('Request data:', requestData);
+                console.log('Socket status - exists:', !!socket, 'connected:', isConnected);
 
                 if (socket && isConnected) {
+                    console.log('📤 Emitting request_new_goal to server...');
                     socket.emit('request_new_goal', requestData);
-                    console.log('Server request sent successfully');
+                    console.log('✅ Server request sent successfully');
+
+                    // Set a timeout to fallback to local generation if server doesn't respond
+                    setTimeout(() => {
+                        if (!newGoalPresented && gameData.currentTrialData.newGoalPresented !== true) {
+                            console.log('⏰ Server timeout - no response after 3 seconds, using fallback');
+
+                            // In multiplayer, only the first player should generate the fallback goal
+                            // to ensure synchronization
+                            if (playerOrder.isFirstPlayer) {
+                                console.log('🎯 First player generating fallback goal for synchronization');
+                                console.log('🎯 My player ID:', myPlayerId);
+                                console.log('🎯 Socket connected:', isConnected);
+                                const newGoal = generateFallbackGoal(requestData);
+                                if (newGoal) {
+                                    console.log('🎯 Generated goal:', newGoal);
+                                    // Broadcast the new goal to partner via socket
+                                    if (socket && isConnected) {
+                                        console.log('🎯 Broadcasting fallback goal to partner...');
+                                        socket.emit('share_fallback_goal', {
+                                            newGoalPosition: newGoal,
+                                            distanceCondition: requestData.distanceCondition,
+                                            stepCount: requestData.stepCount,
+                                            trialIndex: requestData.trialIndex
+                                        });
+                                        console.log('🎯 Fallback goal broadcast sent');
+                                    } else {
+                                        console.log('⚠️ Socket not available for broadcasting fallback goal');
+                                    }
+                                    // Apply the goal locally
+                                    console.log('🎯 Applying goal locally for first player...');
+                                    applyNewGoal(newGoal, requestData);
+                                } else {
+                                    console.log('❌ Failed to generate fallback goal');
+                                }
+                            } else {
+                                console.log('🎯 Second player waiting for fallback goal from first player');
+                                console.log('🎯 My player ID:', myPlayerId);
+                                // Second player waits for the goal from first player
+                            }
+                        }
+                    }, 3000);
                 } else {
-                    console.error('Socket not available for server request');
+                    console.error('❌ Socket not available for server request');
+                    console.error('Socket status:', { socket: !!socket, isConnected: isConnected });
+
+                    // Try to fallback to a simple new goal generation if server isn't available
+                    console.log('⚠️ Attempting fallback new goal generation...');
+                    fallbackNewGoalGeneration(requestData);
                 }
             },
             callback: function() {
-                console.log('2P3G new goal presentation completed');
+                console.log('✅ 2P3G new goal presentation completed');
             }
         });
     } else {
-        console.error('ExpDesign.checkNewGoalPresentation2P3G not available');
+        console.error('❌ ExpDesign.checkNewGoalPresentation2P3G not available, using local fallback');
+        console.log('Available ExpDesign:', window.ExpDesign ? 'exists' : 'missing');
         console.log('Available ExpDesign functions:', window.ExpDesign ? Object.keys(window.ExpDesign) : 'ExpDesign not available');
+
+        // Fallback to local 2P3G new goal generation logic
+        console.log('🔄 Using local fallback goal generation');
+        checkNewGoalPresentation2P3GLocal();
+    }
+}
+
+/**
+ * Local 2P3G new goal generation fallback
+ */
+function checkNewGoalPresentation2P3GLocal() {
+    console.log('=== LOCAL 2P3G NEW GOAL CHECK ===');
+
+    // Check minimum steps requirement
+    if (gameData.stepCount < TWOP3G_CONFIG.minStepsBeforeNewGoal) {
+        console.log('Minimum steps not met:', gameData.stepCount, '<', TWOP3G_CONFIG.minStepsBeforeNewGoal);
+        return;
+    }
+
+    // Check if new goal already presented
+    if (newGoalPresented || gameData.currentTrialData.newGoalPresented === true) {
+        console.log('New goal already presented, skipping');
+        return;
+    }
+
+    // Get current goals for both players
+    var player1Goals = gameData.currentTrialData.player1CurrentGoal || [];
+    var player2Goals = gameData.currentTrialData.player2CurrentGoal || [];
+
+    var player1CurrentGoal = player1Goals.length > 0 ? player1Goals[player1Goals.length - 1] : null;
+    var player2CurrentGoal = player2Goals.length > 0 ? player2Goals[player2Goals.length - 1] : null;
+
+    console.log('Current goals - Player1:', player1CurrentGoal, 'Player2:', player2CurrentGoal);
+
+    // Check if both players are heading to the same goal
+    if (player1CurrentGoal !== null && player2CurrentGoal !== null &&
+        player1CurrentGoal === player2CurrentGoal) {
+
+        console.log('=== BOTH PLAYERS HEADING TO SAME GOAL - GENERATING NEW GOAL ===');
+
+        // Generate a new goal with proper distance constraints
+        const gridSize = 15;
+        const validPositions = [];
+
+        // Get distance calculator
+        const distanceCalc = window.NodeGameHelpers ? window.NodeGameHelpers.calculatetGirdDistance :
+                           function(pos1, pos2) { return Math.abs(pos1[0] - pos2[0]) + Math.abs(pos1[1] - pos2[1]); };
+
+        for (let row = 0; row < gridSize; row++) {
+            for (let col = 0; col < gridSize; col++) {
+                const newGoal = [row, col];
+
+                // Check if position is empty
+                if (gameData.gridMatrix && gameData.gridMatrix[row] && gameData.gridMatrix[row][col] === 0) {
+                    const newGoalDistanceToPlayer2 = distanceCalc(gameData.currentPartnerPos, newGoal);
+                    const newGoalDistanceToPlayer1 = distanceCalc(gameData.currentPlayerPos, newGoal);
+
+                    // Basic constraints
+                    const player1DistanceOk = newGoalDistanceToPlayer1 >= 1 && newGoalDistanceToPlayer1 <= 10;
+                    const distanceDifference = Math.abs(newGoalDistanceToPlayer2 - newGoalDistanceToPlayer1);
+                    const distanceConditionMet = distanceDifference <= 2; // Relaxed equal distance constraint
+
+                    if (player1DistanceOk && distanceConditionMet) {
+                        validPositions.push(newGoal);
+                    }
+                }
+            }
+        }
+
+        let newGoalPos = null;
+        if (validPositions.length > 0) {
+            // Select random valid position
+            const randomIndex = Math.floor(Math.random() * validPositions.length);
+            newGoalPos = validPositions[randomIndex];
+            console.log(`Selected goal from ${validPositions.length} valid positions`);
+        } else {
+            // Fallback to any empty position if no valid positions found
+            console.log('No valid positions found, using any empty position');
+            let attempts = 0;
+            while (attempts < 100 && !newGoalPos) {
+                const row = Math.floor(Math.random() * gridSize);
+                const col = Math.floor(Math.random() * gridSize);
+
+                if (gameData.gridMatrix && gameData.gridMatrix[row] && gameData.gridMatrix[row][col] === 0) {
+                    newGoalPos = [row, col];
+                    break;
+                }
+                attempts++;
+            }
+        }
+
+        if (newGoalPos) {
+            console.log('✅ Generated new goal locally at:', newGoalPos);
+
+            // Update local state
+            newGoalPosition = newGoalPos;
+            newGoalPresented = true;
+            gameData.currentTrialData.newGoalPresented = true;
+            gameData.currentTrialData.newGoalPosition = newGoalPos;
+            gameData.currentTrialData.newGoalPresentedTime = gameData.stepCount;
+
+            // Add new goal to the grid and goals list
+            gameData.gridMatrix[newGoalPos[0]][newGoalPos[1]] = 2; // OBJECT.goal
+            gameData.currentGoals.push(newGoalPos);
+
+            // Update visualization
+            updateGameVisualization();
+
+            console.log('New goal added to game state');
+        } else {
+            console.log('❌ Failed to generate new goal locally');
+        }
+    }
+}
+
+/**
+ * Generate a fallback goal (used by first player for synchronization)
+ * @param {Object} requestData - The original request data
+ * @returns {Array|null} - The new goal position or null
+ */
+function generateFallbackGoal(requestData) {
+    console.log('=== GENERATE FALLBACK GOAL ===');
+    console.log('Request data:', requestData);
+
+    // Use the same logic as fallbackNewGoalGeneration but return the position
+    const gridSize = 15;
+    let attempts = 0;
+    let newGoalPos = null;
+
+    while (attempts < 100 && !newGoalPos) {
+        const row = Math.floor(Math.random() * gridSize);
+        const col = Math.floor(Math.random() * gridSize);
+
+        // Check if position is empty
+        if (gameData.gridMatrix && gameData.gridMatrix[row] && gameData.gridMatrix[row][col] === 0) {
+            // Check if not too close to players
+            const playerDist = Math.abs(row - gameData.currentPlayerPos[0]) + Math.abs(col - gameData.currentPlayerPos[1]);
+            const partnerDist = Math.abs(row - gameData.currentPartnerPos[0]) + Math.abs(col - gameData.currentPartnerPos[1]);
+
+            if (playerDist >= 2 && partnerDist >= 2) {
+                newGoalPos = [row, col];
+            }
+        }
+        attempts++;
+    }
+
+    console.log('Generated fallback goal:', newGoalPos);
+    return newGoalPos;
+}
+
+/**
+ * Apply a new goal to the game state (used by both server and fallback goals)
+ * @param {Array} goalPosition - The position of the new goal
+ * @param {Object} data - Additional data about the goal
+ */
+function applyNewGoal(goalPosition, data) {
+    console.log('=== APPLYING NEW GOAL ===');
+    console.log('New goal position:', goalPosition);
+    console.log('Data:', data);
+
+    // Update local state
+    newGoalPosition = goalPosition;  // Set global variable
+    newGoalPresented = true;
+    gameData.currentTrialData.newGoalPresented = true;
+    gameData.currentTrialData.newGoalPosition = goalPosition;
+    gameData.currentTrialData.newGoalPresentedTime = data.stepCount || gameData.stepCount;
+    gameData.currentTrialData.newGoalConditionType = data.distanceCondition || 'fallback';
+
+    // Add new goal to the grid and goals list
+    gameData.gridMatrix[goalPosition[0]][goalPosition[1]] = 2; // OBJECT.goal
+    gameData.currentGoals.push(goalPosition);
+
+    // Update visualization
+    updateGameVisualization();
+
+    console.log('✅ New goal applied successfully');
+}
+
+/**
+ * Fallback new goal generation when server is not available (legacy function)
+ */
+function fallbackNewGoalGeneration(requestData) {
+    console.log('=== FALLBACK NEW GOAL GENERATION ===');
+    console.log('Request data:', requestData);
+
+    // Generate a simple new goal
+    const gridSize = 15;
+    let attempts = 0;
+    let newGoalPos = null;
+
+    while (attempts < 100 && !newGoalPos) {
+        const row = Math.floor(Math.random() * gridSize);
+        const col = Math.floor(Math.random() * gridSize);
+
+        // Check if position is empty
+        if (gameData.gridMatrix && gameData.gridMatrix[row] && gameData.gridMatrix[row][col] === 0) {
+            // Check if not too close to players
+            const playerDist = Math.abs(row - gameData.currentPlayerPos[0]) + Math.abs(col - gameData.currentPlayerPos[1]);
+            const partnerDist = Math.abs(row - gameData.currentPartnerPos[0]) + Math.abs(col - gameData.currentPartnerPos[1]);
+
+            if (playerDist >= 2 && partnerDist >= 2) {
+                newGoalPos = [row, col];
+            }
+        }
+        attempts++;
+    }
+
+    if (newGoalPos) {
+        console.log('✅ Generated fallback new goal at:', newGoalPos);
+
+        // Use the unified applyNewGoal function
+        applyNewGoal(newGoalPos, {
+            stepCount: gameData.stepCount,
+            distanceCondition: 'fallback'
+        });
+
+        console.log('✅ Fallback new goal presentation completed');
+    } else {
+        console.error('❌ Failed to generate fallback new goal');
     }
 }
 
@@ -2603,7 +3255,20 @@ function checkTrialEnd2P2G() {
         console.log('=== FINALIZING 2P2G TRIAL ===');
 
         gameData.currentTrialData.collaborationSucceeded = collaboration;
-        finalizeTrial(true);
+
+        // Only finalize trial once per client session to prevent double-processing
+        const isAlreadyFinalized = gameData.allTrialsData.some(trial =>
+            trial.trialIndex === gameData.currentTrial &&
+            trial.experimentType === gameData.currentExperiment
+        );
+
+        if (!isAlreadyFinalized) {
+            console.log('=== 2P2G: Finalizing trial (first time) ===');
+            console.log('=== 2P2G: collaborationSucceeded set to:', collaboration);
+            finalizeTrial(true);
+        } else {
+            console.log('=== 2P2G: Trial already finalized, skipping ===');
+        }
     } else {
         console.log('=== 2P2G TRIAL NOT ENDING - NOT BOTH AT GOALS ===');
     }
@@ -2633,14 +3298,27 @@ function checkTrialEnd2P3G() {
         console.log('=== FINALIZING 2P3G TRIAL ===');
 
         gameData.currentTrialData.collaborationSucceeded = collaboration;
-        finalizeTrial(true);
 
-        // Reset 2P3G specific variables for next trial
-        newGoalPresented = false;
-        newGoalPosition = null;
-        isNewGoalCloserToPlayer2 = null;
-        player1InferredGoals = [];
-        player2InferredGoals = [];
+        // Only finalize trial once per client session to prevent double-processing
+        const isAlreadyFinalized = gameData.allTrialsData.some(trial =>
+            trial.trialIndex === gameData.currentTrial &&
+            trial.experimentType === gameData.currentExperiment
+        );
+
+        if (!isAlreadyFinalized) {
+            console.log('=== 2P3G: Finalizing trial (first time) ===');
+            console.log('=== 2P3G: collaborationSucceeded set to:', collaboration);
+            finalizeTrial(true);
+
+            // Reset 2P3G specific variables for next trial
+            newGoalPresented = false;
+            newGoalPosition = null;
+            isNewGoalCloserToPlayer2 = null;
+            player1InferredGoals = [];
+            player2InferredGoals = [];
+        } else {
+            console.log('=== 2P3G: Trial already finalized, skipping ===');
+        }
     } else {
         console.log('=== 2P3G TRIAL NOT ENDING - NOT BOTH AT GOALS ===');
     }
@@ -2805,3 +3483,22 @@ function enableSuccessThreshold(consecutiveSuccesses = 4, minTrials = 4) {
     NODEGAME_CONFIG.successThreshold.minTrialsBeforeCheck = minTrials;
     console.log(`Success threshold enabled: ${consecutiveSuccesses} consecutive successes after ${minTrials} trials`);
 }
+
+// =================================================================================================
+// MAKE FUNCTIONS GLOBALLY AVAILABLE FOR TIMELINE ACCESS
+// =================================================================================================
+
+// Make success threshold functions globally available for timeline
+window.shouldEndExperimentDueToSuccessThreshold = shouldEndExperimentDueToSuccessThreshold;
+window.shouldContinueToNextTrial = shouldContinueToNextTrial;
+window.updateSuccessThresholdTracking = updateSuccessThresholdTracking;
+window.initializeSuccessThresholdTracking = initializeSuccessThresholdTracking;
+
+// Make other important functions globally available
+window.joinMultiplayerRoom = joinMultiplayerRoom;
+window.handleRoomJoined = handleRoomJoined;
+window.attemptReconnection = attemptReconnection;
+window.checkNewGoalPresentation2P3G = checkNewGoalPresentation2P3G;
+window.checkNewGoalPresentation1P2G = checkNewGoalPresentation1P2G;
+window.finalizeTrial = finalizeTrial;
+window.renderGameBoardFallback = renderGameBoardFallback;

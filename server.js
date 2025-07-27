@@ -29,7 +29,7 @@ const GAME_CONFIG = {
     syncInterval: 100,   // 100ms
     gridSize: 15,        // Updated to match map configurations
     enableSinglePlayerTesting: true,  // Allow single player testing
-    debugMode: false     // Disable excessive logging by default
+    debugMode: true      // Enable debug logging to troubleshoot new goal generation
 };
 
 // Load map data
@@ -675,24 +675,24 @@ class GameRoom {
                     let conditionType = '';
 
                     switch (distanceCondition) {
-                        case 'closer_to_player2':
-                            // New goal closer to player2, equal joint distance
-                            distanceConditionMet = newGoalDistanceToPlayer2 < player2DistanceToOldGoal - 1;
-                            conditionType = 'closer_to_player2';
-                            break;
+                                            case 'closer_to_player2':
+                        // New goal closer to player2
+                        distanceConditionMet = newGoalDistanceToPlayer2 < player2DistanceToOldGoal - 1;
+                        conditionType = 'closer_to_player2';
+                        break;
 
-                        case 'closer_to_player1':
-                            // New goal closer to player1, equal joint distance
-                            distanceConditionMet = newGoalDistanceToPlayer1 < player1DistanceToOldGoal - 1;
-                            conditionType = 'closer_to_player1';
-                            break;
+                    case 'closer_to_player1':
+                        // New goal closer to player1
+                        distanceConditionMet = newGoalDistanceToPlayer1 < player1DistanceToOldGoal - 1;
+                        conditionType = 'closer_to_player1';
+                        break;
 
-                        case 'equal_to_both':
-                            // New goal equal distance to both player1 and player2, equal joint distance
-                            const distanceDifference = Math.abs(newGoalDistanceToPlayer2 - newGoalDistanceToPlayer1);
-                            distanceConditionMet = distanceDifference < 0.1;
-                            conditionType = 'equal_to_both';
-                            break;
+                                            case 'equal_to_both':
+                        // New goal equal distance to both player1 and player2, equal joint distance
+                        const distanceDifference = Math.abs(newGoalDistanceToPlayer2 - newGoalDistanceToPlayer1);
+                        distanceConditionMet = distanceDifference <= 1; // More reasonable tolerance
+                        conditionType = 'equal_to_both';
+                        break;
 
                         default:
                             if (GAME_CONFIG.debugMode) {
@@ -1143,13 +1143,18 @@ io.on('connection', (socket) => {
 
     // Handle new goal request (new server-side logic for 2P3G)
     socket.on('request_new_goal', (data) => {
+        console.log(`📨 REQUEST_NEW_GOAL received from ${socket.id}`);
+        console.log(`📨 Current room:`, currentRoom ? currentRoom.roomId : 'null');
+        console.log(`📨 Game type:`, currentRoom ? currentRoom.gameType : 'null');
+        console.log(`📨 Request data:`, data);
+
         if (GAME_CONFIG.debugMode) {
             console.log(`🔍 REQUEST_NEW_GOAL received from ${socket.id}`);
             console.log(`🔍 Current room:`, currentRoom ? currentRoom.roomId : 'null');
             console.log(`🔍 Game type:`, currentRoom ? currentRoom.gameType : 'null');
         }
 
-        if (currentRoom && currentRoom.gameType === '2P3G') {
+        if (currentRoom && (currentRoom.gameType === '2P3G' || currentRoom.gameType === '2P2G')) {
             if (GAME_CONFIG.debugMode) {
                 console.log(`Player ${socket.id} requested new goal generation:`, data);
             }
@@ -1179,32 +1184,43 @@ io.on('connection', (socket) => {
             }
 
             // Generate new goal using server-side logic
-            const newGoal = currentRoom.generateNewGoalWithServerLogic(
-                data.player2Pos,
-                data.player1Pos,
-                data.currentGoals[data.sharedGoalIndex],
-                data.sharedGoalIndex,
-                data.distanceCondition
-            );
+            let newGoal = null;
+            try {
+                newGoal = currentRoom.generateNewGoalWithServerLogic(
+                    data.player2Pos,
+                    data.player1Pos,
+                    data.currentGoals[data.sharedGoalIndex],
+                    data.sharedGoalIndex,
+                    data.distanceCondition
+                );
 
-            if (GAME_CONFIG.debugMode) {
-                console.log(`🔍 generateNewGoalWithServerLogic returned:`, newGoal);
+                if (GAME_CONFIG.debugMode) {
+                    console.log(`🔍 generateNewGoalWithServerLogic returned:`, newGoal);
+                }
+            } catch (error) {
+                console.error(`❌ Error in generateNewGoalWithServerLogic:`, error);
+                newGoal = null;
             }
 
             if (newGoal) {
-                console.log(`Server generated new goal at position ${newGoal} for room ${currentRoom.roomId}`);
+                console.log(`🎯 Server generated new goal at position ${newGoal} for room ${currentRoom.roomId}`);
 
                 // Broadcast new goal to ALL players in the room
+                console.log(`📡 Broadcasting server_new_goal to room ${currentRoom.roomId}`);
                 if (GAME_CONFIG.debugMode) {
                     console.log(`🔍 Broadcasting server_new_goal to room ${currentRoom.roomId}`);
                 }
-                currentRoom.broadcastToRoom('server_new_goal', {
+
+                const goalData = {
                     newGoalPosition: newGoal,
                     distanceCondition: data.distanceCondition,
                     stepCount: data.stepCount,
                     trialIndex: data.trialIndex,
                     generatedBy: 'server'
-                });
+                };
+                console.log(`📡 Goal data being sent:`, goalData);
+
+                currentRoom.broadcastToRoom('server_new_goal', goalData);
 
                 // Update server's game state
                 if (currentRoom.gameState) {
@@ -1216,6 +1232,20 @@ io.on('connection', (socket) => {
                 console.log(`✅ Server successfully generated and broadcasted new goal to all players in room ${currentRoom.roomId}`);
             } else {
                 console.log(`❌ Server failed to generate new goal for room ${currentRoom.roomId}`);
+                console.log(`❌ Request data was:`, {
+                    player2Pos: data.player2Pos,
+                    player1Pos: data.player1Pos,
+                    sharedGoal: data.currentGoals ? data.currentGoals[data.sharedGoalIndex] : 'undefined',
+                    sharedGoalIndex: data.sharedGoalIndex,
+                    distanceCondition: data.distanceCondition,
+                    gameType: currentRoom.gameType
+                });
+
+                // Send failure response to client so it doesn't timeout
+                socket.emit('server_new_goal_failed', {
+                    reason: 'No valid goal position found',
+                    distanceCondition: data.distanceCondition
+                });
             }
 
             // Clear the lock after processing
@@ -1231,6 +1261,31 @@ io.on('connection', (socket) => {
             if (GAME_CONFIG.debugMode) {
                 console.log(`❌ Invalid room or game type for goal generation request`);
             }
+        }
+    });
+
+        // Handle fallback goal sharing between players
+    socket.on('share_fallback_goal', (data) => {
+        console.log(`📨 SHARE_FALLBACK_GOAL received from ${socket.id}`);
+        console.log(`📨 Goal data:`, data);
+        console.log(`📨 Current room:`, currentRoom ? currentRoom.roomId : 'null');
+        console.log(`📨 Players in room:`, currentRoom ? currentRoom.players.size : 0);
+
+        if (currentRoom) {
+            console.log(`📡 Broadcasting fallback goal to other players in room ${currentRoom.roomId}`);
+
+            let broadcastCount = 0;
+            // Broadcast to all other players in the room
+            for (const [playerId, player] of currentRoom.players) {
+                if (playerId !== socket.id) {
+                    console.log(`📤 Sending fallback goal to player ${playerId}`);
+                    player.socket.emit('share_fallback_goal', data);
+                    broadcastCount++;
+                }
+            }
+            console.log(`📡 Fallback goal broadcast to ${broadcastCount} players`);
+        } else {
+            console.log(`❌ No current room for player ${socket.id}`);
         }
     });
 
