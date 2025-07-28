@@ -40,7 +40,7 @@ const NODEGAME_CONFIG = {
     // TRIAL COUNTS
     // =================================================================================================
     numTrials: {
-        '1P1G': 12,    // Number of 1P1G trials
+        '1P1G': 3,    // Number of 1P1G trials
         '1P2G': 12,    // Number of 1P2G trials, formal=12
         '2P2G': 12,    // Number of 2P2G trials, formal=12
         '2P3G': 12     // Number of 2P3G trials, formal=12
