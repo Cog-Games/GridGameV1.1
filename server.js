@@ -15,6 +15,7 @@ const io = socketIo(server);
 
 // Serve static files
 app.use(express.static('public'));
+app.use(express.static(__dirname)); // Serve files from root directory
 
 // Game rooms management
 const gameRooms = new Map();
@@ -40,7 +41,7 @@ let MapsFor2P3G = {};
 function loadMapData() {
     try {
         // Load 2P2G maps
-        const maps2P2GPath = path.join(__dirname, 'public', 'config', 'MapsFor2P2G.js');
+        const maps2P2GPath = path.join(__dirname, 'config', 'MapsFor2P2G.js');
         if (fs.existsSync(maps2P2GPath)) {
             const maps2P2GContent = fs.readFileSync(maps2P2GPath, 'utf8');
             // Extract the MapsFor2P2G object from the file
@@ -52,7 +53,7 @@ function loadMapData() {
         }
 
         // Load 2P3G maps
-        const maps2P3GPath = path.join(__dirname, 'public', 'config', 'MapsFor2P3G.js');
+        const maps2P3GPath = path.join(__dirname, 'config', 'MapsFor2P3G.js');
         if (fs.existsSync(maps2P3GPath)) {
             const maps2P3GContent = fs.readFileSync(maps2P3GPath, 'utf8');
             // Extract the MapsFor2P3G object from the file
@@ -1312,7 +1313,7 @@ app.get('/test', (req, res) => {
 });
 
 app.get('/test-human-human', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'test_human_human.html'));
+    res.sendFile(path.join(__dirname, 'test_human_human.html'));
 });
 
 

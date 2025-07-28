@@ -25,7 +25,7 @@ const NODEGAME_CONFIG = {
     // =================================================================================================
 
     // Current test configuration (2P3G only)
-    // experimentOrder: ['2P3G'],
+    experimentOrder: ['2P3G'],
 
     // Alternative configurations (uncomment to use):
     // experimentOrder: ['1P1G'],           // Test 1P1G only
@@ -33,7 +33,7 @@ const NODEGAME_CONFIG = {
     // experimentOrder: ['2P2G'],           // Test 2P2G only
     // experimentOrder: ['1P1G', '1P2G'],   // Test 1P1G and 1P2G
     // experimentOrder: ['2P2G', '2P3G'],   // Test 2P2G and 2P3G
-    experimentOrder: ['1P1G', '1P2G', '2P2G', '2P3G'], // Test all experiments
+    // experimentOrder: ['1P1G', '1P2G', '2P2G', '2P3G'], // Test all experiments
     // experimentOrder: ['1P2G', '2P3G'],
 
     // =================================================================================================
@@ -58,10 +58,17 @@ const NODEGAME_CONFIG = {
     },
 
     // =================================================================================================
+    // RL AGENT CONFIGURATION
+    // =================================================================================================
+    rlAgent: {
+        type: 'joint', // Default agent type: 'individual' or 'joint'
+    },
+
+    // =================================================================================================
     // GAME SETTINGS
     // =================================================================================================
     agentDelay: 500,
-    independentAgentDelay: 400, // Slower delay for independent AI movement after human reaches goal
+    independentAgentDelay: 300, // Slower delay for independent AI movement after human reaches goal
     maxGameLength: 50, // Max steps per trial
     enableProlificRedirect: true, // Set to false for testing without redirect
     prolificCompletionCode: 'C19EH5X9', // Prolific completion code
@@ -172,12 +179,35 @@ function setPlayer2Type(type) {
     }
 }
 
+/**
+ * Set the RL agent type
+ * @param {string} agentType - 'individual' or 'joint'
+ */
+function setRLAgentType(agentType) {
+    if (['individual', 'joint'].includes(agentType)) {
+        NODEGAME_CONFIG.rlAgent.type = agentType;
+        console.log(`RL Agent type set to: ${agentType}`);
+    } else {
+        console.error(`Invalid RL agent type: ${agentType}. Must be 'individual' or 'joint'`);
+    }
+}
+
+/**
+ * Get current RL agent type
+ * @returns {string} Current RL agent type
+ */
+function getRLAgentType() {
+    return NODEGAME_CONFIG.rlAgent.type;
+}
+
 // Export configuration for module usage
 window.NodeGameConfig = {
     NODEGAME_CONFIG: NODEGAME_CONFIG,
     NODEGAME_HUMAN_HUMAN_CONFIG: NODEGAME_HUMAN_HUMAN_CONFIG,
     ONEP2G_CONFIG: ONEP2G_CONFIG,
     TWOP3G_CONFIG: TWOP3G_CONFIG,
-    setPlayer2Type: setPlayer2Type
+    setPlayer2Type: setPlayer2Type,
+    setRLAgentType: setRLAgentType,
+    getRLAgentType: getRLAgentType
 };
 

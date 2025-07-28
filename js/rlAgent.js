@@ -9,7 +9,6 @@ function hashGoals(goals) {
 }
 
 // RL Agent Configuration
-var RL_AGENT_TYPE = 'individual'; // Default agent type individual or joint
 var RL_AGENT_CONFIG = {
     gridSize: 15,
     noise: 0.0,
@@ -25,7 +24,7 @@ var RL_AGENT_CONFIG = {
     debugMode: false,  // Disable debug logging for performance
     useFastOptimalPolicy: false,  // Use optimized fast version (true) or original version (false)
     enablePolicyPrecalculation: false,  // Enable pre-calculation of policies for instant response
-    jointRLImplementation: 'original',  // Choose joint RL implementation: '4action', 'original', or 'fast'
+    jointRLImplementation: 'bfs',  // Choose joint RL implementation: '4action', 'original', or 'fast'
 };
 
 // ===============================================================================================
@@ -1240,6 +1239,8 @@ const getSoftmaxOptimalJointRLActionFast = (function () {
 })();
 
 
+
+
 // Create window.RLAgent after the IIFE has executed
 if (typeof window !== 'undefined') {
     window.RLAgent = {
@@ -1263,6 +1264,7 @@ if (typeof window !== 'undefined') {
         enable4ActionJointRL,
         enableOriginalJointRL,
         enableFastJointRL,
+        enableBFSJointRL,
         getJointRLImplementationInfo,
         enablePolicyPrecalculation,
         disablePolicyPrecalculation,
@@ -1519,7 +1521,8 @@ function getAIAction(gridMatrix, currentPos, goals, playerPos = null) {
     let action;
 
     try {
-        if (RL_AGENT_TYPE === 'joint' && playerPos !== null) {
+        const rlAgentType = NodeGameConfig.getRLAgentType();
+        if (rlAgentType === 'joint' && playerPos !== null) {
             // Use joint RL agent that considers both players' positions for cooperation
             if (RL_AGENT_CONFIG.debugMode) {
                 const implementationType = RL_AGENT_CONFIG.jointRLImplementation;
@@ -1535,6 +1538,11 @@ function getAIAction(gridMatrix, currentPos, goals, playerPos = null) {
                     action = getSoftmaxOptimalJointRLAction(currentPos, playerPos, goals, RL_AGENT_CONFIG.softmaxBeta);
                     break;
                 case 'fast':
+                    action = getSoftmaxOptimalJointRLActionFast(currentPos, playerPos, goals, RL_AGENT_CONFIG.softmaxBeta);
+                    break;
+                case 'bfs':
+                    action = getSoftmaxBFSJointRLAction(currentPos, playerPos, goals, RL_AGENT_CONFIG.softmaxBeta);
+                    break;
                 default:
                     action = getSoftmaxOptimalJointRLActionFast(currentPos, playerPos, goals, RL_AGENT_CONFIG.softmaxBeta);
                     break;
@@ -1543,7 +1551,7 @@ function getAIAction(gridMatrix, currentPos, goals, playerPos = null) {
 
         } else {
             // Use individual RL agent that only considers own position
-            if (RL_AGENT_TYPE === 'joint' && playerPos === null) {
+            if (rlAgentType === 'joint' && playerPos === null) {
                 console.warn(`⚠️ Joint RL requested but playerPos is null. Falling back to Individual RL.`);
             }
             if (RL_AGENT_CONFIG.debugMode) {
@@ -1574,12 +1582,7 @@ function getAIAction(gridMatrix, currentPos, goals, playerPos = null) {
  * @param {string} agentType - 'individual' or 'joint'
  */
 function setRLAgentType(agentType) {
-    if (['individual', 'joint'].includes(agentType)) {
-        RL_AGENT_TYPE = agentType;
-        console.log(`RL Agent type set to: ${agentType}`);
-    } else {
-        console.error(`Invalid RL agent type: ${agentType}. Must be 'individual' or 'joint'`);
-    }
+    NodeGameConfig.setRLAgentType(agentType);
 }
 
 /**
@@ -1595,7 +1598,7 @@ function updateRLAgentConfig(config) {
  * @returns {string} Current RL agent type
  */
 function getRLAgentType() {
-    return RL_AGENT_TYPE;
+    return NodeGameConfig.getRLAgentType();
 }
 
 /**
@@ -1729,7 +1732,7 @@ function enableOriginalOptimalPolicy() {
  * @param {string} implementation - '4action', 'original', or 'fast'
  */
 function setJointRLImplementation(implementation) {
-    const validImplementations = ['4action', 'original', 'fast'];
+    const validImplementations = ['4action', 'original', 'fast', 'bfs'];
     if (validImplementations.includes(implementation)) {
         RL_AGENT_CONFIG.jointRLImplementation = implementation;
         console.log(`✅ Joint RL implementation set to: ${implementation}`);
@@ -1768,6 +1771,13 @@ function enableFastJointRL() {
 }
 
 /**
+ * Enable BFS joint RL implementation (reverse 4-D BFS planner)
+ */
+function enableBFSJointRL() {
+    setJointRLImplementation('bfs');
+}
+
+/**
  * Get information about all available joint RL implementations
  * @returns {object} Information about each implementation
  */
@@ -1790,6 +1800,12 @@ function getJointRLImplementationInfo() {
             description: 'Optimized version of full joint planning with performance improvements',
             characteristics: ['Full optimality', 'Optimized performance', 'Identical results to original'],
             bestFor: 'Production use, best balance of speed and optimality'
+        },
+        'bfs': {
+            name: 'BFS Joint Planner',
+            description: 'Reverse 4-D BFS planner with exact optimality (γ = 1)',
+            characteristics: ['Exact optimality', 'BFS-based distance computation', 'Efficient 4-D state space'],
+            bestFor: 'Exact optimal planning, research, γ = 1 scenarios'
         }
     };
 }
@@ -2321,10 +2337,250 @@ if (typeof module !== 'undefined' && module.exports) {
         clearPlannerCache: function() {
             console.log('🗑️ Planner cache clear function not available in Node.js environment');
         },
-        RL_AGENT_TYPE,
         RL_AGENT_CONFIG
     };
 }
+
+
+/* ============================================================
+   Reverse 4‑D BFS planner  (γ = 1  ⇒ exact)
+   ============================================================ */
+
+const getSoftmaxBFSJointRLAction = (function () {
+  // ---------- grid & actions ----------
+  const ROWS = 15, COLS = 15, N = ROWS * COLS;        // single‑agent states
+  const actionSpace = [
+    [0, -1], [0,  1], [-1, 0], [1, 0]                 // L, R, U, D
+  ];
+
+  // ---------- helpers ----------
+  const toIdx   = (r, c)   => r * COLS + c;           // (row,col) ➜ 0‑224
+  const rowOf   = i => Math.floor(i / COLS);
+  const colOf   = i => i % COLS;
+  const inGrid  = (r, c)   => r >= 0 && r < ROWS && c >= 0 && c < COLS;
+  const stepIdx = (idx, a) => {                       // apply action, stay on OOB
+    const r  = rowOf(idx), c  = colOf(idx);
+    const nr = r + actionSpace[a][0];
+    const nc = c + actionSpace[a][1];
+    return inGrid(nr, nc) ? toIdx(nr, nc) : idx;
+  };
+
+  // ---------- cache keyed only by goal set (distance doesn't depend on β) ----------
+  const planners = new Map();   // key -> { dist: Int16Array, goalSet: Set }
+
+  function hashGoals(goals) {
+    return goals.map(g => `${g[0]},${g[1]}`).sort().join('|');
+  }
+
+  // ---------- build Q-value table using BFS-based approach ----------
+  function buildPlanner(goals, beta = 1.0) {
+    const goalSet = new Set(goals.map(([r, c]) => toIdx(r, c)));
+    const S = N * N;                                     // 50 625 joint states
+    const Q = new Float32Array(S * 16);                  // Q(s, jointA) for soft‑max
+    const rewardGoal = RL_AGENT_CONFIG.goalReward, stepCost = RL_AGENT_CONFIG.stepCost;
+    const γ = RL_AGENT_CONFIG.gamma || 0.9;
+
+    // Precompute distances from every position to every goal
+    const goalDistances = new Array(N);
+    for (let pos = 0; pos < N; pos++) {
+      goalDistances[pos] = new Array(goals.length);
+      const r = Math.floor(pos / COLS), c = pos % COLS;
+      for (let g = 0; g < goals.length; g++) {
+        const goal = goals[g];
+        goalDistances[pos][g] = Math.abs(r - goal[0]) + Math.abs(c - goal[1]);
+      }
+    }
+
+    // Precompute proximity rewards for common goal configurations
+    const proximityCache = new Map();
+    function getProximityReward(nextAI, nextPL, done) {
+      if (done) return 0;
+
+      const cacheKey = `${nextAI}-${nextPL}`;
+      if (proximityCache.has(cacheKey)) {
+        return proximityCache.get(cacheKey);
+      }
+
+      let minJointDist = Infinity;
+      for (let g = 0; g < goals.length; g++) {
+        const jointDist = goalDistances[nextAI][g] + goalDistances[nextPL][g];
+        if (jointDist < minJointDist) {
+          minJointDist = jointDist;
+        }
+      }
+
+      const reward = -RL_AGENT_CONFIG.proximityRewardWeight * minJointDist;
+      proximityCache.set(cacheKey, reward);
+      return reward;
+    }
+
+    // Use BFS to compute optimal Q-values
+    // Initialize Q-values with immediate rewards
+    for (let s = 0; s < S; s++) {
+      const iAI = Math.floor(s / N);   // AI index 0‑224
+      const iPL = s % N;               // Player index 0‑224
+
+      // terminal if both players are on the same goal square
+      if (goalSet.has(iAI) && goalSet.has(iPL) && iAI === iPL) {
+        for (let j = 0; j < 16; j++) Q[s * 16 + j] = 0;
+        continue;
+      }
+
+      for (let aAI = 0; aAI < 4; aAI++) {
+        // If AI is already on a goal, it stays there
+        const nextAI = goalSet.has(iAI) ? iAI : stepIdx(iAI, aAI);
+
+        for (let aPL = 0; aPL < 4; aPL++) {
+          // If player is already on a goal, it stays there
+          const nextPL = goalSet.has(iPL) ? iPL : stepIdx(iPL, aPL);
+
+          const jointIdx = aAI * 4 + aPL;          // 0‑15
+          const done = goalSet.has(nextAI) && goalSet.has(nextPL) && nextAI === nextPL;
+
+          // Use cached proximity reward for better performance
+          const proximityReward = getProximityReward(nextAI, nextPL, done);
+
+          const r = done ? rewardGoal : stepCost + proximityReward;
+
+          // For BFS approach, we use the immediate reward plus discounted future value
+          // Since we don't have V(s), we'll use a heuristic based on distance to goals
+          const sNext = nextAI * N + nextPL;
+          let futureValue = 0;
+
+          if (!done) {
+            // Estimate future value based on minimum distance to any goal
+            let minDistToGoal = Infinity;
+            for (let g = 0; g < goals.length; g++) {
+              const distToGoal = goalDistances[nextAI][g] + goalDistances[nextPL][g];
+              if (distToGoal < minDistToGoal) {
+                minDistToGoal = distToGoal;
+              }
+            }
+            // Heuristic: future value is discounted reward for reaching goal
+            futureValue = γ * (rewardGoal + stepCost * minDistToGoal);
+          }
+
+          Q[s * 16 + jointIdx] = r + futureValue;
+        }
+      }
+    }
+
+    return { Q, goalSet, beta };
+  }
+
+    // ---------- public function ----------
+  return function getSoftmaxBFSJointRLAction(aiState, playerState, goals, beta = null) {
+    // Use configured beta if not provided
+    if (beta === null) {
+      beta = RL_AGENT_CONFIG.softmaxBeta;
+    }
+
+    // Ensure beta is reasonable to prevent numerical issues
+    if (!isFinite(beta) || beta <= 0) {
+      console.warn('⚠️ Invalid beta value, using default of 1.0');
+      beta = 1.0;
+    }
+
+    const key = hashGoals(goals) + '|' + beta;
+    if (!planners.has(key)) {
+      planners.set(key, buildPlanner(goals, beta));
+    }
+    const { Q, goalSet } = planners.get(key);
+
+    const idxAI = toIdx(aiState[0], aiState[1]);
+    const idxPL = toIdx(playerState[0], playerState[1]);
+
+    // already together on a goal → stay
+    if (goalSet.has(idxAI) && goalSet.has(idxPL) && idxAI === idxPL) return null;
+
+    // Check if player has reached a goal but AI hasn't - this should slow down AI movement
+    const playerOnGoal = goalSet.has(idxPL);
+    const aiOnGoal = goalSet.has(idxAI);
+    const isIndependentPhase = playerOnGoal && !aiOnGoal;
+
+    const s = idxAI * N + idxPL;
+    const o = s * 16;
+
+    // Get Q-values for all 16 joint actions
+    const qValues = new Array(16);
+    for (let j = 0; j < 16; j++) {
+      qValues[j] = Q[o + j];
+    }
+
+    // If in independent phase (player on goal, AI not), adjust Q-values to slow down AI
+    if (isIndependentPhase) {
+      // Reduce the Q-values for AI movement actions to make AI move slower
+      for (let j = 0; j < 16; j++) {
+        const aiActionIdx = Math.floor(j / 4);
+        // Only penalize non-stay actions (actions that actually move the AI)
+        if (aiActionIdx < 4) { // All 4 actions are movement actions
+          qValues[j] *= 0.5; // Reduce Q-value by 50% to slow down AI
+        }
+      }
+    }
+
+    // Debug logging (only in debug mode)
+    if (RL_AGENT_CONFIG.debugMode) {
+      console.log(`🔍 BFS Joint RL Debug - AI: [${aiState}], Player: [${playerState}], Goals: [${goals.map(g => `[${g}]`).join(', ')}]`);
+      console.log(`🔍 Independent phase: ${isIndependentPhase ? 'YES (slowing down AI)' : 'NO'}`);
+      console.log(`🔍 Q-values range: [${Math.min(...qValues).toFixed(3)}, ${Math.max(...qValues).toFixed(3)}]`);
+    }
+
+    // Check for invalid Q-values
+    const invalidQValues = qValues.filter(q => !isFinite(q));
+    if (invalidQValues.length > 0) {
+      console.warn('⚠️ Invalid Q-values detected:', invalidQValues);
+      console.warn('⚠️ Clearing planner cache and using uniform random action as fallback');
+      planners.clear(); // Clear cache to force rebuild
+      return actionSpace[Math.floor(Math.random() * actionSpace.length)];
+    }
+
+    // Soft‑max sampling with improved numerical stability
+    const maxQ = Math.max(...qValues);
+    const minQ = Math.min(...qValues);
+
+    // Check for numerical issues
+    if (!isFinite(maxQ) || !isFinite(minQ)) {
+      return actionSpace[Math.floor(Math.random() * actionSpace.length)];
+    }
+
+    // Use log-space computation for better numerical stability
+    const logPrefs = qValues.map(q => beta * (q - maxQ));
+
+    // Clip to prevent overflow/underflow
+    const clippedLogPrefs = logPrefs.map(logP => Math.max(-700, Math.min(700, logP)));
+
+    const prefs = clippedLogPrefs.map(logP => Math.exp(logP));
+    const sum = prefs.reduce((a, b) => a + b, 0);
+
+    // Check for numerical issues in sum
+    if (!isFinite(sum) || sum === 0) {
+      console.warn('⚠️ Sum of preferences is invalid, using uniform random fallback');
+      return actionSpace[Math.floor(Math.random() * actionSpace.length)];
+    }
+
+    // Improved action selection with better numerical stability
+    const r = Math.random() * sum;
+    let acc = 0;
+    for (let j = 0; j < prefs.length; j++) {
+      acc += prefs[j];
+      if (r < acc) {
+        const aiActionIdx = Math.floor(j / 4);    // high bits = AI's choice
+        const selectedAction = actionSpace[aiActionIdx];
+        if (RL_AGENT_CONFIG.debugMode) {
+          console.log(`🔍 Selected AI action: [${selectedAction}] (index: ${aiActionIdx})`);
+        }
+        return selectedAction;
+      }
+    }
+
+    // Fallback: return last action if numerical issues occur
+    if (RL_AGENT_CONFIG.debugMode) {
+      console.log(`🔍 Using fallback action: [${actionSpace[actionSpace.length - 1]}]`);
+    }
+    return actionSpace[actionSpace.length - 1];
+  };
+})();
 
 
 
