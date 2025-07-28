@@ -724,6 +724,13 @@ function makeSinglePlayerMove(action) {
         // Check if goal is reached
         const goalReached = isGoalReached(gameData.currentPlayerPos, gameData.currentGoals);
 
+        // ADD THIS: Detect and record first goal
+        const player1CurrentGoal = detectPlayerGoal(gameData.currentPlayerPos, actionArray, gameData.currentGoals, []);
+        if (player1CurrentGoal !== null && gameData.currentTrialData.player1FirstDetectedGoal === null) {
+            gameData.currentTrialData.player1FirstDetectedGoal = player1CurrentGoal;
+            console.log(`Player1 first detected goal: ${player1CurrentGoal}`);
+        }
+
         // Debug logging
         console.log('Player position:', gameData.currentPlayerPos);
         console.log('Current goals:', gameData.currentGoals);
@@ -731,6 +738,12 @@ function makeSinglePlayerMove(action) {
 
         if (goalReached) {
             console.log('Goal reached in single-player mode!');
+
+            // ADD THIS: Record final reached goal
+            var finalGoal = whichGoalReached(gameData.currentPlayerPos, gameData.currentGoals);
+            gameData.currentTrialData.player1FinalReachedGoal = finalGoal;
+            console.log(`Player1 final reached goal: ${finalGoal}`);
+
             // Update visualization immediately to show final position
             updateGameVisualization();
             // End trial after a short delay
@@ -850,6 +863,12 @@ function recordMove(data) {
             gameData.currentTrialData.player1CurrentGoal.push(firstPlayerGoal);
             console.log('First player (red) moved, detected goal:', firstPlayerGoal);
 
+            // ADD THIS: Record first detected goal
+            if (firstPlayerGoal !== null && gameData.currentTrialData.player1FirstDetectedGoal === null) {
+                gameData.currentTrialData.player1FirstDetectedGoal = firstPlayerGoal;
+                console.log(`Player1 first detected goal: ${firstPlayerGoal}`);
+            }
+
             // Update goal history
             if (firstPlayerGoal !== null) {
                 firstPlayerGoalHistory.push(firstPlayerGoal);
@@ -868,6 +887,12 @@ function recordMove(data) {
             gameData.currentTrialData.player2CurrentGoal.push(secondPlayerGoal);
             console.log('Second player (orange) moved, detected goal:', secondPlayerGoal);
 
+            // ADD THIS: Record first detected goal
+            if (secondPlayerGoal !== null && gameData.currentTrialData.player2FirstDetectedGoal === null) {
+                gameData.currentTrialData.player2FirstDetectedGoal = secondPlayerGoal;
+                console.log(`Player2 first detected goal: ${secondPlayerGoal}`);
+            }
+
             // Update goal history
             if (secondPlayerGoal !== null) {
                 secondPlayerGoalHistory.push(secondPlayerGoal);
@@ -878,6 +903,16 @@ function recordMove(data) {
                 gameData.currentTrialData.player2CurrentGoal[gameData.currentTrialData.player2CurrentGoal.length - 1] : null;
             gameData.currentTrialData.player2CurrentGoal.push(previousSecondPlayerGoal);
             console.log('Second player (orange) didn\'t move, maintaining previous goal:', previousSecondPlayerGoal);
+        }
+
+        // ADD THIS: Record first detected shared goal (2P3G only)
+        const currentFirstPlayerGoal = gameData.currentTrialData.player1CurrentGoal[gameData.currentTrialData.player1CurrentGoal.length - 1];
+        const currentSecondPlayerGoal = gameData.currentTrialData.player2CurrentGoal[gameData.currentTrialData.player2CurrentGoal.length - 1];
+        if (currentFirstPlayerGoal !== null && currentSecondPlayerGoal !== null &&
+            currentFirstPlayerGoal === currentSecondPlayerGoal &&
+            gameData.currentTrialData.firstDetectedSharedGoal === null) {
+            gameData.currentTrialData.firstDetectedSharedGoal = currentFirstPlayerGoal;
+            console.log(`First detected shared goal: ${currentFirstPlayerGoal}`);
         }
 
         // Check for new goal presentation
@@ -2158,7 +2193,24 @@ function initializeTrialData(trialIndex, experimentType) {
         goals: null,
         playerStartPos: null,
         partnerStartPos: null,
-        movementMode: movementMode
+        movementMode: movementMode,
+
+        // NEW VARIABLES TO ADD:
+        player1FirstDetectedGoal: null,  // First goal detected for player1
+        player2FirstDetectedGoal: null,  // First goal detected for player2
+        player1FinalReachedGoal: null,   // Final goal reached by player1
+        player2FinalReachedGoal: null,   // Final goal reached by player2
+        firstDetectedSharedGoal: null,   // First detected shared goal (2P3G only)
+
+        // Goal tracking variables for 2P experiments
+        player1CurrentGoal: [],
+        player2CurrentGoal: [],
+        newGoalPresentedTime: null,
+        newGoalPosition: null,
+        newGoalConditionType: null,
+        newGoalPresented: false,
+        isNewGoalCloserToPlayer2: null,
+        collaborationSucceeded: undefined
     };
 
     // Initialize default values for multiplayer games to prevent undefined errors
@@ -2805,6 +2857,11 @@ function checkTrialEnd2P2G() {
         var player2Goal = whichGoalReached(gameData.partnerStartPos, gameData.currentGoals);
         var collaboration = (player1Goal === player2Goal && player1Goal !== 0);
 
+        // ADD THIS: Record final reached goals
+        gameData.currentTrialData.player1FinalReachedGoal = player1Goal;
+        gameData.currentTrialData.player2FinalReachedGoal = player2Goal;
+        console.log(`Final goals - Player1: ${player1Goal}, Player2: ${player2Goal}`);
+
         gameData.currentTrialData.collaborationSucceeded = collaboration;
         finalizeTrial(true);
     }
@@ -2821,6 +2878,11 @@ function checkTrialEnd2P3G() {
         var player1Goal = whichGoalReached(gameData.playerStartPos, gameData.currentGoals);
         var player2Goal = whichGoalReached(gameData.partnerStartPos, gameData.currentGoals);
         var collaboration = (player1Goal === player2Goal && player1Goal !== 0);
+
+        // ADD THIS: Record final reached goals
+        gameData.currentTrialData.player1FinalReachedGoal = player1Goal;
+        gameData.currentTrialData.player2FinalReachedGoal = player2Goal;
+        console.log(`Final goals - Player1: ${player1Goal}, Player2: ${player2Goal}`);
 
         gameData.currentTrialData.collaborationSucceeded = collaboration;
         finalizeTrial(true);

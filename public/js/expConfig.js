@@ -32,18 +32,18 @@ const NODEGAME_CONFIG = {
     // experimentOrder: ['1P2G'],           // Test 1P2G only
     // experimentOrder: ['2P2G'],           // Test 2P2G only
     // experimentOrder: ['1P1G', '1P2G'],   // Test 1P1G and 1P2G
-    experimentOrder: ['2P2G', '2P3G'],   // Test 2P2G and 2P3G
-    // experimentOrder: ['1P1G', '1P2G', '2P2G', '2P3G'], // Test all experiments
+    // experimentOrder: ['2P2G', '2P3G'],   // Test 2P2G and 2P3G
+    experimentOrder: ['1P1G', '1P2G', '2P2G', '2P3G'], // Test all experiments
     // experimentOrder: ['1P2G', '2P3G'],
 
     // =================================================================================================
     // TRIAL COUNTS
     // =================================================================================================
     numTrials: {
-        '1P1G': 1,    // Number of 1P1G trials
-        '1P2G': 2,    // Number of 1P2G trials, formal=12
-        '2P2G': 1,    // Number of 2P2G trials, formal=12
-        '2P3G': 3     // Number of 2P3G trials, formal=12
+        '1P1G': 8,    // Number of 1P1G trials
+        '1P2G': 8,    // Number of 1P2G trials, formal=12
+        '2P2G': 8,    // Number of 2P2G trials, formal=12
+        '2P3G': 8     // Number of 2P3G trials, formal=12
     },
 
     // =================================================================================================
@@ -51,10 +51,10 @@ const NODEGAME_CONFIG = {
     // =================================================================================================
     successThreshold: {
         enabled: true,                    // Enable success threshold for collaboration games
-        consecutiveSuccessesRequired: 2,  // Number of consecutive successes required
-        minTrialsBeforeCheck: 2,         // Minimum trials before checking for success threshold
-        maxTrials: 30,                    // Maximum trials regardless of success
-        randomSamplingAfterTrial: 2      // After this trial, use random sampling for maps and conditions
+        consecutiveSuccessesRequired: 4,  // Number of consecutive successes required
+        minTrialsBeforeCheck: 8,         // Minimum trials before checking for success threshold
+        maxTrials: 10,                    // Maximum trials regardless of success
+        randomSamplingAfterTrial: 8      // After this trial, use random sampling for maps and conditions
     },
 
     // =================================================================================================

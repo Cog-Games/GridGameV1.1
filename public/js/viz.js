@@ -543,38 +543,6 @@ function drawFixationCrossHumanHuman(context, fixationPos, posScale, lineWidth) 
 }
 
 
-/**
- * Draw overlapping circles function for human-human version
- */
-function drawOverlappingCirclesHumanHuman(context, colPos, rowPos) {
-    // First draw white background
-    context.fillStyle = COLORPOOL.map;
-    context.fillRect(colPos * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding,
-        rowPos * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding,
-        EXPSETTINGS.cellSize, EXPSETTINGS.cellSize);
-
-    const circleRadius = EXPSETTINGS.cellSize * 0.35; // Slightly smaller for overlap
-    const centerX = colPos * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding + EXPSETTINGS.cellSize/2;
-    const centerY = rowPos * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding + EXPSETTINGS.cellSize/2;
-    const offset = EXPSETTINGS.cellSize * 0.15; // Offset for overlap
-
-    // Draw player1 circle (red) on the left
-    context.beginPath();
-    context.lineWidth = 1/3 * EXPSETTINGS.padding;
-    context.strokeStyle = COLORPOOL.player;
-    context.fillStyle = COLORPOOL.player;
-    context.arc(centerX - offset, centerY, circleRadius, 0, 2 * Math.PI);
-    context.fill();
-    context.stroke();
-
-    // Draw player2 circle (orange) on the right
-    context.beginPath();
-    context.strokeStyle = "orange";
-    context.fillStyle = "orange";
-    context.arc(centerX + offset, centerY, circleRadius, 0, 2 * Math.PI);
-    context.fill();
-    context.stroke();
-}
 
 /**
  * Draw fixation cross in center (nodeGame version)
@@ -600,28 +568,67 @@ function nodeGameDrawFixationCross(context, fixationPos, posScale, lineWidth) {
     context.stroke();
 }
 
+
 /**
- * Draw circle function matching exact human-AI version parameters
+ * Draw a circle for human-human visualization
  */
-function drawCircleHumanHuman(context, color, lineWidth, colPos, rowPos, startAngle, tmpAngle) {
-    // First draw white background (like human-AI version)
-    context.fillStyle = COLORPOOL.map;
-    context.fillRect(colPos * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding,
+function drawCircleHumanHuman(ctx, color, lineWidth, colPos, rowPos, startAngle, endAngle) {
+    const centerX = colPos * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding + EXPSETTINGS.cellSize / 2;
+    const centerY = rowPos * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding + EXPSETTINGS.cellSize / 2;
+    const radius = EXPSETTINGS.cellSize * 0.4; // Adjust size as needed
+
+    ctx.beginPath();
+    ctx.lineWidth = lineWidth;
+    ctx.strokeStyle = color;
+    ctx.fillStyle = color;
+    ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+    ctx.fill();
+    ctx.stroke();
+}
+
+/**
+ * Draw overlapping circles for when players are in the same position
+ */
+function drawOverlappingCirclesHumanHuman(ctx, colPos, rowPos) {
+    // First draw white background
+    ctx.fillStyle = COLORPOOL.map;
+    ctx.fillRect(colPos * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding,
         rowPos * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding,
         EXPSETTINGS.cellSize, EXPSETTINGS.cellSize);
 
-    // Use exact same circle radius as human-AI version
-    const circleRadius = EXPSETTINGS.cellSize * 0.4;
+    const circleRadius = EXPSETTINGS.cellSize * 0.35; // Slightly smaller for overlap
+    const centerX = colPos * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding + EXPSETTINGS.cellSize / 2;
+    const centerY = rowPos * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding + EXPSETTINGS.cellSize / 2;
+    const offset = EXPSETTINGS.cellSize * 0.15; // Offset for overlap
 
-    // Then draw circle with exact human-AI parameters
-    context.beginPath();
-    context.lineWidth = lineWidth;
-    context.strokeStyle = color;
-    context.fillStyle = color;
-    context.arc(colPos * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding + EXPSETTINGS.cellSize / 2,
-        rowPos * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding + EXPSETTINGS.cellSize / 2,
-        circleRadius,
-        startAngle, tmpAngle);
-    context.fill();
-    context.stroke();
+    // Determine colors based on player order (with fallback)
+    const playerOrder = window.playerOrder || { isFirstPlayer: true }; // Fallback to first player
+    let firstColor, secondColor;
+
+    if (playerOrder.isFirstPlayer) {
+        // I am the first player (red), partner is second (orange)
+        firstColor = COLORPOOL.player; // red
+        secondColor = "orange";
+    } else {
+        // I am the second player (orange), partner is first (red)
+        firstColor = "orange";
+        secondColor = COLORPOOL.player; // red
+    }
+
+    // Draw first player circle on the left
+    ctx.beginPath();
+    ctx.lineWidth = 1 / 3 * EXPSETTINGS.padding;
+    ctx.strokeStyle = firstColor;
+    ctx.fillStyle = firstColor;
+    ctx.arc(centerX - offset, centerY, circleRadius, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.stroke();
+
+    // Draw second player circle on the right
+    ctx.beginPath();
+    ctx.strokeStyle = secondColor;
+    ctx.fillStyle = secondColor;
+    ctx.arc(centerX + offset, centerY, circleRadius, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.stroke();
 }

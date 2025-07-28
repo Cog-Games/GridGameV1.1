@@ -1148,40 +1148,20 @@ io.on('connection', (socket) => {
         console.log(`📨 Game type:`, currentRoom ? currentRoom.gameType : 'null');
         console.log(`📨 Request data:`, data);
 
-        if (GAME_CONFIG.debugMode) {
-            console.log(`🔍 REQUEST_NEW_GOAL received from ${socket.id}`);
-            console.log(`🔍 Current room:`, currentRoom ? currentRoom.roomId : 'null');
-            console.log(`🔍 Game type:`, currentRoom ? currentRoom.gameType : 'null');
-        }
+
 
         if (currentRoom && (currentRoom.gameType === '2P3G' || currentRoom.gameType === '2P2G')) {
-            if (GAME_CONFIG.debugMode) {
-                console.log(`Player ${socket.id} requested new goal generation:`, data);
-            }
+
 
             // Check if another player is already requesting a goal
             if (currentRoom.goalGenerationInProgress) {
-                if (GAME_CONFIG.debugMode) {
-                    console.log(`Goal generation already in progress by ${currentRoom.goalGenerationInProgress}, rejecting ${socket.id}`);
-                }
                 return;
             }
 
             // Set the lock to prevent other players from requesting
             currentRoom.goalGenerationInProgress = socket.id;
-            if (GAME_CONFIG.debugMode) {
-                console.log(`Set goal generation lock for player ${socket.id}`);
-            }
 
-            if (GAME_CONFIG.debugMode) {
-                console.log(`🔍 About to call generateNewGoalWithServerLogic with:`, {
-                    player2Pos: data.player2Pos,
-                    player1Pos: data.player1Pos,
-                    sharedGoal: data.currentGoals[data.sharedGoalIndex],
-                    sharedGoalIndex: data.sharedGoalIndex,
-                    distanceCondition: data.distanceCondition
-                });
-            }
+
 
             // Generate new goal using server-side logic
             let newGoal = null;
@@ -1194,22 +1174,14 @@ io.on('connection', (socket) => {
                     data.distanceCondition
                 );
 
-                if (GAME_CONFIG.debugMode) {
-                    console.log(`🔍 generateNewGoalWithServerLogic returned:`, newGoal);
-                }
+
             } catch (error) {
                 console.error(`❌ Error in generateNewGoalWithServerLogic:`, error);
                 newGoal = null;
             }
 
             if (newGoal) {
-                console.log(`🎯 Server generated new goal at position ${newGoal} for room ${currentRoom.roomId}`);
-
                 // Broadcast new goal to ALL players in the room
-                console.log(`📡 Broadcasting server_new_goal to room ${currentRoom.roomId}`);
-                if (GAME_CONFIG.debugMode) {
-                    console.log(`🔍 Broadcasting server_new_goal to room ${currentRoom.roomId}`);
-                }
 
                 const goalData = {
                     newGoalPosition: newGoal,
@@ -1218,8 +1190,6 @@ io.on('connection', (socket) => {
                     trialIndex: data.trialIndex,
                     generatedBy: 'server'
                 };
-                console.log(`📡 Goal data being sent:`, goalData);
-
                 currentRoom.broadcastToRoom('server_new_goal', goalData);
 
                 // Update server's game state
@@ -1228,18 +1198,7 @@ io.on('connection', (socket) => {
                     currentRoom.gameState.newGoalPresented = true;
                     currentRoom.gameState.newGoalPosition = newGoal;
                 }
-
-                console.log(`✅ Server successfully generated and broadcasted new goal to all players in room ${currentRoom.roomId}`);
             } else {
-                console.log(`❌ Server failed to generate new goal for room ${currentRoom.roomId}`);
-                console.log(`❌ Request data was:`, {
-                    player2Pos: data.player2Pos,
-                    player1Pos: data.player1Pos,
-                    sharedGoal: data.currentGoals ? data.currentGoals[data.sharedGoalIndex] : 'undefined',
-                    sharedGoalIndex: data.sharedGoalIndex,
-                    distanceCondition: data.distanceCondition,
-                    gameType: currentRoom.gameType
-                });
 
                 // Send failure response to client so it doesn't timeout
                 socket.emit('server_new_goal_failed', {
@@ -1252,40 +1211,20 @@ io.on('connection', (socket) => {
             setTimeout(() => {
                 if (currentRoom && currentRoom.goalGenerationInProgress === socket.id) {
                     currentRoom.goalGenerationInProgress = null;
-                    if (GAME_CONFIG.debugMode) {
-                        console.log(`Cleared goal generation lock for player ${socket.id}`);
-                    }
                 }
             }, 1000);
-        } else {
-            if (GAME_CONFIG.debugMode) {
-                console.log(`❌ Invalid room or game type for goal generation request`);
-            }
         }
     });
 
         // Handle fallback goal sharing between players
     socket.on('share_fallback_goal', (data) => {
-        console.log(`📨 SHARE_FALLBACK_GOAL received from ${socket.id}`);
-        console.log(`📨 Goal data:`, data);
-        console.log(`📨 Current room:`, currentRoom ? currentRoom.roomId : 'null');
-        console.log(`📨 Players in room:`, currentRoom ? currentRoom.players.size : 0);
-
         if (currentRoom) {
-            console.log(`📡 Broadcasting fallback goal to other players in room ${currentRoom.roomId}`);
-
-            let broadcastCount = 0;
             // Broadcast to all other players in the room
             for (const [playerId, player] of currentRoom.players) {
                 if (playerId !== socket.id) {
-                    console.log(`📤 Sending fallback goal to player ${playerId}`);
                     player.socket.emit('share_fallback_goal', data);
-                    broadcastCount++;
                 }
             }
-            console.log(`📡 Fallback goal broadcast to ${broadcastCount} players`);
-        } else {
-            console.log(`❌ No current room for player ${socket.id}`);
         }
     });
 

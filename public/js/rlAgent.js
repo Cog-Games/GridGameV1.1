@@ -2085,7 +2085,7 @@ function precalculateAllJointRLPoliciesAsync(goals, callback = null, experimentT
 function resetNewGoalPreCalculationFlag() {
     if (typeof window !== 'undefined') {
         window.newGoalPreCalculated = false;
-        console.log('🔄 Reset new goal pre-calculation flag');
+        // console.log('🔄 Reset new goal pre-calculation flag');
     }
 }
 

@@ -28,7 +28,6 @@ window.selectRandomMaps = selectRandomMaps;
 window.getRandomMapForCollaborationGame = getRandomMapForCollaborationGame;
 
 // Make timeline-related functions globally available
-window.runTrialStage = window.TrialHandlers.runTrialStage;
 window.addCollaborationExperimentStages = addCollaborationExperimentStages;
 window.nextStage = nextStage;
 
@@ -104,7 +103,7 @@ function startStandaloneExperiment(experimentType) {
         createTimelineStages();
 
         // Start timeline
-        console.log('Running continuous experiments');
+        // console.log('Running continuous experiments');
         runNextStage();
 
     } catch (error) {
@@ -148,5 +147,3 @@ window.NodeGameExperiments = {
     start: startNodeGameExperiment,
 };
 
-// Auto-initialize when DOM is loaded
-document.addEventListener('DOMContentLoaded', initializeNodeGameExperiments);

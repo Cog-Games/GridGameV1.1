@@ -35,15 +35,15 @@ function runTrialStage(stage) {
     // For collaboration games, show dynamic trial count
     var trialCountDisplay = '';
     if (experimentType.includes('2P') && NODEGAME_CONFIG.successThreshold.enabled) {
-        trialCountDisplay = `Trial ${trialIndex + 1} (${gameData.successThreshold.totalTrialsCompleted + 1} total)`;
+        trialCountDisplay = `Round ${trialIndex + 1}`;
     } else {
-        trialCountDisplay = `Trial ${trialIndex + 1} of ${NODEGAME_CONFIG.numTrials[experimentType]}`;
+        trialCountDisplay = `Round ${trialIndex + 1}`;
     }
 
     container.innerHTML = `
         <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
             <div style="text-align: center;">
-                <h3 style="margin-bottom: 10px;">Experiment ${experimentIndex + 1}: ${experimentType}</h3>
+                <h3 style="margin-bottom: 10px;">Game ${experimentIndex + 1}</h3>
                 <h4 style="margin-bottom: 20px;">${trialCountDisplay}</h4>
                 <div id="gameCanvas" style="margin-bottom: 20px;"></div>
                 <p style="font-size: 20px;">You are the player <span style="display: inline-block; width: 18px; height: 18px; background-color: red; border-radius: 50%; vertical-align: middle;"></span>. Press ↑ ↓ ← → to move.</p>
@@ -168,6 +168,10 @@ function runTrial1P1G() {
 
         // Check win condition
         if (isGoalReached(gameData.player1, gameData.currentGoals)) {
+            var finalGoal = whichGoalReached(gameData.player1, gameData.currentGoals);
+            gameData.currentTrialData.player1FinalReachedGoal = finalGoal;
+            console.log(`Player1 final reached goal: ${finalGoal}`);
+
             document.removeEventListener('keydown', handleKeyPress);
             if (gameLoopInterval) clearInterval(gameLoopInterval);
 
@@ -243,6 +247,12 @@ function runTrial1P2G() {
         var player1CurrentGoal = detectPlayerGoal(gameData.player1, aimAction, gameData.currentGoals, gameData.currentTrialData.player1CurrentGoal);
         gameData.currentTrialData.player1CurrentGoal.push(player1CurrentGoal);
 
+        // ADD THIS: Record first detected goal
+        if (player1CurrentGoal !== null && gameData.currentTrialData.player1FirstDetectedGoal === null) {
+            gameData.currentTrialData.player1FirstDetectedGoal = player1CurrentGoal;
+            console.log(`Player1 first detected goal: ${player1CurrentGoal}`);
+        }
+
         gameData.stepCount++;
         nodeGameUpdateGameDisplay();
 
@@ -251,6 +261,10 @@ function runTrial1P2G() {
 
         // Check win condition
         if (isGoalReached(gameData.player1, gameData.currentGoals)) {
+            var finalGoal = whichGoalReached(gameData.player1, gameData.currentGoals);
+            gameData.currentTrialData.player1FinalReachedGoal = finalGoal;
+            console.log(`Player1 final reached goal: ${finalGoal}`);
+
             document.removeEventListener('keydown', handleKeyPress);
             if (gameLoopInterval) clearInterval(gameLoopInterval);
 
@@ -290,6 +304,11 @@ function checkTrialEnd2P2G(callback) {
     if (player1AtGoal && player2AtGoal) {
         var player1Goal = whichGoalReached(gameData.player1, gameData.currentGoals);
         var player2Goal = whichGoalReached(gameData.player2, gameData.currentGoals);
+
+        // ADD THIS: Record final reached goals
+        gameData.currentTrialData.player1FinalReachedGoal = player1Goal;
+        gameData.currentTrialData.player2FinalReachedGoal = player2Goal;
+        console.log(`Final goals - Player1: ${player1Goal}, Player2: ${player2Goal}`);
 
         // Collaboration is successful if both players reached the same goal
         // Note: Using 0-based indexing from gameHelpers.js (goal 0, 1, 2...)
@@ -374,6 +393,23 @@ function runTrial2P2G() {
         gameData.stepCount++;
         nodeGameUpdateGameDisplay();
 
+        // ADD THIS: Detect and record first goals for both players
+        var player1CurrentGoal = detectPlayerGoal(gameData.player1, aimAction, gameData.currentGoals, []);
+        var player2CurrentGoal = null;
+        if (player2Action) {
+            player2CurrentGoal = detectPlayerGoal(gameData.player2, player2Action, gameData.currentGoals, []);
+        }
+
+        // Record first detected goals
+        if (player1CurrentGoal !== null && gameData.currentTrialData.player1FirstDetectedGoal === null) {
+            gameData.currentTrialData.player1FirstDetectedGoal = player1CurrentGoal;
+            console.log(`Player1 first detected goal: ${player1CurrentGoal}`);
+        }
+        if (player2CurrentGoal !== null && gameData.currentTrialData.player2FirstDetectedGoal === null) {
+            gameData.currentTrialData.player2FirstDetectedGoal = player2CurrentGoal;
+            console.log(`Player2 first detected goal: ${player2CurrentGoal}`);
+        }
+
         // Check if player1 reached goal and track when
         var wasPlayer1AtGoal = player1AtGoal;
         player1AtGoal = isGoalReached(gameData.player1, gameData.currentGoals);
@@ -456,16 +492,16 @@ function runTrial2P2G() {
                 return;
             }
 
-            // Only move if player2 hasn't reached goal and player1 has reached goal
-            if (!isGoalReached(gameData.player2, gameData.currentGoals) && player1AtGoal) {
-                makeIndependentPlayer2Move();
-            } else if (isGoalReached(gameData.player2, gameData.currentGoals)) {
-                // Player2 reached goal, stop independent movement
-                if (aiMoveInterval) {
-                    clearInterval(aiMoveInterval);
-                    aiMoveInterval = null;
-                }
+                    // Only move if player2 hasn't reached goal and player1 has reached goal
+        if (!isGoalReached(gameData.player2, gameData.currentGoals) && player1AtGoal) {
+            makeIndependentPlayer2Move();
+        } else if (isGoalReached(gameData.player2, gameData.currentGoals)) {
+            // Player2 reached goal, stop independent movement
+            if (aiMoveInterval) {
+                clearInterval(aiMoveInterval);
+                aiMoveInterval = null;
             }
+        }
         }, NODEGAME_CONFIG.independentAgentDelay);
     }
 
@@ -491,7 +527,6 @@ function runTrial2P2G() {
         if (!gameData || !gameData.player1 || !gameData.player2 || !gameData.currentGoals) {
             return;
         }
-
         // Only start independent player2 movement if:
         // 1. Player1 has actually reached a goal (check current state, not just the flag)
         // 2. Player2 hasn't reached a goal yet
@@ -605,6 +640,23 @@ function runTrial2P3G() {
             if (player2CurrentGoal !== null) {
                 player2InferredGoals.push(player2CurrentGoal);
             }
+        }
+
+        // ADD THIS: Record first detected goals and shared goal
+        if (player1CurrentGoal !== null && gameData.currentTrialData.player1FirstDetectedGoal === null) {
+            gameData.currentTrialData.player1FirstDetectedGoal = player1CurrentGoal;
+            console.log(`Player1 first detected goal: ${player1CurrentGoal}`);
+        }
+        if (player2Action && player2CurrentGoal !== null && gameData.currentTrialData.player2FirstDetectedGoal === null) {
+            gameData.currentTrialData.player2FirstDetectedGoal = player2CurrentGoal;
+            console.log(`Player2 first detected goal: ${player2CurrentGoal}`);
+        }
+        // Record first detected shared goal (2P3G only)
+        if (player1CurrentGoal !== null && player2Action && player2CurrentGoal !== null &&
+            player1CurrentGoal === player2CurrentGoal &&
+            gameData.currentTrialData.firstDetectedSharedGoal === null) {
+            gameData.currentTrialData.firstDetectedSharedGoal = player1CurrentGoal;
+            console.log(`First detected shared goal: ${player1CurrentGoal}`);
         }
 
         gameData.stepCount++;

@@ -5,57 +5,45 @@ function createTimelineStages() {
     timeline.stages = [];
     timeline.mapData = {};
 
-    // =================================================================================================
-    // EXPERIMENT SETUP - LOG CURRENT CONFIGURATION
-    // =================================================================================================
-    console.log('=== EXPERIMENT CONFIGURATION ===');
-    console.log('Experiments to run:', NODEGAME_CONFIG.experimentOrder);
-    console.log('Total experiments:', NODEGAME_CONFIG.experimentOrder.length);
-
-    var totalTrials = 0;
-    NODEGAME_CONFIG.experimentOrder.forEach(expType => {
-        var trials = NODEGAME_CONFIG.numTrials[expType];
-        totalTrials += trials;
-        console.log(`- ${expType}: ${trials} trials`);
-    });
-    console.log('Total trials:', totalTrials);
-    console.log('================================');
-
     // Add consent stage (only once at the beginning)
-    // timeline.stages.push({
-    //     type: 'consent',
-    //     handler: showConsentStage
-    // });
+    timeline.stages.push({
+        type: 'consent',
+        handler: showConsentStage
+    });
+
+    timeline.stages.push({
+        type: 'welcome_info',
+        handler: showWelcomeInfoStage
+    });
+
 
     // Add stages for each experiment in order
     for (var expIndex = 0; expIndex < NODEGAME_CONFIG.experimentOrder.length; expIndex++) {
         var experimentType = NODEGAME_CONFIG.experimentOrder[expIndex];
         var numTrials = NODEGAME_CONFIG.numTrials[experimentType];
 
-        console.log(`Setting up experiment ${expIndex + 1}/${NODEGAME_CONFIG.experimentOrder.length}: ${experimentType} (${numTrials} trials)`);
-
         // Select maps for this experiment
         var experimentMaps = getMapsForExperiment(experimentType);
         var selectedMaps = selectRandomMaps(experimentMaps, numTrials);
         timeline.mapData[experimentType] = selectedMaps;
-
-        // Generate randomized distance condition sequence for 2P3G experiments
-        if (experimentType === '2P3G') {
-            TWOP3G_CONFIG.distanceConditionSequence = generateRandomizedDistanceSequence(numTrials);
-        }
 
         // Generate randomized distance condition sequence for 1P2G experiments
         if (experimentType === '1P2G') {
             ONEP2G_CONFIG.distanceConditionSequence = generateRandomized1P2GDistanceSequence(numTrials);
         }
 
+        // Generate randomized distance condition sequence for 2P3G experiments
+        if (experimentType === '2P3G') {
+            TWOP3G_CONFIG.distanceConditionSequence = generateRandomizedDistanceSequence(numTrials);
+        }
+
         // Add welcome screen for this experiment (uncomment if needed)
-        timeline.stages.push({
-            type: 'welcome',
-            experimentType: experimentType,
-            experimentIndex: expIndex,
-            handler: showWelcomeStage
-        });
+        // timeline.stages.push({
+        //     type: 'welcome',
+        //     experimentType: experimentType,
+        //     experimentIndex: expIndex,
+        //     handler: showWelcomeStage
+        // });
 
         // Add instructions stage for this experiment (uncomment if needed)
         timeline.stages.push({
@@ -65,7 +53,7 @@ function createTimelineStages() {
             handler: showInstructionsStage
         });
 
-        // Add waiting for partner stage only for 2P experiments (2P2G and 2P3G)
+        // Add waiting for partner stage only for 2P experiments (when starting 2P2G)
         if (experimentType.includes('2P2G')) {
             timeline.stages.push({
                 type: 'waiting_for_partner',
@@ -116,8 +104,8 @@ function createTimelineStages() {
     //     handler: showCompletionStage
     // });
 
-    console.log(`Timeline created with ${timeline.stages.length} total stages`);
-    console.log('Timeline stages:', timeline.stages.map((stage, index) => `${index}: ${stage.type}`).join(', '));
+    // console.log(`Timeline created with ${timeline.stages.length} total stages`);
+    // console.log('Timeline stages:', timeline.stages.map((stage, index) => `${index}: ${stage.type}`).join(', '));
 
 }
 
@@ -169,31 +157,32 @@ function showConsentStage(stage) {
                 <h1 style="color: #333; text-align: center; margin-bottom: 30px;">Informed Consent for Research Participation</h1>
 
                 <div style="max-height: 400px; overflow-y: auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px; margin-bottom: 30px; background: #fafafa;">
-                    <h3>Study Title: Human-Human Collaboration in Grid World Environments</h3>
+                    <h3>Key Information</h3>
+                    <p>This consent form asks you to take part in a research study. This study is conducted by researchers at Duke University and UCLA.</p>
 
-                    <h4>Purpose of the Study</h4>
-                    <p>You are being invited to participate in a research study examining how two people collaborate to solve spatial navigation tasks. This study will help us understand coordination and communication in collaborative problem-solving.</p>
+                    <h4>Purpose</h4>
+                    <p>The purpose of this study is to investigate how people make decisions.</p>
 
-                    <h4>What You Will Do</h4>
-                    <p>You will be paired with another participant to play collaboration games on a grid. Your goal is to work together to reach target locations. The session will take approximately 30-45 minutes and consists of:</p>
-                    <ul>
-                        <li>Reading instructions about the collaboration tasks</li>
-                        <li>Waiting to be matched with another participant</li>
-                        <li>Playing collaboration games together in real-time</li>
-                        <li>Completing a brief questionnaire about your experience</li>
-                    </ul>
+                    <h4>What you will be asked to do</h4>
+                    <p>You will be playing a series of navigation games on a 2D grid map. Afterward, you will complete some questionnaires regarding your game experience. The study will take approximately 10 minutes to complete.</p>
 
-                    <h4>Risks and Benefits</h4>
-                    <p>There are no known risks beyond those encountered in routine daily activities. This research may contribute to our understanding of human collaboration and coordination.</p>
+                    <h4>Benefits and Risks</h4>
+                    <p>There are no foreseen risks or benefits for participating in this study. Should any of the content cause you distress at any point throughout the study, you may stop at any time.</p>
 
                     <h4>Confidentiality</h4>
-                    <p>Your responses will be kept confidential. Data will be stored securely and only accessible to the research team. No personally identifying information will be collected.</p>
+                    <p>We do not ask for your name or any other information that might identify you. Although collected data may be made public or used for future research purposes, your identity will always remain confidential.</p>
 
-                    <h4>Voluntary Participation</h4>
-                    <p>Your participation is completely voluntary. You may withdraw at any time without penalty. You may skip any questions you prefer not to answer.</p>
+                    <h4>Voluntary nature of participation</h4>
+                    <p>Your participation in this research study is voluntary. You may withdraw at any time and you may choose not to answer any question, but you must proceed to the final screen of the study in order to receive your completion code, which you must submit in order to be paid.</p>
+
+                    <h4>Compensation</h4>
+                    <p>You will receive $2 for your participation in this study, and an additional $0.50 bonus if you finish the task beyond a certain threshold.</p>
 
                     <h4>Contact Information</h4>
-                    <p>If you have questions about this study, please contact the research team. If you have questions about your rights as a research participant, please contact your institution's IRB.</p>
+                    <p>For questions about the study or for research-related complaints, concerns or suggestions about the research, contact Dr. Tamar Kushnir at (919) 660-5640 during regular business hours. For questions about your rights as a participant contact the Duke Campus Institutional Review Board at campusirb@duke.edu. Please reference Protocol ID# 2024-0427 in your email.</p>
+
+                    <h4>Agreement</h4>
+                    <p>By clicking the button below, you acknowledge that your participation in the study is voluntary, you are 18 years of age or older, and that you are aware that you may choose to terminate your participation in the study at any time and for any reason.</p>
                 </div>
 
                 <div style="text-align: center;">
@@ -237,6 +226,55 @@ function showConsentStage(stage) {
     });
 }
 
+
+/**
+ * Show welcome info stage
+ */
+function showWelcomeInfoStage(stage) {
+    var container = document.getElementById('container');
+
+    container.innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
+            <div style="background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 800px; text-align: center;">
+                <h2 style="color: #333; margin-bottom: 30px;">Welcome to the Game!</h2>
+
+                <div style="display: flex; justify-content: center; align-items: center; width: 100%;">
+                    <div style="text-align: center; line-height: 1.6; margin-bottom: 30px; font-size: 18px; max-width: 600px;">
+                        <p style="margin-bottom: 10px;">
+                            You will be playing a navigation game where there are hungry travelers who need to reach a restaurant as soon as possible to get some food.
+                        </p>
+                        <p style="margin-bottom: 20px;">
+                            <span style="color: #007bff; font-weight: bold;">
+                                Your goal is to use the arrow keys on the computer to control one of the travelers to reach one of the restaurants for a meal as quickly as possible, using the shortest path.
+                            </span>
+                        </p>
+                        <p style="margin-bottom: 20px;">
+                            Next, let's see how to play the game and practice for a few rounds!
+                        </p>
+                    </div>
+                </div>
+
+                <div style="margin-top: 30px;">
+                    <p style="font-size: 20px; font-weight: bold; color: #333; margin-bottom: 20px;">
+                        Press the <span style="background: #f0f0f0; padding: 4px 8px; border-radius: 4px; font-family: monospace;">spacebar</span> to continue!
+                    </p>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Handle spacebar to continue
+    function handleSpacebar(event) {
+        if (event.code === 'Space' || event.key === ' ') {
+            event.preventDefault();
+            document.removeEventListener('keydown', handleSpacebar);
+            nextStage();
+        }
+    }
+
+    document.addEventListener('keydown', handleSpacebar);
+    document.body.focus();
+}
 
 /**
  * Show welcome stage (matching jsPsych)
@@ -294,26 +332,7 @@ function showInstructionsStage(stage) {
         }
     }
 
-    var instructions = getInstructionsForExperiment(experimentType);
-
-    container.innerHTML = `
-        <div style="display: flex; align-items: center; justify-content: center; min-height: 80vh; background: #f8f9fa;">
-            <div style="background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 800px; text-align: center;">
-                <h2 style="color: #333; margin-bottom: 20px;">Experiment ${experimentIndex + 1} of ${NODEGAME_CONFIG.experimentOrder.length}</h2>
-                <h3 style="color: #666; margin-bottom: 30px;">${experimentType} Instructions</h3>
-                <div style="text-align: left; margin-bottom: 30px; line-height: 1.6;">
-                    ${instructions}
-                </div>
-                <div style="margin-bottom: 30px;">
-                    <p style="font-size: 18px; font-weight: bold;">Controls:</p>
-                    <p>You are the player <span style="display: inline-block; width: 18px; height: 18px; background-color: red; border-radius: 50%; vertical-align: middle;"></span>. Press ↑ ↓ ← → to move.</p>
-                    ${experimentType.includes('2P') ? '<p><span style="display: inline-block; width: 18px; height: 18px; background-color: orange; border-radius: 50%; vertical-align: middle; margin-right: 5px;"></span> = AI Player</p>' : ''}
-                    <p><span style="display: inline-block; width: 18px; height: 18px; background-color: green; vertical-align: middle; margin-right: 5px;"></span> = Goals</p>
-                </div>
-                <p style="font-size: 18px; font-weight: bold; margin-bottom: 20px;">Press the <span style="background: #f0f0f0; padding: 2px 6px; border-radius: 3px; font-family: monospace;">spacebar</span> to start.</p>
-            </div>
-        </div>
-    `;
+    container.innerHTML = getInstructionsForExperiment(experimentType);
 
     // Handle spacebar to continue
     function handleSpacebar(event) {
@@ -344,8 +363,8 @@ function showPreTrialStage(stage) {
     container.innerHTML = `
         <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
             <div style="text-align: center;">
-                <h3 style="margin-bottom: 10px;">Experiment ${experimentIndex + 1}: ${experimentType}</h3>
-                <h4 style="margin-bottom: 20px;">Trial ${trialIndex + 1} of ${NODEGAME_CONFIG.numTrials[experimentType]}</h4>
+                <h3 style="margin-bottom: 10px;">Game ${experimentIndex + 1}</h3>
+                <h4 style="margin-bottom: 20px;">Round ${trialIndex + 1} of ${NODEGAME_CONFIG.numTrials[experimentType]}</h4>
                 <div id="gameCanvas" style="margin-bottom: 20px;"></div>
                 <p style="font-size: 20px;">You are the player <span style="display: inline-block; width: 18px; height: 18px; background-color: red; border-radius: 50%; vertical-align: middle;"></span>. Press ↑ ↓ ← → to move.</p>
             </div>
@@ -379,8 +398,6 @@ function showFixationStage(stage) {
     container.innerHTML = `
         <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
             <div style="text-align: center;">
-                <h3 style="margin-bottom: 10px;">Experiment ${experimentIndex + 1}: ${experimentType}</h3>
-                <h4 style="margin-bottom: 20px;">Trial ${trialIndex + 1} of ${NODEGAME_CONFIG.numTrials[experimentType]}</h4>
                 <div id="gameCanvas" style="margin-bottom: 20px;"></div>
             </div>
         </div>
@@ -482,20 +499,17 @@ function showPostTrialStage(stage) {
     // For collaboration games, show dynamic trial count
     var trialCountDisplay = '';
     if (experimentType.includes('2P') && NODEGAME_CONFIG.successThreshold.enabled) {
-        trialCountDisplay = `Trial ${trialIndex + 1} (${gameData.successThreshold.totalTrialsCompleted} total)`;
+        trialCountDisplay = `Round ${trialIndex + 1}`;
     } else {
-        trialCountDisplay = `Trial ${trialIndex + 1} of ${NODEGAME_CONFIG.numTrials[experimentType]}`;
+        trialCountDisplay = `Round ${trialIndex + 1}`;
     }
-
-    // Removed duplicate collaboration feedback code - now using createCollaborationFeedbackOverlay() function instead
 
     container.innerHTML = `
         <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
             <div style="text-align: center; max-width: 600px; width: 100%;">
-                <h3 style="margin-bottom: 10px;">Experiment ${experimentIndex + 1}: ${experimentType}</h3>
+                <h3 style="margin-bottom: 10px;">Game ${experimentIndex + 1}</h3>
                 <h4 style="margin-bottom: 20px;">${trialCountDisplay} Results</h4>
                 <div id="gameCanvas" style="margin: 0 auto 20px auto; position: relative; display: flex; justify-content: center;"></div>
-                <h3 style="color: ${color}; margin-bottom: 20px;">${message}</h3>
             </div>
         </div>
     `;
@@ -527,9 +541,13 @@ function showPostTrialStage(stage) {
         nodeGameUpdateGameDisplay();
     }
 
-    // Add visual feedback overlay on top of the canvas if collaboration feedback exists
+    // Add visual feedback overlay on top of the canvas
     if (experimentType.includes('2P') && lastTrialData.collaborationSucceeded !== undefined) {
-        createCollaborationFeedbackOverlay(canvasContainer, lastTrialData.collaborationSucceeded);
+        // For 2P experiments, use collaboration feedback overlay
+        createTrialFeedbackOverlay(canvasContainer, lastTrialData.collaborationSucceeded, 'collaboration');
+    } else if (experimentType.includes('1P')) {
+        // For 1P experiments, use single player feedback overlay
+        createTrialFeedbackOverlay(canvasContainer, success, 'single');
     }
 
     // Auto-advance after configurable duration
@@ -543,14 +561,6 @@ function showPostTrialStage(stage) {
         } else if (window.ExpDesign && typeof window.ExpDesign.shouldEndExperimentDueToSuccessThreshold === 'function') {
             shouldEndDueToThreshold = window.ExpDesign.shouldEndExperimentDueToSuccessThreshold();
         }
-
-        console.log(`=== POST-TRIAL DECISION LOGIC ===`);
-        console.log(`Experiment type: ${experimentType}, Trial index: ${trialIndex}`);
-        console.log(`Success threshold enabled: ${NODEGAME_CONFIG.successThreshold.enabled}`);
-        console.log(`Should end due to threshold: ${shouldEndDueToThreshold}`);
-        console.log(`Current game data:`, gameData.successThreshold);
-        console.log(`All trials data length: ${gameData.allTrialsData.length}`);
-        console.log(`==============================`);
 
         if (shouldEndDueToThreshold) {
             console.log('Ending experiment due to success threshold - will skip to game-feedback or next experiment');
@@ -1403,42 +1413,81 @@ function showCompletionStage(stage) {
 /**
  * Get welcome message for experiment type
  */
-function getWelcomeMessage(experimentType) {
+function getInstructionsForExperiment(experimentType) {
     switch (experimentType) {
         case '1P1G':
-            return '<p style="font-size:30px;">Welcome to the 1-Player-1-Goal Task.</p><p style="font-size:24px;">Press <strong>space bar</strong> to begin.</p>';
+            return `
+                <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
+                    <div style="background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 800px; text-align: center;">
+                        <h2 style="color: #333; margin-bottom: 30px;">Game 1</h2>
+                        <div style="background: #e8f5e8; border: 1px solid #c3e6cb; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
+                            <p style="font-size: 18px; color: #155724; margin-bottom: 15px; line-height: 1.6;">
+                                In this practice, you are the traveler <span style="display: inline-block; width: 20px; height: 20px; background-color: red; border-radius: 50%; vertical-align: middle; margin: 0 4px;"></span>, and there will be one restaurant <span style="display: inline-block; width: 20px; height: 20px; background-color: #007bff; border-radius: 3px; vertical-align: middle; margin: 0 4px;"></span> on the map. Navigate to the restaurant (using ↑ ↓ ← →) as quickly as possible using the shortest path.
+                            </p>
+                        </div>
+                        <p style="font-size: 20px; margin-top: 30px;">Press <strong>space bar</strong> to begin.</p>
+                    </div>
+                </div>
+            `;
         case '1P2G':
-            return '<p style="font-size:30px;">Welcome to the 1-Player-2-Goals Task.</p><p style="font-size:24px;">Press <strong>space bar</strong> to begin.</p>';
+            return `
+                <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
+                    <div style="background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 800px; text-align: center;">
+                        <h2 style="color: #333; margin-bottom: 30px;">Game 2</h2>
+                        <div style="background: #e8f5e8; border: 1px solid #c3e6cb; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
+                            <p style="font-size: 18px; color: #155724; margin-bottom: 15px; line-height: 1.6;">
+                                Good job!
+                            </p>
+                            <p style="font-size: 18px; color: #155724; margin-bottom: 15px; line-height: 1.6;">
+                                Let's continue. Now, there will be several identical restaurants <span style="display: inline-block; width: 20px; height: 20px; background-color: #007bff; border-radius: 3px; vertical-align: middle; margin: 0 4px;"></span> on the map. Note that some restaurants are already open before you start. During the game, other restaurants may open and appear on the map. All restaurants are identical, and your goal is to navigate to one of them as quickly as possible using the shortest path.
+                            </p>
+                        </div>
+                        <p style="font-size: 20px; margin-top: 30px;">Press <strong>space bar</strong> to begin.</p>
+                    </div>
+                </div>
+            `;
         case '2P2G':
-            return '<p style="font-size:30px;">Welcome to the 2-Player-2-Goals Task.</p><p style="font-size:24px;">Press <strong>space bar</strong> to begin.</p>';
+            return `
+                <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
+                    <div style="background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 800px; text-align: center;">
+                        <h2 style="color: #333; margin-bottom: 30px;">Game 3</h2>
+                        <div style="background: #e8f5e8; border: 1px solid #c3e6cb; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
+                            <p style="font-size: 18px; color: #155724; margin-bottom: 15px; line-height: 1.6;">
+                                Good job! Now, you will be playing with another player!
+                            </p>
+                            <p style="font-size: 18px; color: #155724; margin-bottom: 15px; line-height: 1.6;">
+                                In this new game, there are only tables for two at these restaurants <span style="display: inline-block; width: 20px; height: 20px; background-color: #007bff; border-radius: 3px; vertical-align: middle; margin: 0 4px;"></span>, so you and another player have to go together in order to eat. You can also cross paths or touch sometimes on your way to your destination, and that's okay too!
+                            </p>
+                            <p style="font-size: 18px; color: #155724; margin-bottom: 15px; line-height: 1.6;">
+                                Let's practice first!
+                            </p>
+                        </div>
+                        <p style="font-size: 20px; margin-top: 30px;">Press <strong>space bar</strong> to begin.</p>
+                    </div>
+                </div>
+            `;
         case '2P3G':
             return `
-                <p style="font-size:24px; color: #333; margin-top: 30px;">
-                    The game rules have been updated!
-                </p>
-                <p style="font-size:22px; color: #333; margin-top: 20px;">In this game, a third restaurant may open during the game.</p>
-                <p style="font-size:22px; color: #333; margin-top: 10px;">This restaurant is the same as the previous two restaurants, and you can choose any of the three restaurants!</p>
-                <p style="font-size:20px; color: #d9534f; margin-top: 20px;">
-                    Make sure you get to one restaurant as soon as possible using the least steps!
-                </p>
-                <p style="font-size:24px; margin-top: 30px;">Press <strong>space bar</strong> to begin.</p>
+                <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
+                    <div style="background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 800px; text-align: center;">
+                        <h2 style="color: #333; margin-bottom: 30px;">Game 4</h2>
+                        <div style="background: #e8f5e8; border: 1px solid #c3e6cb; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
+                            <p style="font-size: 18px; color: #155724; margin-bottom: 15px; line-height: 1.6;">
+                                Good job! Now, let's start the final game.
+                            </p>
+                            <p style="font-size: 18px; color: #155724; margin-bottom: 15px; line-height: 1.6;">
+                                You will still be playing the same player in the previous game. But now, there may be several identical restaurants <span style="display: inline-block; width: 20px; height: 20px; background-color: #007bff; border-radius: 3px; vertical-align: middle; margin: 0 4px;"></span> on the map. Note that some restaurants are already open before you start. During the game, other restaurants may open and appear on the map. All restaurants are identical, but you and the other player need to navigate to one of them together as quickly as possible using the shortest path.
+                            </p>
+                        </div>
+                        <p style="font-size: 20px; margin-top: 30px;">Press <strong>space bar</strong> to begin.</p>
+                    </div>
+                </div>
             `;
         default:
             return '<p style="font-size:30px;">Welcome to the task. Press space bar to begin.</p>';
     }
 }
 
-/**
- * Get instructions for experiment type
- */
-function getInstructionsForExperiment(experimentType) {
-    return `
-        <h3>Game Instructions</h3>
-        <p>Navigate the grid to reach the goal(s).</p>
-        ${experimentType.includes('2P') ? '<p>You will be playing with another player.</p>' : ''}
-        <p>Use the arrow keys to move your player around the grid.</p>
-    `;
-}
 
 /**
  * Show waiting for partner stage (unified for both human-AI and human-human versions)
@@ -1591,7 +1640,7 @@ function showWaitingForPartnerStage(stage) {
                         </div>
 
                         <div style="font-size: 20px; color: #333; margin-bottom: 20px;">
-                            <p><strong>Partner found and connection established!</strong></p>
+                            <p><strong>Another player found and connection established!</strong></p>
                             <p>The game is ready to begin.</p>
                         </div>
 
@@ -1924,21 +1973,28 @@ function showGameFeedbackStage(stage) {
 }
 
 /**
- * Create collaboration feedback overlay
+ * Create unified trial feedback overlay
  * @param {HTMLElement} canvasContainer - Container to append overlay to
- * @param {boolean} collaborationSucceeded - Whether collaboration succeeded
+ * @param {boolean} success - Whether the trial was successful
+ * @param {string} messageType - Type of feedback: 'single' or 'collaboration'
  * @param {number} duration - How long to show overlay (optional, defaults to not auto-remove)
  * @returns {HTMLElement} - The created overlay element
  */
-function createCollaborationFeedbackOverlay(canvasContainer, collaborationSucceeded, duration = null) {
+function createTrialFeedbackOverlay(canvasContainer, success, messageType, duration = null) {
     if (!canvasContainer) {
-        console.warn('No canvas container provided for collaboration feedback overlay');
+        console.warn('No canvas container provided for trial feedback overlay');
         return null;
     }
 
-    // Create visual feedback based on collaboration success
+    // Validate messageType
+    if (messageType !== 'single' && messageType !== 'collaboration') {
+        console.warn('Invalid messageType. Must be "single" or "collaboration"');
+        return null;
+    }
+
+    // Create visual feedback based on success
     let visualFeedback;
-    if (collaborationSucceeded) {
+    if (success) {
         // Smile face for success
         visualFeedback = `
             <div style="display: flex; justify-content: center; margin: 30px 0;">
@@ -1980,20 +2036,28 @@ function createCollaborationFeedbackOverlay(canvasContainer, collaborationSuccee
         `;
     }
 
+    // Determine message based on messageType
+    let message;
+    if (messageType === 'single') {
+        message = success ? 'Goal reached!' : 'Time up!';
+    } else if (messageType === 'collaboration') {
+        message = success ? 'Collaboration succeeded!' : 'Collaboration failed!';
+    }
+
     // Create overlay div positioned absolutely over the canvas
     const overlay = document.createElement('div');
     overlay.innerHTML = `
         <div style="
             text-align: center;
             background: rgba(255, 255, 255, 0.95);
-            border: 3px solid ${collaborationSucceeded ? '#28a745' : '#dc3545'};
+            border: 3px solid ${success ? '#28a745' : '#dc3545'};
             border-radius: 15px;
             padding: 30px 40px;
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
             backdrop-filter: blur(5px);
         ">
-            <div style="font-size: 32px; font-weight: bold; margin-bottom: 20px; color: ${collaborationSucceeded ? '#28a745' : '#dc3545'};">
-                ${collaborationSucceeded ? 'Collaboration succeeded!' : 'Collaboration failed!'}
+            <div style="font-size: 32px; font-weight: bold; margin-bottom: 20px; color: ${success ? '#28a745' : '#dc3545'};">
+                ${message}
             </div>
             ${visualFeedback}
         </div>

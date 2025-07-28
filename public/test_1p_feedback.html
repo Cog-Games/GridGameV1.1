@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Grid World Human-Human Collaboration Experiment</title>
+    <title>1P Feedback Test</title>
     <style>
         body {
             margin: 0;
@@ -141,14 +141,14 @@
             const missing = [];
 
             if (typeof io === 'undefined') missing.push('Socket.io');
-            if (typeof MapsFor2P2G === 'undefined') missing.push('2P2G Maps');
-            if (typeof MapsFor2P3G === 'undefined') missing.push('2P3G Maps');
+            if (typeof MapsFor1P1G === 'undefined') missing.push('1P1G Maps');
+            if (typeof MapsFor1P2G === 'undefined') missing.push('1P2G Maps');
             if (typeof window.NodeGameHumanHumanFull === 'undefined') missing.push('Human-Human Experiments');
 
             return missing;
         }
 
-        // Initialize and start the human-human experiment
+        // Initialize and start the 1P experiment test
         document.addEventListener('DOMContentLoaded', function() {
             console.log('Page loaded, checking dependencies...');
 
@@ -157,8 +157,8 @@
                 // Log all available objects for debugging
                 console.log('Debugging - Available objects:', {
                     io: typeof io,
-                    MapsFor2P2G: typeof MapsFor2P2G,
-                    MapsFor2P3G: typeof MapsFor2P3G,
+                    MapsFor1P1G: typeof MapsFor1P1G,
+                    MapsFor1P2G: typeof MapsFor1P2G,
                     NodeGameHumanHumanFull: typeof window.NodeGameHumanHumanFull,
                     gameData: typeof gameData,
                     initializeTrialData: typeof initializeTrialData,
@@ -186,8 +186,9 @@
                     console.log('NodeGame Human-Human experiments initialized:', initialized);
 
                     if (initialized) {
-                        console.log('Starting human-human experiment flow...');
-                        window.NodeGameHumanHumanFull.start('2P2G');
+                        console.log('Starting 1P experiment test...');
+                        // Test with 1P1G first
+                        window.NodeGameHumanHumanFull.start('1P1G');
                     } else {
                         showError(
                             'Initialization Failed',

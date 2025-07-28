@@ -262,16 +262,10 @@ function initializeSocket() {
                 // This case might be for re-joining an ongoing game or when we're already in a trial stage.
                 // Check if we're currently showing fixation display and need to transition to full game board
                 if (timeline.inTrialStage) {
-                    console.log('Game started event received during trial stage. Transitioning from fixation to full game board.');
-                    // Now show the complete game board and enable controls
-                    const currentStage = timeline.stages[timeline.currentStage];
-                    if (currentStage && currentStage.type === 'trial') {
-                        setupTrialVisualization(currentStage.experimentType);
-                        setupKeyboardControls();
-                    } else {
-                        setupTrialVisualization(gameData.currentExperiment);
-                        setupKeyboardControls();
-                    }
+                    console.log('Game started event received during trial stage. Trial already set up, just updating visualization.');
+                    // The trial stage is already set up, just update the visualization with the server data
+                    updateGameVisualization();
+                    setupKeyboardControls();
                 } else {
                     console.log('Game started event received, but not in trial stage. Updating existing view.');
                     updateGameVisualization();
@@ -415,7 +409,14 @@ function initializeSocket() {
 
         socket.on('trial_complete', (data) => {
             console.log(`Trial completed! Success: ${data.success}`);
-            handleTrialComplete(data);
+            console.log(`Current experiment: ${gameData.currentExperiment}, Game active: ${isGameActive}`);
+
+            // Only process trial completion if we're in an active game
+            if (isGameActive && gameData.currentExperiment) {
+                handleTrialComplete(data);
+            } else {
+                console.log('⚠️ Ignoring trial_complete event - game not active or no current experiment');
+            }
         });
 
         socket.on('trial_started', (data) => {
@@ -424,14 +425,9 @@ function initializeSocket() {
         });
 
         socket.on('new_goal_presented', (data) => {
-            console.log('=== SERVER NEW GOAL PRESENTED ===');
-            console.log('Server new goal data:', data);
-            console.log('Local newGoalPresented:', newGoalPresented);
-            console.log('Local newGoalPosition:', newGoalPosition);
 
             // Always process server new goal since client-side generation is disabled
             if (data.newGoal) {
-                console.log('Processing server new goal...');
 
                 // Store the full game state including distance condition
                 if (data.gameState) {
@@ -489,23 +485,15 @@ function initializeSocket() {
                             gameData.currentTrialData.player2DistanceToOldGoal = calculateDistance(player2Pos, oldGoal);
                         }
 
-                        console.log('=== NEW GOAL PRESENTED DISTANCE CALCULATIONS ===');
-                        console.log('New goal distances - Player1:', gameData.currentTrialData.newGoalDistanceToPlayer1, 'Player2:', gameData.currentTrialData.newGoalDistanceToPlayer2);
-                        console.log('Distance sum:', gameData.currentTrialData.newGoalDistanceSum);
+
                     }
                 }
-
-                console.log('✅ Server new goal processed successfully');
-                console.log('Updated goals array:', gameData.currentGoals);
-                console.log('Distance condition used:', data.distanceCondition);
 
                 // Show new goal message
                 // showNewGoalMessage();
 
                 // Update visualization
                 updateGameVisualization();
-            } else {
-                console.log('❌ Server new goal data missing newGoal position');
             }
         });
 
@@ -971,6 +959,12 @@ function recordMoveMultiPlayer(data) {
             gameData.currentTrialData.player1CurrentGoal.push(firstPlayerGoal);
             console.log('First player (red) moved, detected goal:', firstPlayerGoal);
 
+            // ADD THIS: Record first detected goal
+            if (firstPlayerGoal !== null && gameData.currentTrialData.player1FirstDetectedGoal === null) {
+                gameData.currentTrialData.player1FirstDetectedGoal = firstPlayerGoal;
+                console.log(`Player1 first detected goal: ${firstPlayerGoal}`);
+            }
+
             // Update goal history
             if (firstPlayerGoal !== null) {
                 firstPlayerGoalHistory.push(firstPlayerGoal);
@@ -990,6 +984,12 @@ function recordMoveMultiPlayer(data) {
             gameData.currentTrialData.player2CurrentGoal.push(secondPlayerGoal);
             console.log('Second player (orange) moved, detected goal:', secondPlayerGoal);
 
+            // ADD THIS: Record first detected goal
+            if (secondPlayerGoal !== null && gameData.currentTrialData.player2FirstDetectedGoal === null) {
+                gameData.currentTrialData.player2FirstDetectedGoal = secondPlayerGoal;
+                console.log(`Player2 first detected goal: ${secondPlayerGoal}`);
+            }
+
             // Update goal history
             if (secondPlayerGoal !== null) {
                 secondPlayerGoalHistory.push(secondPlayerGoal);
@@ -1000,6 +1000,16 @@ function recordMoveMultiPlayer(data) {
                 gameData.currentTrialData.player2CurrentGoal[gameData.currentTrialData.player2CurrentGoal.length - 1] : null;
             gameData.currentTrialData.player2CurrentGoal.push(previousSecondPlayerGoal);
             console.log('Second player (orange) didn\'t move, maintaining previous goal:', previousSecondPlayerGoal);
+        }
+
+        // ADD THIS: Record first detected shared goal (2P3G only)
+        const currentFirstPlayerGoal = gameData.currentTrialData.player1CurrentGoal[gameData.currentTrialData.player1CurrentGoal.length - 1];
+        const currentSecondPlayerGoal = gameData.currentTrialData.player2CurrentGoal[gameData.currentTrialData.player2CurrentGoal.length - 1];
+        if (currentFirstPlayerGoal !== null && currentSecondPlayerGoal !== null &&
+            currentFirstPlayerGoal === currentSecondPlayerGoal &&
+            gameData.currentTrialData.firstDetectedSharedGoal === null) {
+            gameData.currentTrialData.firstDetectedSharedGoal = currentFirstPlayerGoal;
+            console.log(`First detected shared goal: ${currentFirstPlayerGoal}`);
         }
 
         // Check for new goal presentation in 2P3G only
@@ -1032,6 +1042,12 @@ function recordMoveMultiPlayer(data) {
                     const player1CurrentGoal = detectPlayerGoal(gameData.currentPlayerPos, currentPlayerAction, gameData.currentGoals, gameData.currentTrialData.player1CurrentGoal);
         gameData.currentTrialData.player1CurrentGoal.push(player1CurrentGoal);
         console.log('1P2G: Player1 moved, detected goal:', player1CurrentGoal);
+
+        // ADD THIS: Record first detected goal
+        if (player1CurrentGoal !== null && gameData.currentTrialData.player1FirstDetectedGoal === null) {
+            gameData.currentTrialData.player1FirstDetectedGoal = player1CurrentGoal;
+            console.log(`Player1 first detected goal: ${player1CurrentGoal}`);
+        }
         } else {
             console.log('1P2G: Skipping goal detection - missing action or functions');
         }
@@ -1045,6 +1061,10 @@ function recordMoveMultiPlayer(data) {
 
         // Check trial end for 1P2G (single goal reached)
         if (isGoalReached(gameData.currentPlayerPos, gameData.currentGoals)) {
+            var finalGoal = whichGoalReached(gameData.currentPlayerPos, gameData.currentGoals);
+            gameData.currentTrialData.player1FinalReachedGoal = finalGoal;
+            console.log(`Player1 final reached goal: ${finalGoal}`);
+
             console.log('1P2G: Goal reached, finalizing trial');
             finalizeTrial(true);
         }
@@ -1071,9 +1091,9 @@ function showCollaborationFeedback() {
         return;
     }
 
-    // Use the createCollaborationFeedbackOverlay function from expTimeline.js
-    if (typeof createCollaborationFeedbackOverlay === 'function') {
-        createCollaborationFeedbackOverlay(canvasContainer, collaborationSucceeded, NODEGAME_CONFIG.timing.feedbackDisplayDuration);
+    // Use the createTrialFeedbackOverlay function from expTimeline.js
+    if (typeof createTrialFeedbackOverlay === 'function') {
+        createTrialFeedbackOverlay(canvasContainer, collaborationSucceeded, 'collaboration', NODEGAME_CONFIG.timing.feedbackDisplayDuration);
     } else {
         // Fallback: create a simple overlay
         const overlay = document.createElement('div');
@@ -1116,6 +1136,9 @@ function handleTrialComplete(data) {
     console.log('Server data.success:', data.success);
     console.log('Client collaborationSucceeded:', gameData.currentTrialData?.collaborationSucceeded);
     console.log('Experiment type:', gameData.currentExperiment);
+    console.log('Trial data experiment type:', gameData.currentTrialData?.experimentType);
+    console.log('Current trial index:', gameData.currentTrialIndex);
+    console.log('Is game active:', isGameActive);
 
     isGameActive = false;
 
@@ -1367,73 +1390,6 @@ function startNodeGameHumanHumanExperiment(experimentType) {
 }
 
 
-// Note: showWaitingForPartnerStage function is now defined in expTimeline.js
-// and supports both human-human and human-AI modes
-
-/**
- * Draw a circle for human-human visualization
- */
-function drawCircleHumanHuman(ctx, color, lineWidth, colPos, rowPos, startAngle, endAngle) {
-    const centerX = colPos * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding + EXPSETTINGS.cellSize/2;
-    const centerY = rowPos * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding + EXPSETTINGS.cellSize/2;
-    const radius = EXPSETTINGS.cellSize * 0.4; // Adjust size as needed
-
-    ctx.beginPath();
-    ctx.lineWidth = lineWidth;
-    ctx.strokeStyle = color;
-    ctx.fillStyle = color;
-    ctx.arc(centerX, centerY, radius, startAngle, endAngle);
-    ctx.fill();
-    ctx.stroke();
-}
-
-/**
- * Draw overlapping circles for when players are in the same position
- */
-function drawOverlappingCirclesHumanHuman(ctx, colPos, rowPos) {
-    // First draw white background
-    ctx.fillStyle = COLORPOOL.map;
-    ctx.fillRect(colPos * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding,
-        rowPos * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding,
-        EXPSETTINGS.cellSize, EXPSETTINGS.cellSize);
-
-    const circleRadius = EXPSETTINGS.cellSize * 0.35; // Slightly smaller for overlap
-    const centerX = colPos * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding + EXPSETTINGS.cellSize/2;
-    const centerY = rowPos * (EXPSETTINGS.cellSize + EXPSETTINGS.padding) + EXPSETTINGS.padding + EXPSETTINGS.cellSize/2;
-    const offset = EXPSETTINGS.cellSize * 0.15; // Offset for overlap
-
-    // Determine colors based on player order (with fallback)
-    const playerOrder = window.playerOrder || { isFirstPlayer: true }; // Fallback to first player
-    let firstColor, secondColor;
-
-    if (playerOrder.isFirstPlayer) {
-        // I am the first player (red), partner is second (orange)
-        firstColor = COLORPOOL.player; // red
-        secondColor = "orange";
-    } else {
-        // I am the second player (orange), partner is first (red)
-        firstColor = "orange";
-        secondColor = COLORPOOL.player; // red
-    }
-
-    // Draw first player circle on the left
-    ctx.beginPath();
-    ctx.lineWidth = 1/3 * EXPSETTINGS.padding;
-    ctx.strokeStyle = firstColor;
-    ctx.fillStyle = firstColor;
-    ctx.arc(centerX - offset, centerY, circleRadius, 0, 2 * Math.PI);
-    ctx.fill();
-    ctx.stroke();
-
-    // Draw second player circle on the right
-    ctx.beginPath();
-    ctx.strokeStyle = secondColor;
-    ctx.fillStyle = secondColor;
-    ctx.arc(centerX + offset, centerY, circleRadius, 0, 2 * Math.PI);
-    ctx.fill();
-    ctx.stroke();
-}
-
 /**
  * Fallback rendering function using exact human-AI version parameters
  */
@@ -1642,6 +1598,9 @@ function runTrialStage(stage) {
     const experimentIndex = stage.experimentIndex;
 
     console.log(`Running trial ${trialIndex} for experiment ${experimentType}`);
+
+    // Set trial stage flag
+    timeline.inTrialStage = true;
 
     // Set current experiment type
     gameData.currentExperiment = experimentType;
@@ -2154,7 +2113,6 @@ function skipToCompletion() {
 }
 
 
-
 /**
  * Initialize trial data
  */
@@ -2459,19 +2417,6 @@ function finalizeTrial(success) {
         if (gameData.currentExperiment && gameData.currentExperiment.includes('2P')) {
             // For collaboration games, success is based on collaboration
             trialSuccess = gameData.currentTrialData.collaborationSucceeded === true;
-
-            // DEBUG: Log detailed success calculation
-            console.log('=== TRIAL SUCCESS CALCULATION DEBUG ===');
-            console.log('Experiment type:', gameData.currentExperiment);
-            console.log('collaborationSucceeded value:', gameData.currentTrialData.collaborationSucceeded);
-            console.log('collaborationSucceeded type:', typeof gameData.currentTrialData.collaborationSucceeded);
-            console.log('trialSuccess calculated as:', trialSuccess);
-            console.log('Current trial index:', gameData.currentTrial);
-            console.log('Total trials so far:', gameData.allTrialsData.length);
-            console.log('Success threshold enabled:', NODEGAME_CONFIG.successThreshold.enabled);
-            console.log('Success threshold config:', NODEGAME_CONFIG.successThreshold);
-            console.log('Success threshold tracking:', gameData.successThreshold);
-            console.log('=========================================');
         } else {
             // For single player games, success is based on completion
             trialSuccess = success;
@@ -2485,20 +2430,6 @@ function finalizeTrial(success) {
         // Reset movement flags to prevent issues in next trial
         timeline.isMoving = false;
         timeline.keyListenerActive = false;
-
-        console.log('Trial finalized:', gameData.currentTrialData);
-        console.log(`Trial success: ${trialSuccess} (${gameData.currentExperiment})`);
-
-        // Debug logging for data recording issues
-        console.log('=== TRIAL DATA DEBUG ===');
-        console.log('aimAction array length:', gameData.currentTrialData.aimAction ? gameData.currentTrialData.aimAction.length : 'undefined');
-        console.log('partnerAction array length:', gameData.currentTrialData.partnerAction ? gameData.currentTrialData.partnerAction.length : 'undefined');
-        console.log('RT array length:', gameData.currentTrialData.RT ? gameData.currentTrialData.RT.length : 'undefined');
-        console.log('partnerRT array length:', gameData.currentTrialData.partnerRT ? gameData.currentTrialData.partnerRT.length : 'undefined');
-        console.log('goals saved:', gameData.currentTrialData.goals ? 'yes' : 'no');
-        console.log('playerStartPos saved:', gameData.currentTrialData.playerStartPos ? 'yes' : 'no');
-        console.log('partnerStartPos saved:', gameData.currentTrialData.partnerStartPos ? 'yes' : 'no');
-        console.log('========================');
     }
 
     // For single-player games, advance to next stage after a short delay
@@ -2561,120 +2492,6 @@ function getRandomDistanceConditionFor1P2G(trialIndex) {
     }
 }
 
-// =================================================================================================
-// SUCCESS THRESHOLD HELPER FUNCTIONS - FOR COLLABORATION GAMES
-// =================================================================================================
-
-/**
- * Initialize success threshold tracking for a new experiment
- */
-function initializeSuccessThresholdTracking() {
-    if (!gameData.successThreshold) {
-        gameData.successThreshold = {};
-    }
-
-    gameData.successThreshold.consecutiveSuccesses = 0;
-    gameData.successThreshold.totalTrialsCompleted = 0;
-    gameData.successThreshold.experimentEndedEarly = false;
-    gameData.successThreshold.lastSuccessTrial = -1;
-    gameData.successThreshold.successHistory = [];
-
-    console.log('Success threshold tracking initialized:', gameData.successThreshold);
-}
-
-/**
- * Update success threshold tracking after a trial
- * @param {boolean} success - Whether the trial was successful
- * @param {number} trialIndex - Current trial index
- */
-function updateSuccessThresholdTracking(success, trialIndex) {
-    // Only track for collaboration games
-    if (!gameData.currentExperiment || !gameData.currentExperiment.includes('2P')) {
-        console.log('Skipping success threshold tracking - not a 2P game');
-        return;
-    }
-
-    if (!NODEGAME_CONFIG.successThreshold.enabled) {
-        console.log('Skipping success threshold tracking - disabled');
-        return;
-    }
-
-    // Initialize if not done yet
-    if (!gameData.successThreshold) {
-        console.warn('Success threshold not initialized, initializing now');
-        initializeSuccessThresholdTracking();
-    }
-
-    gameData.successThreshold.totalTrialsCompleted++;
-    gameData.successThreshold.successHistory.push(success);
-
-    if (success) {
-        gameData.successThreshold.consecutiveSuccesses++;
-        gameData.successThreshold.lastSuccessTrial = trialIndex;
-    } else {
-        gameData.successThreshold.consecutiveSuccesses = 0;
-    }
-
-    console.log(`=== SUCCESS THRESHOLD UPDATE ===`);
-    console.log(`Trial ${trialIndex + 1}: ${success ? 'SUCCESS' : 'FAILURE'}`);
-    console.log(`Consecutive successes: ${gameData.successThreshold.consecutiveSuccesses}/${NODEGAME_CONFIG.successThreshold.consecutiveSuccessesRequired}`);
-    console.log(`Total trials: ${gameData.successThreshold.totalTrialsCompleted}/${NODEGAME_CONFIG.successThreshold.maxTrials}`);
-    console.log(`Min trials before check: ${NODEGAME_CONFIG.successThreshold.minTrialsBeforeCheck}`);
-    console.log(`Success history: [${gameData.successThreshold.successHistory.join(', ')}]`);
-    console.log(`Should end due to threshold? ${shouldEndExperimentDueToSuccessThreshold()}`);
-    console.log(`===============================`);
-}
-
-/**
- * Check if experiment should end due to success threshold
- * @returns {boolean} - True if experiment should end
- */
-function shouldEndExperimentDueToSuccessThreshold() {
-    console.log('=== CHECKING IF SHOULD END DUE TO SUCCESS THRESHOLD ===');
-
-    // Only apply to collaboration games
-    if (!gameData.currentExperiment || !gameData.currentExperiment.includes('2P')) {
-        console.log('Not a 2P game, no threshold check needed');
-        return false;
-    }
-
-    // Check if success threshold is enabled
-    if (!NODEGAME_CONFIG.successThreshold.enabled) {
-        console.log('Success threshold disabled, no threshold check needed');
-        return false;
-    }
-
-    // Initialize if not done yet
-    if (!gameData.successThreshold) {
-        console.warn('Success threshold not initialized, initializing now');
-        initializeSuccessThresholdTracking();
-    }
-
-    var config = NODEGAME_CONFIG.successThreshold;
-    var tracking = gameData.successThreshold;
-
-    console.log('Success threshold config:', config);
-    console.log('Success threshold tracking:', tracking);
-
-    // Check if we've reached the maximum trials
-    if (tracking.totalTrialsCompleted >= config.maxTrials) {
-        console.log(`✅ Experiment ending: Reached maximum trials (${config.maxTrials})`);
-        return true;
-    }
-
-    // Check if we have enough trials and consecutive successes
-    if (tracking.totalTrialsCompleted >= config.minTrialsBeforeCheck &&
-        tracking.consecutiveSuccesses >= config.consecutiveSuccessesRequired) {
-        console.log(`✅ Experiment ending: Success threshold met (${tracking.consecutiveSuccesses} consecutive successes after ${tracking.totalTrialsCompleted} trials)`);
-        gameData.successThreshold.experimentEndedEarly = true;
-        return true;
-    }
-
-    console.log(`❌ Continue experiment: ${tracking.totalTrialsCompleted} trials, ${tracking.consecutiveSuccesses} consecutive successes`);
-    console.log(`Need ${config.minTrialsBeforeCheck} min trials and ${config.consecutiveSuccessesRequired} consecutive successes`);
-    console.log('==================================================');
-    return false;
-}
 /**
  * Reset experiment data
  */
@@ -3251,6 +3068,11 @@ function checkTrialEnd2P2G() {
         var player2Goal = whichGoalReached(gameData.currentPartnerPos, gameData.currentGoals);
         var collaboration = (player1Goal === player2Goal && player1Goal !== null);
 
+        // ADD THIS: Record final reached goals
+        gameData.currentTrialData.player1FinalReachedGoal = player1Goal;
+        gameData.currentTrialData.player2FinalReachedGoal = player2Goal;
+        console.log(`Final goals - Player1: ${player1Goal}, Player2: ${player2Goal}`);
+
         console.log(`2P2G Collaboration check: Player1 goal=${player1Goal}, Player2 goal=${player2Goal}, Collaboration=${collaboration}`);
         console.log('=== FINALIZING 2P2G TRIAL ===');
 
@@ -3293,6 +3115,11 @@ function checkTrialEnd2P3G() {
         var player1Goal = whichGoalReached(gameData.currentPlayerPos, gameData.currentGoals);
         var player2Goal = whichGoalReached(gameData.currentPartnerPos, gameData.currentGoals);
         var collaboration = (player1Goal === player2Goal && player1Goal !== null);
+
+        // ADD THIS: Record final reached goals
+        gameData.currentTrialData.player1FinalReachedGoal = player1Goal;
+        gameData.currentTrialData.player2FinalReachedGoal = player2Goal;
+        console.log(`Final goals - Player1: ${player1Goal}, Player2: ${player2Goal}`);
 
         console.log(`2P3G Collaboration check: Player1 goal=${player1Goal}, Player2 goal=${player2Goal}, Collaboration=${collaboration}`);
         console.log('=== FINALIZING 2P3G TRIAL ===');

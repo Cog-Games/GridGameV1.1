@@ -74,6 +74,14 @@ function initializeTrialData(trialIndex, experimentType, design) {
         // Initialize goal tracking variables for 2P experiments
         player1CurrentGoal: [],      // Changed from humanCurrentGoal
         player2CurrentGoal: [],      // Changed from aiCurrentGoal
+
+        // NEW VARIABLES TO ADD:
+        player1FirstDetectedGoal: null,  // First goal detected for player1
+        player2FirstDetectedGoal: null,  // First goal detected for player2
+        player1FinalReachedGoal: null,   // Final goal reached by player1
+        player2FinalReachedGoal: null,   // Final goal reached by player2
+        firstDetectedSharedGoal: null,   // First detected shared goal (2P3G only)
+
         newGoalPresentedTime: null,
         newGoalPosition: null,
         newGoalConditionType: null,

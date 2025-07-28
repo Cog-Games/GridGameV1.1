@@ -1,49 +1,88 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
-  <head>
-    <meta charset="utf-8">
-    <title> Navigation Game</title>
-    <!-- <script src="lib/jquery-3.4.1.min.js" type="text/javascript"> </script> -->
-    <!-- <script src="lib/underscore-min.js" type="text/javascript"> </script> -->
-    <!-- <script src="lib/backbone-min.js" type="text/javascript"> </script> -->
-    <!-- <script src="lib/d3.v3.min.js" type="text/javascript"> </script> -->
-    <!-- <script src="lib/math.js" type="text/javascript"> </script> -->
+<html lang="en">
 
-    <!-- jsPsych -->
-    <script src="https://unpkg.com/jspsych@7.2.1"></script>
-    <script src="https://unpkg.com/@jspsych/plugin-html-keyboard-response@1.1.0"></script>
-    <script src="https://unpkg.com/@jspsych/plugin-call-function@1.1.0"></script>
-    <script src="https://unpkg.com/@jspsych/plugin-survey@0.1.1"></script>
-    <script src="https://unpkg.com/@jspsych/plugin-survey-text@1.1.0"></script>
-    <script src="https://unpkg.com/@jspsych/plugin-html-button-response@1.1.0"></script>
-    <script src="https://unpkg.com/@jspsych/plugin-html-keyboard-response@1.1.0"></script>
-    <script src="https://unpkg.com/@jspsych/plugin-canvas-keyboard-response@1.1.0"></script>
-    <script src="https://unpkg.com/@jspsych/plugin-canvas-button-response@1.1.1"></script>
-    <link href="https://unpkg.com/jspsych@7.2.3/css/jspsych.css" rel="stylesheet" type="text/css"/>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grid World Collaboration Experiment</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f8f9fa;
+    }
 
-    <!-- SheetJS library for Excel file creation -->
-    <script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    #container {
+      width: 100%;
+      height: 100vh;
+      margin: 0;
+      padding: 0;
+    }
+  </style>
+</head>
 
-    <!-- utils.js and psiturk.js provide the basic psiturk functionality -->
-    <script src="js/utils.js" type="text/javascript"> </script>
-  </head>
-  <body>
-    <script src="config/MapsFor1P1G.js" type="text/javascript"> </script>
-    <script src="config/MapsFor1P2G.js" type="text/javascript"> </script>
-    <script src="config/MapsFor2P2G.js" type="text/javascript"> </script>
-    <script src="config/MapsFor2P3G.js" type="text/javascript"> </script>
-    <!-- <script src="js/math.js" type="text/javascript"> </script> -->
-    <script src="js/utils.js" type="text/javascript"> </script>
-    <script src="js/setup.js" type="text/javascript"> </script>
-    <script src="js/vizWithAI.js" type="text/javascript"> </script>
-    <script src="js/mdp.js" type="text/javascript"> </script>
-    <script src="js/rlAgent.js" type="text/javascript"> </script>
-    <script src="js/experimentConfig.js" type="text/javascript"> </script>
-    <script src="js/expDesign.js" type="text/javascript"> </script>
-    <script src="js/testExpWithAI.js" type="text/javascript"> </script>
+<body>
+  <!-- Main experiment container -->
+  <div id="container">
+    <!-- Content will be dynamically loaded by the experiment -->
+  </div>
 
-    <link rel="stylesheet" href="css/bootstrap.min.css" type="text/css" />
-    <link rel="stylesheet" href="css/style.css" type="text/css" />
-    <link rel="stylesheet" href="css/exp.css" type="text/css" />
-  </body>
+  <!-- Dependencies -->
+  <script src="public/js/setup.js"></script>
+  <script src="public/js/utils.js"></script>
+  <script src="public/js/mdp.js"></script>
+  <script src="public/js/viz.js"></script>
+  <script src="public/js/rlAgent.js"></script>
+
+  <!-- Map data files -->
+  <script src="public/config/MapsFor1P1G.js"></script>
+  <script src="public/config/MapsFor1P2G.js"></script>
+  <script src="public/config/MapsFor2P2G.js"></script>
+  <script src="public/config/MapsFor2P3G.js"></script>
+
+  <!-- SheetJS library for Excel export functionality -->
+  <script src="https://cdn.sheetjs.com/xlsx-0.19.3/package/dist/xlsx.full.min.js"></script>
+
+  <!-- Updated NodeGame experiments (refactored modules) -->
+  <script src="public/js/expConfig.js"></script>
+  <script src="public/js/gameHelpers.js"></script>
+  <script src="public/js/gameState.js"></script>
+  <script src="public/js/dataRecording.js"></script>
+  <script src="public/js/expDesign.js"></script>
+  <script src="public/js/expTrialHumanAI.js"></script>
+  <script src="public/js/expTimeline.js"></script>
+  <script src="public/js/human-AI-version.js"></script>
+
+  <script>
+    // Initialize and start the experiment immediately on page load
+    document.addEventListener('DOMContentLoaded', function () {
+      console.log('Initializing NodeGame experiments...');
+      var initialized = window.NodeGameExperiments.initialize();
+      console.log('NodeGame experiments initialized:', initialized);
+
+      if (initialized) {
+        // Start the experiment flow immediately (will begin with consent form)
+        console.log('Starting experiment flow...');
+        window.NodeGameExperiments.start('2P2G'); // Default experiment type, but will run all experiments in sequence
+      } else {
+        console.error('Failed to initialize experiments');
+        document.getElementById('container').innerHTML = `
+                    <div style="display: flex; align-items: center; justify-content: center; height: 100vh;">
+                        <div style="text-align: center; color: #666;">
+                            <h2>Error</h2>
+                            <p>Failed to initialize the experiment. Please refresh the page.</p>
+                        </div>
+                    </div>
+                `;
+      }
+    });
+
+    // Error handling
+    window.addEventListener('error', function (event) {
+      console.error('Error:', event.error);
+    });
+  </script>
+</body>
+
 </html>

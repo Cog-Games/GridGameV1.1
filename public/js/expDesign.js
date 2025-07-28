@@ -10,6 +10,96 @@
  * - setup.js (for EXPSETTINGS, OBJECT)
  */
 
+/**
+ * Generate randomized distance condition sequence for 2P3G trials
+ * Ensures equal representation of each condition in random order
+ * @param {number} numTrials - Number of 2P3G trials
+ * @returns {Array} - Randomized array of distance conditions
+ */
+function generateRandomizedDistanceSequence(numTrials) {
+    var allConditions = [
+        TWOP3G_CONFIG.distanceConditions.CLOSER_TO_PLAYER2,
+        TWOP3G_CONFIG.distanceConditions.CLOSER_TO_PLAYER1,
+        TWOP3G_CONFIG.distanceConditions.EQUAL_TO_BOTH,
+        TWOP3G_CONFIG.distanceConditions.NO_NEW_GOAL
+    ];
+
+    var numConditions = allConditions.length;
+    var trialsPerCondition = Math.floor(numTrials / numConditions);
+    var remainingTrials = numTrials % numConditions;
+
+    // Create array with equal representation of each condition
+    var sequence = [];
+    for (var i = 0; i < numConditions; i++) {
+        for (var j = 0; j < trialsPerCondition; j++) {
+            sequence.push(allConditions[i]);
+        }
+    }
+
+    // Add remaining trials (if any) by cycling through conditions
+    for (var k = 0; k < remainingTrials; k++) {
+        sequence.push(allConditions[k]);
+    }
+
+    // Shuffle the sequence using Fisher-Yates algorithm
+    for (var m = sequence.length - 1; m > 0; m--) {
+        var randomIndex = Math.floor(Math.random() * (m + 1));
+        var temp = sequence[m];
+        sequence[m] = sequence[randomIndex];
+        sequence[randomIndex] = temp;
+    }
+
+    console.log('Generated randomized distance condition sequence for', numTrials, 'trials:');
+    console.log('Trials per condition:', trialsPerCondition, 'Remaining trials:', remainingTrials);
+    console.log('Sequence:', sequence);
+
+    return sequence;
+}
+
+/**
+ * Generate randomized distance condition sequence for 1P2G trials
+ * Ensures equal representation of each condition in random order
+ * @param {number} numTrials - Number of 1P2G trials
+ * @returns {Array} - Randomized array of distance conditions
+ */
+function generateRandomized1P2GDistanceSequence(numTrials) {
+    var allConditions = [
+        ONEP2G_CONFIG.distanceConditions.CLOSER_TO_PLAYER1,
+        ONEP2G_CONFIG.distanceConditions.FARTHER_TO_PLAYER1,
+        ONEP2G_CONFIG.distanceConditions.EQUAL_TO_PLAYER1,
+        ONEP2G_CONFIG.distanceConditions.NO_NEW_GOAL
+    ];
+
+    var numConditions = allConditions.length;
+    var trialsPerCondition = Math.floor(numTrials / numConditions);
+    var remainingTrials = numTrials % numConditions;
+
+    // Create array with equal representation of each condition
+    var sequence = [];
+    for (var i = 0; i < numConditions; i++) {
+        for (var j = 0; j < trialsPerCondition; j++) {
+            sequence.push(allConditions[i]);
+        }
+    }
+
+    // Add remaining trials (if any) by cycling through conditions
+    for (var k = 0; k < remainingTrials; k++) {
+        sequence.push(allConditions[k]);
+    }
+
+    // Shuffle the sequence using Fisher-Yates algorithm
+    for (var m = sequence.length - 1; m > 0; m--) {
+        var randomIndex = Math.floor(Math.random() * (m + 1));
+        var temp = sequence[m];
+        sequence[m] = sequence[randomIndex];
+        sequence[randomIndex] = temp;
+    }
+    // console.log('Generated randomized distance condition sequence for', numTrials, 'trials:');
+    // console.log('Trials per condition:', trialsPerCondition, 'Remaining trials:', remainingTrials);
+    console.log('Sequence:', sequence);
+    return sequence;
+}
+
 // =================================================================================================
 // 2P3G Functions - Experimental Design Logic
 // =================================================================================================
@@ -296,13 +386,8 @@ function checkNewGoalPresentation2P3G(options) {
     }
     options = options || {};
 
-    console.log('=== UNIFIED 2P3G NEW GOAL CHECK START ===');
-    console.log('Options:', options);
-    console.log('Current experiment:', gameData.currentExperiment);
-
     // Only proceed if this is actually a 2P3G experiment
     if (gameData.currentExperiment !== '2P3G') {
-        console.log('🚫 Skipping 2P3G new goal check - not a 2P3G experiment');
         return;
     }
 
@@ -431,8 +516,7 @@ function checkNewGoalPresentation2P3G(options) {
         console.log('=== USING LOCAL GOAL GENERATION ===');
 
         // Get distance condition for this trial
-        var distanceCondition = gameData.currentTrialData.distanceCondition ||
-                               TWOP3G_CONFIG.distanceConditions.CLOSER_TO_PLAYER2;
+        var distanceCondition = gameData.currentTrialData.distanceCondition;
 
         console.log('Using distance condition:', distanceCondition);
 
@@ -572,6 +656,11 @@ function checkTrialEnd2P3G(callback) {
             if (player1AtGoal && player2AtGoal) {
         var player1Goal = whichGoalReached(gameData.player1, gameData.currentGoals);
         var player2Goal = whichGoalReached(gameData.player2, gameData.currentGoals);
+
+        // ADD THIS: Record final reached goals
+        gameData.currentTrialData.player1FinalReachedGoal = player1Goal;
+        gameData.currentTrialData.player2FinalReachedGoal = player2Goal;
+        console.log(`Final goals - Player1: ${player1Goal}, Player2: ${player2Goal}`);
 
         // Collaboration is successful if both players reached the same goal
         // Note: Using 0-based indexing from gameHelpers.js (goal 0, 1, 2...)
@@ -937,8 +1026,6 @@ function initializeSuccessThresholdTracking() {
     gameData.successThreshold.experimentEndedEarly = false;
     gameData.successThreshold.lastSuccessTrial = -1;
     gameData.successThreshold.successHistory = [];
-
-    console.log('Success threshold tracking initialized');
 }
 
 /**
@@ -1021,9 +1108,8 @@ function shouldContinueToNextTrial(experimentType, trialIndex) {
     }
 
     // Check if we've reached the configured number of trials
-    var configuredTrials = NODEGAME_CONFIG.numTrials[experimentType];
-    if (trialIndex >= configuredTrials - 1) {
-        console.log(`Ending ${experimentType} experiment: Completed ${configuredTrials} trials`);
+    if (trialIndex >= NODEGAME_CONFIG.successThreshold.maxTrials - 1) {
+        console.log(`Ending ${experimentType} experiment: Completed ${NODEGAME_CONFIG.successThreshold.maxTrials} trials`);
         return false;
     }
 

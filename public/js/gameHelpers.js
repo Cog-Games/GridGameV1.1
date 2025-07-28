@@ -229,14 +229,6 @@ function detectPlayerGoal(playerPos, action, goals, goalHistory) {
  * @returns {Object} - Map data for the experiment
  */
 function getMapsForExperiment(experimentType) {
-    console.log(`getMapsForExperiment called with: ${experimentType}`);
-    console.log('Available map globals:', {
-        MapsFor1P1G: typeof window.MapsFor1P1G,
-        MapsFor1P2G: typeof window.MapsFor1P2G,
-        MapsFor2P2G: typeof window.MapsFor2P2G,
-        MapsFor2P3G: typeof window.MapsFor2P3G
-    });
-
     var mapData;
     switch (experimentType) {
         case '1P1G':
@@ -258,93 +250,6 @@ function getMapsForExperiment(experimentType) {
 
     // console.log(`Returning map data for ${experimentType}:`, mapData);
     return mapData;
-}
-
-/**
- * Generate randomized distance condition sequence for 2P3G trials
- * Ensures equal representation of each condition in random order
- * @param {number} numTrials - Number of 2P3G trials
- * @returns {Array} - Randomized array of distance conditions
- */
-function generateRandomizedDistanceSequence(numTrials) {
-    var allConditions = [
-        TWOP3G_CONFIG.distanceConditions.CLOSER_TO_PLAYER2,
-        TWOP3G_CONFIG.distanceConditions.CLOSER_TO_PLAYER1,
-        TWOP3G_CONFIG.distanceConditions.EQUAL_TO_BOTH,
-        TWOP3G_CONFIG.distanceConditions.NO_NEW_GOAL
-    ];
-
-    var numConditions = allConditions.length;
-    var trialsPerCondition = Math.floor(numTrials / numConditions);
-    var remainingTrials = numTrials % numConditions;
-
-    // Create array with equal representation of each condition
-    var sequence = [];
-    for (var i = 0; i < numConditions; i++) {
-        for (var j = 0; j < trialsPerCondition; j++) {
-            sequence.push(allConditions[i]);
-        }
-    }
-
-    // Add remaining trials (if any) by cycling through conditions
-    for (var k = 0; k < remainingTrials; k++) {
-        sequence.push(allConditions[k]);
-    }
-
-    // Shuffle the sequence using Fisher-Yates algorithm
-    for (var m = sequence.length - 1; m > 0; m--) {
-        var randomIndex = Math.floor(Math.random() * (m + 1));
-        var temp = sequence[m];
-        sequence[m] = sequence[randomIndex];
-        sequence[randomIndex] = temp;
-    }
-
-    console.log('Generated randomized distance condition sequence for', numTrials, 'trials:');
-    console.log('Trials per condition:', trialsPerCondition, 'Remaining trials:', remainingTrials);
-    console.log('Sequence:', sequence);
-
-    return sequence;
-}
-
-/**
- * Generate randomized distance condition sequence for 1P2G trials
- * Ensures equal representation of each condition in random order
- * @param {number} numTrials - Number of 1P2G trials
- * @returns {Array} - Randomized array of distance conditions
- */
-function generateRandomized1P2GDistanceSequence(numTrials) {
-    var allConditions = [
-        ONEP2G_CONFIG.distanceConditions.CLOSER_TO_PLAYER1,
-        ONEP2G_CONFIG.distanceConditions.FARTHER_TO_PLAYER1,
-        ONEP2G_CONFIG.distanceConditions.EQUAL_TO_PLAYER1,
-        ONEP2G_CONFIG.distanceConditions.NO_NEW_GOAL
-    ];
-
-    var numConditions = allConditions.length;
-    var trialsPerCondition = Math.floor(numTrials / numConditions);
-    var remainingTrials = numTrials % numConditions;
-
-    // Create array with equal representation of each condition
-    var sequence = [];
-    for (var i = 0; i < numConditions; i++) {
-        for (var j = 0; j < trialsPerCondition; j++) {
-            sequence.push(allConditions[i]);
-        }
-    }
-
-    // Add remaining trials (if any) by cycling through conditions
-    for (var k = 0; k < remainingTrials; k++) {
-        sequence.push(allConditions[k]);
-    }
-
-    // Shuffle the sequence using Fisher-Yates algorithm
-    for (var m = sequence.length - 1; m > 0; m--) {
-        var randomIndex = Math.floor(Math.random() * (m + 1));
-        var temp = sequence[m];
-        sequence[m] = sequence[randomIndex];
-        sequence[randomIndex] = temp;
-    }
-    return sequence;
 }
 
 /**
@@ -458,8 +363,6 @@ if (typeof module !== 'undefined' && module.exports) {
 
         // Map and distance condition helpers
         getMapsForExperiment,
-        generateRandomizedDistanceSequence,
-        generateRandomized1P2GDistanceSequence,
         selectRandomMaps,
         getRandomMapForCollaborationGame
     };
@@ -478,8 +381,6 @@ window.NodeGameHelpers = {
 
     // Map and distance condition helpers
     getMapsForExperiment,
-    generateRandomizedDistanceSequence,
-    generateRandomized1P2GDistanceSequence,
     selectRandomMaps,
     getRandomMapForCollaborationGame
 };
