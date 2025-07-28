@@ -1,4 +1,4 @@
-const MapsFor2P3G = {
+var MapsFor2P3G = {
     "297": [
         {
             "initPlayerGrid": [

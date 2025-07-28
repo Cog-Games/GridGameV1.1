@@ -1,4 +1,4 @@
-const MapsFor2P2G = {
+var MapsFor2P2G = {
     "198": [
         {
             "initPlayerGrid": [

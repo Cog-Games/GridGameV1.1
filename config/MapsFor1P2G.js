@@ -1,4 +1,4 @@
-const MapsFor1P2G = {
+var MapsFor1P2G = {
     "99": [
         {
             "initPlayerGrid": [

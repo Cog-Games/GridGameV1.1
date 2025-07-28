@@ -1,4 +1,4 @@
-const MapsFor1P1G = {
+var MapsFor1P1G = {
     "0": [
         {
             "initPlayerGrid": [
