@@ -40,10 +40,10 @@ const NODEGAME_CONFIG = {
     // TRIAL COUNTS
     // =================================================================================================
     numTrials: {
-        '1P1G': 8,    // Number of 1P1G trials
-        '1P2G': 8,    // Number of 1P2G trials, formal=12
-        '2P2G': 8,    // Number of 2P2G trials, formal=12
-        '2P3G': 8     // Number of 2P3G trials, formal=12
+        '1P1G': 12,    // Number of 1P1G trials
+        '1P2G': 12,    // Number of 1P2G trials, formal=12
+        '2P2G': 12,    // Number of 2P2G trials, formal=12
+        '2P3G': 12     // Number of 2P3G trials, formal=12
     },
 
     // =================================================================================================
@@ -51,10 +51,10 @@ const NODEGAME_CONFIG = {
     // =================================================================================================
     successThreshold: {
         enabled: true,                    // Enable success threshold for collaboration games
-        consecutiveSuccessesRequired: 4,  // Number of consecutive successes required
-        minTrialsBeforeCheck: 8,         // Minimum trials before checking for success threshold
-        maxTrials: 10,                    // Maximum trials regardless of success
-        randomSamplingAfterTrial: 8      // After this trial, use random sampling for maps and conditions
+        consecutiveSuccessesRequired: 5,  // Number of consecutive successes required
+        minTrialsBeforeCheck: 12,         // Minimum trials before checking for success threshold
+        maxTrials: 24,                    // Maximum trials regardless of success
+        randomSamplingAfterTrial: 12      // After this trial, use random sampling for maps and conditions
     },
 
     // =================================================================================================
