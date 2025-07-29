@@ -6,10 +6,10 @@ function createTimelineStages() {
     timeline.mapData = {};
 
     // Add consent stage (only once at the beginning)
-    // timeline.stages.push({
-    //     type: 'consent',
-    //     handler: showConsentStage
-    // });
+    timeline.stages.push({
+        type: 'consent',
+        handler: showConsentStage
+    });
 
     timeline.stages.push({
         type: 'welcome_info',
