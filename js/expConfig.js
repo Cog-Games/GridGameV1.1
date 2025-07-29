@@ -25,14 +25,14 @@ const NODEGAME_CONFIG = {
     // =================================================================================================
 
     // Current test configuration (2P3G only)
-    experimentOrder: ['2P3G'],
+    // experimentOrder: ['2P3G'],
 
     // Alternative configurations (uncomment to use):
     // experimentOrder: ['1P1G'],           // Test 1P1G only
     // experimentOrder: ['1P2G'],           // Test 1P2G only
     // experimentOrder: ['2P2G'],           // Test 2P2G only
     // experimentOrder: ['1P1G', '1P2G'],   // Test 1P1G and 1P2G
-    // experimentOrder: ['2P2G', '2P3G'],   // Test 2P2G and 2P3G
+    experimentOrder: ['2P2G', '2P3G'],   // Test 2P2G and 2P3G
     // experimentOrder: ['1P1G', '1P2G', '2P2G', '2P3G'], // Test all experiments
     // experimentOrder: ['1P2G', '2P3G'],
 
@@ -51,7 +51,7 @@ const NODEGAME_CONFIG = {
     // =================================================================================================
     successThreshold: {
         enabled: true,                    // Enable success threshold for collaboration games
-        consecutiveSuccessesRequired: 5,  // Number of consecutive successes required
+        consecutiveSuccessesRequired: 5,  // Number of consecutive successes required, formal=5
         minTrialsBeforeCheck: 12,         // Minimum trials before checking for success threshold
         maxTrials: 24,                    // Maximum trials regardless of success
         randomSamplingAfterTrial: 12      // After this trial, use random sampling for maps and conditions
