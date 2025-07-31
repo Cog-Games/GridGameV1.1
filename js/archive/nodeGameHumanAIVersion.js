@@ -533,7 +533,7 @@ function runTrial2P2G() {
                     aiMoveInterval = null;
                 }
             }
-        }, NODEGAME_CONFIG.independentAgentDelay);
+        }, NODEGAME_CONFIG.rlAgent.independentAgentDelay);
     }
 
     // Set up controls
@@ -800,7 +800,7 @@ function runTrial2P3G() {
                     aiMoveInterval = null;
                 }
             }
-        }, NODEGAME_CONFIG.independentAgentDelay);
+        }, NODEGAME_CONFIG.rlAgent.independentAgentDelay);
     }
 
     // Set up controls - prevent multiple listeners
@@ -844,7 +844,7 @@ function runTrial2P3G() {
             !isGoalReached(gameData.aiState, gameData.currentGoals) &&
             !aiMoveInterval &&
             !isFrozen) {
-            console.log('2P3G: Starting independent AI movement - human reached goal, AI has not (slower pace: ' + NODEGAME_CONFIG.independentAgentDelay + 'ms)');
+            console.log('2P3G: Starting independent AI movement - human reached goal, AI has not (slower pace: ' + NODEGAME_CONFIG.rlAgent.independentAgentDelay + 'ms)');
             startIndependentAIMovement();
         }
     }, 100);

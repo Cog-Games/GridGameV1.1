@@ -62,13 +62,13 @@ const NODEGAME_CONFIG = {
     // =================================================================================================
     rlAgent: {
         type: 'joint', // Default agent type: 'individual' or 'joint'
+        agentDelay: 500,
+        independentAgentDelay: 300, // Slower delay for independent AI movement after human reaches goal
     },
 
     // =================================================================================================
     // GAME SETTINGS
     // =================================================================================================
-    agentDelay: 500,
-    independentAgentDelay: 300, // Slower delay for independent AI movement after human reaches goal
     maxGameLength: 50, // Max steps per trial
     enableProlificRedirect: true, // Set to false for testing without redirect
     prolificCompletionCode: 'C19EH5X9', // Prolific completion code
