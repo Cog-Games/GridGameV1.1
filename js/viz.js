@@ -296,6 +296,7 @@ function updateGameDisplay() {
  */
 function createGameCanvas() {
     var canvas = document.createElement('canvas');
+    canvas.id = 'gameCanvas'; // Set the ID so it can be found later
     canvas.width = WINSETTING.w;
     canvas.height = WINSETTING.h;
     canvas.style.border = '2px solid #333';
@@ -390,6 +391,7 @@ function nodeGameUpdateGameDisplay() {
  */
 function nodeGameCreateGameCanvas() {
     var canvas = document.createElement('canvas');
+    canvas.id = 'gameCanvas'; // Set the ID so it can be found later
     canvas.width = WINSETTING.w;
     canvas.height = WINSETTING.h;
     canvas.style.border = '2px solid #333';
@@ -632,3 +634,10 @@ function drawOverlappingCirclesHumanHuman(ctx, colPos, rowPos) {
     ctx.fill();
     ctx.stroke();
 }
+
+// Make visualization functions globally accessible
+window.createGameCanvas = createGameCanvas;
+window.nodeGameCreateGameCanvas = nodeGameCreateGameCanvas;
+window.drawGrid = drawGrid;
+window.updateGameDisplay = updateGameDisplay;
+window.nodeGameUpdateGameDisplay = nodeGameUpdateGameDisplay;

@@ -33,6 +33,9 @@ var gameData = {
     }
 };
 
+// Make gameData globally accessible
+window.gameData = gameData;
+
 // Timeline state
 var timeline = {
     currentStage: 0,
@@ -42,6 +45,9 @@ var timeline = {
     isMoving: false, // Prevent multiple moves per keypress
     keyListenerActive: false // Track if key listener is already active
 };
+
+// Make timeline globally accessible
+window.timeline = timeline;
 
 /**
  * Initialize trial data structure

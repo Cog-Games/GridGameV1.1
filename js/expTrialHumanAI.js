@@ -182,7 +182,7 @@ function runTrial1P1G() {
         // Reset movement flag with a small delay to prevent rapid successive key presses
         setTimeout(() => {
             timeline.isMoving = false;
-        }, 100); // 100ms delay to prevent rapid successive movements
+        }, NODEGAME_CONFIG.timing.movementDelay); // Configurable delay to prevent rapid successive movements
     }
 
     // Set up controls
@@ -275,7 +275,7 @@ function runTrial1P2G() {
         // Reset movement flag with a small delay to prevent rapid successive key presses
         setTimeout(() => {
             timeline.isMoving = false;
-        }, 100); // 100ms delay to prevent rapid successive movements
+        }, NODEGAME_CONFIG.timing.movementDelay); // Configurable delay to prevent rapid successive movements
     }
 
     // Set up controls
@@ -427,7 +427,10 @@ function runTrial2P2G() {
             setTimeout(() => nextStage(), NODEGAME_CONFIG.timing.trialToFeedbackDelay);
         });
 
-        timeline.isMoving = false;
+        // Reset movement flag with a small delay to prevent rapid successive key presses
+        setTimeout(() => {
+            timeline.isMoving = false;
+        }, NODEGAME_CONFIG.timing.movementDelay); // Configurable delay to prevent rapid successive movements
     }
 
     // Independent player2 movement when player1 has reached goal
@@ -681,7 +684,7 @@ function runTrial2P3G() {
         // Reset movement flag with a small delay to prevent rapid successive key presses
         setTimeout(() => {
             timeline.isMoving = false;
-        }, 100); // 100ms delay to prevent rapid successive movements
+        }, NODEGAME_CONFIG.timing.movementDelay); // Configurable delay to prevent rapid successive movements
     }
 
     // Function to start freeze period when new goal appears

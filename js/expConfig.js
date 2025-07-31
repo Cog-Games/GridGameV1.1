@@ -32,18 +32,18 @@ const NODEGAME_CONFIG = {
     // experimentOrder: ['1P2G'],           // Test 1P2G only
     // experimentOrder: ['2P2G'],           // Test 2P2G only
     // experimentOrder: ['1P1G', '1P2G'],   // Test 1P1G and 1P2G
-    // experimentOrder: ['2P2G', '2P3G'],   // Test 2P2G and 2P3G
-    experimentOrder: ['1P1G', '1P2G', '2P2G', '2P3G'], // Test all experiments
+    experimentOrder: ['2P2G', '2P3G'],   // Test 2P2G and 2P3G
+    // experimentOrder: ['1P1G', '1P2G', '2P2G', '2P3G'], // Test all experiments
     // experimentOrder: ['1P2G', '2P3G'],
 
     // =================================================================================================
     // TRIAL COUNTS
     // =================================================================================================
     numTrials: {
-        '1P1G': 3,    // Number of 1P1G trials
-        '1P2G': 12,    // Number of 1P2G trials, formal=12
-        '2P2G': 12,    // Number of 2P2G trials, formal=12
-        '2P3G': 12     // Number of 2P3G trials, formal=12
+        '1P1G': 1,    // Number of 1P1G trials, formal=3
+        '1P2G': 2,    // Number of 1P2G trials, formal=12
+        '2P2G': 2,    // Number of 2P2G trials, formal=12
+        '2P3G': 2     // Number of 2P3G trials, formal=12
     },
 
     // =================================================================================================
@@ -52,9 +52,9 @@ const NODEGAME_CONFIG = {
     successThreshold: {
         enabled: true,                    // Enable success threshold for collaboration games
         consecutiveSuccessesRequired: 5,  // Number of consecutive successes required, formal=5
-        minTrialsBeforeCheck: 12,         // Minimum trials before checking for success threshold
+        minTrialsBeforeCheck: 2,         // Minimum trials before checking for success threshold
         maxTrials: 24,                    // Maximum trials regardless of success
-        randomSamplingAfterTrial: 12      // After this trial, use random sampling for maps and conditions
+        randomSamplingAfterTrial: 2      // After this trial, use random sampling for maps and conditions
     },
 
     // =================================================================================================
@@ -80,7 +80,8 @@ const NODEGAME_CONFIG = {
         preTrialDisplayDuration: 2000, // How long to show pre-trial map (ms)
         fixationDuration: 1000,         // Fixation cross duration (ms)
         newGoalMessageDuration: 0,    // New goal message and freeze duration (ms)
-        waitingForPartnerDuration: 1000 // How long to show "waiting for partner" simulation (ms)
+        waitingForPartnerDuration: 3000, // How long to show "waiting for partner" simulation (ms)
+        movementDelay: 100             // Delay to prevent rapid successive movements (ms)
     }
 };
 

@@ -29,8 +29,8 @@ const GAME_CONFIG = {
     maxGameLength: 50,
     syncInterval: 100,   // 100ms
     gridSize: 15,        // Updated to match map configurations
-    enableSinglePlayerTesting: true,  // Allow single player testing
-    debugMode: true      // Enable debug logging to troubleshoot new goal generation
+    enableSinglePlayerTesting: false, // Require two players for multiplayer games
+    debugMode: false     // Disable debug logging to reduce noise
 };
 
 // Load map data
@@ -90,8 +90,8 @@ class GameRoom {
         this.maxTrials = 12; // Default trial count
         this.newGoalPresented = false; // For 2P3G experiments
         this.goalGenerationInProgress = null;
-
-        console.log(`Created game room ${roomId} for ${gameType}`);
+        this.currentTrialDesign = null; // Store map design for current trial
+        this.mapInitialized = false; // Flag to prevent multiple map initializations
     }
 
     addPlayer(playerId, socket) {
@@ -141,12 +141,18 @@ class GameRoom {
     }
 
     setPlayerReady(playerId) {
+        console.log(`🎮 setPlayerReady called for player ${playerId} in room ${this.roomId}`);
+        console.log(`🎮 Current players:`, Array.from(this.players.keys()));
+        console.log(`🎮 Ready players:`, Array.from(this.readyPlayers));
+
         const player = this.players.get(playerId);
         if (player) {
             player.ready = true;
             this.readyPlayers.add(playerId);
 
-            console.log(`Player ${playerId} is ready in room ${this.roomId}`);
+            console.log(`✅ Player ${playerId} is ready in room ${this.roomId}`);
+            console.log(`🎮 Ready players now:`, Array.from(this.readyPlayers));
+            console.log(`🎮 Total players:`, this.players.size);
 
             // Check if all players are ready
             // Allow single player testing if enabled
@@ -154,9 +160,25 @@ class GameRoom {
                 (this.readyPlayers.size === this.players.size && this.players.size >= 1) :
                 (this.readyPlayers.size === this.players.size && this.players.size >= 2);
 
-            if (shouldStartGame) {
-                this.startGame();
+            console.log(`🎮 Should start game:`, shouldStartGame);
+            console.log(`🎮 GAME_CONFIG.enableSinglePlayerTesting:`, GAME_CONFIG.enableSinglePlayerTesting);
+            console.log(`🎮 Game already active:`, this.gameActive);
+            console.log(`🎮 Map initialized:`, this.mapInitialized);
+
+            // Only start game if not already active and map is ready
+            if (shouldStartGame && !this.gameActive) {
+                // Wait a bit for map design to be sent
+                setTimeout(() => {
+                    if (!this.gameActive) {
+                        console.log(`🎮 Starting game in room ${this.roomId}`);
+                        this.startGame();
+                    }
+                }, 500); // Small delay to allow map design to be sent
+            } else if (this.gameActive) {
+                console.log(`🎮 Game already active in room ${this.roomId}, ignoring start request`);
             }
+        } else {
+            console.error(`❌ Player ${playerId} not found in room ${this.roomId}`);
         }
     }
 
@@ -173,11 +195,29 @@ class GameRoom {
     startGame() {
         console.log(`Starting game in room ${this.roomId}`);
 
+        // Prevent starting if already active
+        if (this.gameActive) {
+            console.log(`🎮 Game already active in room ${this.roomId}, skipping start`);
+            return;
+        }
+
         this.gameActive = true;
         this.currentPlayer = Array.from(this.players.keys())[0]; // Start with first player
 
         // Initialize game state
         this.initializeGameState();
+
+        // Get player order (first player to join is red, second is orange)
+        const playerIds = Array.from(this.players.keys());
+        const playerOrder = {
+            firstPlayerId: playerIds[0],  // First player (red)
+            secondPlayerId: playerIds[1]  // Second player (orange)
+        };
+
+        console.log(`🎮 Server: Setting player order for room ${this.roomId}:`);
+        console.log(`  - First player (red): ${playerIds[0]}`);
+        console.log(`  - Second player (orange): ${playerIds[1]}`);
+        console.log(`  - All players in room: ${playerIds.join(', ')}`);
 
         // Notify all players that game is starting
         this.broadcastToRoom('game_started', {
@@ -185,7 +225,8 @@ class GameRoom {
             gameType: this.gameType,
             gameState: this.gameState,
             currentPlayer: this.currentPlayer,
-            movementMode: this.movementMode
+            movementMode: this.movementMode,
+            playerOrder: playerOrder
         });
 
         // Start state synchronization
@@ -195,12 +236,12 @@ class GameRoom {
     initializeGameState() {
         // Use stored map design if available, otherwise use random selection
         let selectedMap;
-        if (this.currentTrialDesign) {
+        if (this.currentTrialDesign && !this.mapInitialized) {
             console.log('=== USING CLIENT-PROVIDED MAP DESIGN ===');
             console.log('Client trial design:', this.currentTrialDesign);
             selectedMap = this.convertClientDesignToServerMap(this.currentTrialDesign);
             console.log('Converted to server map:', selectedMap);
-            this.currentTrialDesign = null; // Clear after use
+            this.mapInitialized = true; // Mark as initialized to prevent override
         } else {
             console.log('=== USING RANDOM MAP SELECTION ===');
             console.log('No client design available, falling back to random selection');
@@ -208,6 +249,7 @@ class GameRoom {
             console.log('Available map data:', mapData ? `${mapData.length} maps` : 'null');
             selectedMap = this.selectRandomMap(mapData);
             console.log('Selected random map:', selectedMap);
+            this.mapInitialized = true; // Mark as initialized
         }
 
         // Create grid matrix from map data
@@ -222,22 +264,26 @@ class GameRoom {
         this.gameState = {
             gridMatrix: gridMatrix,
             goals: selectedMap.goals,
-            playerStates: {},
+            players: {}, // Changed from playerStates to players to match client expectation
+            playerStates: {}, // Keep both for backward compatibility
             currentPlayer: this.currentPlayer,
             stepCount: 0,
             trialStartTime: Date.now(),
             newGoalPresented: false,
             newGoalPosition: null,
-            distanceCondition: distanceCondition // Add distance condition to game state
+            distanceCondition: distanceCondition, // Add distance condition to game state
+            trialIndex: this.currentTrial // Add trial index to game state
         };
 
         // Set initial player positions
         let playerIndex = 0;
         for (const [playerId, player] of this.players) {
-            this.gameState.playerStates[playerId] = {
+            const playerData = {
                 position: playerIndex === 0 ? selectedMap.player1Pos : selectedMap.player2Pos,
                 goalHistory: []
             };
+            this.gameState.players[playerId] = playerData; // Set in players
+            this.gameState.playerStates[playerId] = playerData; // Also set in playerStates for compatibility
             playerIndex++;
         }
 
@@ -434,6 +480,11 @@ class GameRoom {
             // Update player position
             const oldPosition = playerState.position;
             playerState.position = newPosition;
+
+            // Also update the players object to keep it in sync
+            if (this.gameState.players[playerId]) {
+                this.gameState.players[playerId].position = newPosition;
+            }
 
             // Record move
             this.recordMove(playerId, action, moveData.reactionTime);
@@ -803,6 +854,12 @@ class GameRoom {
             if (position[0] === goals[i][0] && position[1] === goals[i][1]) {
                 if (!playerState.goalHistory.includes(i)) {
                     playerState.goalHistory.push(i);
+
+                    // Also update the players object to keep it in sync
+                    if (this.gameState.players[playerId]) {
+                        this.gameState.players[playerId].goalHistory.push(i);
+                    }
+
                     return true;
                 }
             }
@@ -862,6 +919,13 @@ class GameRoom {
             maxTrials: this.maxTrials
         });
 
+        // Broadcast collaboration feedback
+        this.broadcastToRoom('collaboration_feedback', {
+            roomId: this.roomId,
+            collaborationSucceeded: success,
+            trialData: this.trialData
+        });
+
         // Increment trial counter
         this.currentTrial++;
 
@@ -884,6 +948,7 @@ class GameRoom {
         this.gameState = null;
         this.gameActive = false;
         this.newGoalPresented = false;
+        this.mapInitialized = false; // Reset map initialized flag
 
         // Initialize new game state
         this.initializeGameState();
@@ -897,7 +962,7 @@ class GameRoom {
             roomId: this.roomId,
             gameState: this.gameState,
             currentPlayer: this.currentPlayer,
-            currentTrial: this.currentTrial + 1,
+            trialIndex: this.currentTrial, // Changed from currentTrial to trialIndex to match client expectation
             maxTrials: this.maxTrials
         });
     }
@@ -1118,8 +1183,14 @@ io.on('connection', (socket) => {
 
     // Handle player ready
     socket.on('player_ready', (data) => {
+        console.log(`🎮 PLAYER_READY received from ${socket.id}`);
+        console.log(`🎮 Data:`, data);
+        console.log(`🎮 Current room:`, currentRoom ? currentRoom.roomId : 'null');
+
         if (currentRoom) {
             currentRoom.setPlayerReady(socket.id);
+        } else {
+            console.error(`❌ No current room for player ${socket.id}`);
         }
     });
 
@@ -1230,22 +1301,26 @@ io.on('connection', (socket) => {
     });
 
         // Handle start trial with map design
-    socket.on('start_trial', (data) => {
-        console.log(`=== SERVER RECEIVED START_TRIAL ===`);
-        console.log(`Player ${socket.id} starting trial with design:`, data);
-        console.log(`Trial index: ${data.trialIndex}`);
-        console.log(`Experiment type: ${data.experimentType}`);
-        console.log(`Map design:`, data.design);
+        socket.on('start_trial', (data) => {
+            console.log(`=== SERVER RECEIVED START_TRIAL ===`);
+            console.log(`Player ${socket.id} starting trial with design:`, data);
+            console.log(`Trial index: ${data.trialIndex}`);
+            console.log(`Experiment type: ${data.experimentType}`);
+            console.log(`Map design:`, data.design);
 
-        if (currentRoom) {
-            // Store the map design for this trial
-            currentRoom.currentTrialDesign = data.design;
-            console.log(`Stored map design for trial ${data.trialIndex} in room ${currentRoom.roomId}`);
-        } else {
-            console.log(`No current room found for player ${socket.id}`);
-        }
-        console.log(`=== END START_TRIAL HANDLER ===`);
-    });
+            if (currentRoom) {
+                // Only store the map design if it hasn't been initialized yet
+                if (!currentRoom.mapInitialized) {
+                    currentRoom.currentTrialDesign = data.design;
+                    console.log(`Stored map design for trial ${data.trialIndex} in room ${currentRoom.roomId}`);
+                } else {
+                    console.log(`Map already initialized for room ${currentRoom.roomId}, ignoring additional start_trial`);
+                }
+            } else {
+                console.log(`No current room found for player ${socket.id}`);
+            }
+            console.log(`=== END START_TRIAL HANDLER ===`);
+        });
 
     // Handle disconnection
     socket.on('disconnect', () => {

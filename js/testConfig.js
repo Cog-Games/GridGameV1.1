@@ -42,8 +42,8 @@ const NODEGAME_CONFIG = {
     numTrials: {
         '1P1G': 3,    // Number of 1P1G trials
         '1P2G': 12,    // Number of 1P2G trials, formal=12
-        '2P2G': 12,    // Number of 2P2G trials, formal=12
-        '2P3G': 12     // Number of 2P3G trials, formal=12
+        '2P2G': 6,    // Number of 2P2G trials, formal=12 (increased for testing)
+        '2P3G': 6     // Number of 2P3G trials, formal=12 (increased for testing)
     },
 
     // =================================================================================================
@@ -51,10 +51,10 @@ const NODEGAME_CONFIG = {
     // =================================================================================================
     successThreshold: {
         enabled: true,                    // Enable success threshold for collaboration games
-        consecutiveSuccessesRequired: 5,  // Number of consecutive successes required, formal=5
-        minTrialsBeforeCheck: 12,         // Minimum trials before checking for success threshold
-        maxTrials: 24,                    // Maximum trials regardless of success
-        randomSamplingAfterTrial: 12      // After this trial, use random sampling for maps and conditions
+        consecutiveSuccessesRequired: 3,  // Number of consecutive successes required, formal=5 (reduced for testing)
+        minTrialsBeforeCheck: 4,         // Minimum trials before checking for success threshold, formal=12 (reduced for testing)
+        maxTrials: 12,                    // Maximum trials regardless of success, formal=24 (reduced for testing)
+        randomSamplingAfterTrial: 4      // After this trial, use random sampling for maps and conditions, formal=12 (reduced for testing)
     },
 
     // =================================================================================================
@@ -199,6 +199,9 @@ function setRLAgentType(agentType) {
 function getRLAgentType() {
     return NODEGAME_CONFIG.rlAgent.type;
 }
+
+// Make NODEGAME_CONFIG globally accessible
+window.NODEGAME_CONFIG = NODEGAME_CONFIG;
 
 // Export configuration for module usage
 window.NodeGameConfig = {
