@@ -18,46 +18,6 @@
             margin: 0;
             padding: 0;
         }
-
-        .error-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            background: #f8f9fa;
-        }
-
-        .error-card {
-            max-width: 600px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            padding: 40px;
-            text-align: center;
-        }
-
-        .btn {
-            background: #007bff;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            margin: 5px;
-        }
-
-        .btn:hover {
-            background: #0056b3;
-        }
-
-        .btn.secondary {
-            background: #6c757d;
-        }
-
-        .btn.secondary:hover {
-            background: #545b62;
-        }
     </style>
 </head>
 <body>
@@ -118,141 +78,43 @@
     <script src="js/dataRecording.js"></script>
     <script src="js/expDesign.js"></script>
     <script src="js/expTimeline.js"></script>
+    <script src="js/expTrialHumanAI.js"></script>
+    <!-- <script src="js/human-human-versionOld.js"></script> -->
 
     <!-- Human-Human specific modules -->
     <script src="js/gameStateHumanHuman.js"></script>
     <script src="js/networkingHumanHuman.js"></script>
     <script src="js/expTrialHumanHuman.js"></script>
+    <script src="js/expTimelineHumanHuman.js"></script>
     <script src="js/human-human-version.js"></script>
 
     <script>
-        function showError(title, message, showTryAgain = true) {
-            document.getElementById('container').innerHTML = `
-                <div class="error-container">
-                    <div class="error-card">
-                        <h2 style="color: #dc3545; margin-bottom: 20px;">${title}</h2>
-                        <p style="color: #666; margin-bottom: 30px;">${message}</p>
-                        ${showTryAgain ? `
-                            <button class="btn" onclick="location.reload()">Try Again</button>
-                            <button class="btn secondary" onclick="window.location.href='index.html'">Back to Main</button>
-                        ` : `
-                            <button class="btn secondary" onclick="window.location.href='index.html'">Back to Main</button>
-                        `}
-                    </div>
-                </div>
-            `;
-        }
-
-        function checkDependencies() {
-            const missing = [];
-
-            if (typeof io === 'undefined') missing.push('Socket.io');
-            if (typeof MapsFor2P2G === 'undefined') missing.push('2P2G Maps');
-            if (typeof MapsFor2P3G === 'undefined') missing.push('2P3G Maps');
-            if (typeof window.NodeGameHumanHumanFull === 'undefined') missing.push('Human-Human Experiments');
-
-            // Additional checks for required modules
-            if (typeof window.GameStateHumanHuman === 'undefined') missing.push('GameStateHumanHuman');
-            if (typeof window.NetworkingHumanHuman === 'undefined') missing.push('NetworkingHumanHuman');
-            if (typeof window.TrialHandlersHumanHuman === 'undefined') missing.push('TrialHandlersHumanHuman');
-            if (typeof gameData === 'undefined') missing.push('gameData');
-            if (typeof NODEGAME_CONFIG === 'undefined') missing.push('NODEGAME_CONFIG');
-
-            return missing;
-        }
-
-        // Initialize and start the human-human experiment
+        // Initialize and start the experiment immediately on page load
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('Page loaded, checking dependencies...');
+            console.log('Initializing NodeGame Human-Human experiments...');
+            var initialized = window.NodeGameHumanHuman.initialize();
+            console.log('NodeGame Human-Human experiments initialized:', initialized);
 
-            // Add a longer delay to ensure all scripts are loaded
-            setTimeout(function() {
-                // Log all available objects for debugging
-                console.log('Debugging - Available objects:', {
-                    io: typeof io,
-                    MapsFor2P2G: typeof MapsFor2P2G,
-                    MapsFor2P3G: typeof MapsFor2P3G,
-                    NodeGameHumanHumanFull: typeof window.NodeGameHumanHumanFull,
-                    gameData: typeof gameData,
-                    initializeTrialData: typeof initializeTrialData,
-                    recordPlayerMove: typeof recordPlayerMove,
-                    finalizeTrial: typeof finalizeTrial,
-                    MultiplayerHumanHuman: typeof window.MultiplayerHumanHuman
-                });
-
-                // Check for missing dependencies with retry mechanism
-                let retryCount = 0;
-                const maxRetries = 5;
-
-                function checkAndInitialize() {
-                    const missingDeps = checkDependencies();
-                    if (missingDeps.length > 0) {
-                        console.error(`Missing dependencies (attempt ${retryCount + 1}/${maxRetries}):`, missingDeps);
-
-                        if (retryCount < maxRetries) {
-                            retryCount++;
-                            console.log(`Retrying in 500ms... (${retryCount}/${maxRetries})`);
-                            setTimeout(checkAndInitialize, 500);
-                            return;
-                        } else {
-                            showError(
-                                'Missing Dependencies',
-                                `The following required components could not be loaded after ${maxRetries} attempts: ${missingDeps.join(', ')}. Please ensure the server is running and all files are present.`
-                            );
-                            return;
-                        }
-                                        }
-
-                    console.log('All dependencies loaded successfully');
-                    console.log('Initializing NodeGame Human-Human experiments...');
-
-                    try {
-                        const initialized = window.NodeGameHumanHumanFull.initialize();
-                        console.log('NodeGame Human-Human experiments initialized:', initialized);
-
-                        if (initialized) {
-                            console.log('Starting human-human experiment flow...');
-                            // Add a small delay to ensure socket initialization completes
-                            setTimeout(() => {
-                                window.NodeGameHumanHumanFull.start('2P2G');
-                            }, 500);
-                        } else {
-                            showError(
-                                'Initialization Failed',
-                                'The experiment system could not be initialized. This may be because the server is not running or there is a configuration issue.'
-                            );
-                        }
-                    } catch (error) {
-                        console.error('Error during initialization:', error);
-                        showError(
-                            'Initialization Error',
-                            `An error occurred while starting the experiment: ${error.message}`
-                        );
-                    }
-                }
-
-                // Start the check and initialization process
-                checkAndInitialize();
-            }, 1000); // Increased delay to 1000ms to ensure all scripts are loaded
-        });
-
-        // Global error handling
-        window.addEventListener('error', function(event) {
-            console.error('Global error:', event.error);
-
-            // Only show error page if container is empty or has default content
-            const container = document.getElementById('container');
-            if (!container.innerHTML.trim() || container.innerHTML.includes('error-container')) {
-                showError(
-                    'JavaScript Error',
-                    `A JavaScript error occurred: ${event.error.message}. Please refresh the page to try again.`
-                );
+            if (initialized) {
+                // Start the experiment flow immediately (will begin with consent form)
+                console.log('Starting experiment flow...');
+                window.NodeGameHumanHuman.start('2P2G'); // Default experiment type, but will run all experiments in sequence
+            } else {
+                console.error('Failed to initialize experiments');
+                document.getElementById('container').innerHTML = `
+                    <div style="display: flex; align-items: center; justify-content: center; height: 100vh;">
+                        <div style="text-align: center; color: #666;">
+                            <h2>Error</h2>
+                            <p>Failed to initialize the experiment. Please refresh the page.</p>
+                        </div>
+                    </div>
+                `;
             }
         });
 
-        // Handle unhandled promise rejections
-        window.addEventListener('unhandledrejection', function(event) {
-            console.error('Unhandled promise rejection:', event.reason);
+        // Error handling
+        window.addEventListener('error', function(event) {
+            console.error('Error:', event.error);
         });
     </script>
 </body>

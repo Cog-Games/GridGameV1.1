@@ -1,30 +1,31 @@
 /**
- * Human-Human Version - Main Entry Point (Refactored)
+ * Human-Human Version - Main Entry Point (Refactored to match human-AI version)
  *
- * This file has been refactored to use modular components.
- * Game state, trial handlers, networking, and data recording have been moved to separate modules.
+ * This file has been refactored to match the human-AI version's structure and flow exactly,
+ * while implementing server-side features for multiplayer experiments.
+ *
+ * Key differences from human-AI version:
+ * 1. Server-side map generation: Instead of generating maps client-side, the server generates
+ *    and sends maps to both players to ensure synchronization
+ * 2. Server-side new goal generation for 2P3G: The logic for when and where new goals appear should
+ *    be handled server-side
+ * 3. Real-time communication: The trial handlers need to properly use socket.io for real-time player
+ *    coordination
  *
  * Dependencies:
- * - gameState.js - Base game state and data management
+ * - gameState.js - Base game state and data management (shared with human-AI)
  * - gameStateHumanHuman.js - Human-human specific game state extensions
  * - expTrialHumanHuman.js - Trial execution functions for human-human experiments
  * - networkingHumanHuman.js - Socket.io and multiplayer networking
- * - dataRecording.js - Data recording functions
- * - expDesign.js - Experimental design and success threshold logic
- * - gameHelpers.js - Game helper functions
- * - expTimeline.js - Timeline management functions
- * - viz.js - Visualization functions
+ * - dataRecording.js - Data recording functions (shared with human-AI)
+ * - expDesign.js - Experimental design and success threshold logic (shared with human-AI)
+ * - gameHelpers.js - Game helper functions (shared with human-AI)
+ * - expTimeline.js - Timeline management functions (shared with human-AI)
+ * - viz.js - Visualization functions (shared with human-AI)
  * - All other existing dependencies (setup, etc.)
  */
 
-// Import nodeGame if available
-if (typeof node !== 'undefined') {
-    var node = node;
-} else if (typeof require !== 'undefined') {
-    var node = require('nodegame-client');
-}
-
-// Make imported functions globally available for non-module scripts
+// Make imported functions globally available for non-module scripts (same as human-AI version)
 window.setupGridMatrixForTrial = setupGridMatrixForTrial;
 window.transition = transition;
 window.isValidPosition = isValidPosition;
@@ -37,26 +38,25 @@ window.generateRandomized1P2GDistanceSequence = generateRandomized1P2GDistanceSe
 window.selectRandomMaps = selectRandomMaps;
 window.getRandomMapForCollaborationGame = getRandomMapForCollaborationGame;
 
-// Make timeline-related functions globally available
+// Make timeline-related functions globally available (same as human-AI version)
 window.addCollaborationExperimentStages = addCollaborationExperimentStages;
-window.nextStage = nextStage;
-
-// Note: Human-human specific functions will be made available after the modules are loaded
-// These assignments will be done at the end of the file
+window.addTrialStages = addTrialStages;
+// Use the shared nextStage from expTimeline.js instead of local one
+window.nextStage = window.nextStage || nextStage;
 
 /**
- * Initialize human-human experiments
+ * Initialize experiments (following human-AI pattern)
  */
-function initializeNodeGameHumanHumanFullExperiments() {
+function initializeNodeGameHumanHumanExperiments() {
     console.log('Initializing human-human experiments...');
 
-    // Ensure required dependencies are available
+    // Ensure required dependencies are available (same as human-AI)
     if (typeof DIRECTIONS === 'undefined' || typeof OBJECT === 'undefined') {
         console.error('Required game dependencies not loaded');
         return false;
     }
 
-    // Check if map data is available
+    // Check if map data is available (same as human-AI)
     console.log('Checking map data availability...');
     var mapDataAvailable = true;
     var requiredMaps = ['MapsFor1P1G', 'MapsFor1P2G', 'MapsFor2P2G', 'MapsFor2P3G'];
@@ -75,10 +75,14 @@ function initializeNodeGameHumanHumanFullExperiments() {
         return false;
     }
 
-    // Initialize socket for multiplayer experiments
+    // Initialize socket for multiplayer experiments (human-human specific)
     try {
-        window.NetworkingHumanHuman.initializeSocket();
-        console.log('Socket.io initialized for multiplayer experiments');
+        if (window.NetworkingHumanHuman && window.NetworkingHumanHuman.initializeSocket) {
+            window.NetworkingHumanHuman.initializeSocket();
+            console.log('Socket.io initialized for multiplayer experiments');
+        } else {
+            console.warn('NetworkingHumanHuman not available - single-player experiments will still work');
+        }
     } catch (error) {
         console.warn('Could not initialize socket.io (single-player experiments will still work):', error);
     }
@@ -88,190 +92,87 @@ function initializeNodeGameHumanHumanFullExperiments() {
 }
 
 /**
- * Start a specific human-human experiment
+ * Start a specific experiment (following human-AI pattern)
  */
 function startNodeGameHumanHumanExperiment(experimentType) {
-    console.log('Starting human-human experiment:', experimentType);
-
-    // Check if this is a multiplayer experiment
-    if (experimentType.includes('2P')) {
-        console.log('Starting multiplayer experiment:', experimentType);
-
-        // For multiplayer experiments, ensure socket is initialized and attempt connection
-        if (!window.NetworkingHumanHuman.getSocket()) {
-            console.log('Socket not initialized, initializing now...');
-            window.NetworkingHumanHuman.initializeSocket();
-        }
-
-        // Start multiplayer experiment (it will handle connection waiting)
-        startMultiplayerExperiment(experimentType);
-    } else {
-        // For single-player experiments, use standalone mode
-        console.log('Starting single-player experiment:', experimentType);
-        startStandaloneExperiment(experimentType);
-    }
+    console.log('Starting experiment in human-human mode:', experimentType);
+    startStandaloneExperiment();
 }
 
 /**
- * Start experiment in standalone mode (single-player)
+ * Start experiment in standalone mode (following human-AI pattern)
  */
-function startStandaloneExperiment(experimentType) {
+function startStandaloneExperiment() {
     try {
         // Clear any existing content
         document.getElementById('container').innerHTML = '';
 
-        // Reset experiment state
+        // Reset experiment state for continuous experiments (same as human-AI)
         gameData.currentTrial = 0;
         gameData.allTrialsData = [];
 
-        // Initialize success threshold tracking
+        // Initialize success threshold tracking (same as human-AI)
         window.ExpDesign.initializeSuccessThresholdTracking();
 
-        // Initialize timeline
+        // Initialize timeline (same as human-AI)
         timeline.currentStage = 0;
 
-        // Create timeline stages for the experiment
-        createTimelineStagesHumanHuman(experimentType);
+        // Ensure trial handler is set up before creating timeline
+        setupTrialHandlerIntegration();
 
-        // Start timeline
+        // Create timeline stages for human-human experiments (use dedicated function)
+        createTimelineStagesHumanHuman();
+
+        // Start timeline (same as human-AI)
         runNextStage();
 
     } catch (error) {
-        console.error('Error starting standalone experiment:', error);
+        console.error('Error starting experiment:', error);
     }
 }
 
 /**
- * Start experiment in multiplayer mode
+ * Setup trial handler integration (called immediately, not in timeout)
  */
-function startMultiplayerExperiment(experimentType) {
-    try {
-        // Clear any existing content
-        document.getElementById('container').innerHTML = '';
+function setupTrialHandlerIntegration() {
+    console.log('Setting up trial handler integration...');
 
-        // Show connecting message
-        document.getElementById('container').innerHTML = `
-            <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
-                <div style="text-align: center; max-width: 600px; padding: 20px;">
-                    <h2 style="color: #007bff; margin-bottom: 20px;">Connecting to Server</h2>
-                    <p style="font-size: 18px; margin-bottom: 15px;">
-                        Establishing connection for multiplayer experiment...
-                    </p>
-                    <div style="margin: 20px 0;">
-                        <div style="border: 3px solid #f3f3f3; border-top: 3px solid #007bff; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto;"></div>
-                    </div>
-                </div>
-            </div>
-            <style>
-            @keyframes spin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
-            }
-            </style>
-        `;
+    // Set the human-human trial handler for multiplayer detection
+    window.runTrialStage = function(stage) {
+        console.log('runTrialStage called with stage:', stage);
 
-        // Reset experiment state
-        window.GameStateHumanHuman.resetExperimentData();
-
-        // Set current experiment
-        gameData.currentExperiment = experimentType;
-
-        // Initialize success threshold tracking
-        window.ExpDesign.initializeSuccessThresholdTracking();
-
-        // Initialize timeline
-        timeline.currentStage = 0;
-
-        // Create timeline stages for multiplayer experiment
-        createTimelineStagesHumanHuman(experimentType);
-
-        // Start timeline immediately - the waiting stage will handle connection
-        runNextStage();
-
-    } catch (error) {
-        console.error('Error starting multiplayer experiment:', error);
-        window.NetworkingHumanHuman.showErrorMessage('Failed to start experiment: ' + error.message);
-    }
-}
-
-
-
-/**
- * Create timeline stages for the experiment
- */
-function createTimelineStagesHumanHuman(experimentType) {
-    // Create proper timeline matching human-AI version structure
-    timeline.stages = [];
-    timeline.mapData = {};
-
-    console.log('Creating timeline stages for human-human experiment:', experimentType);
-
-    // Set up map data for the experiment (select random maps like human-AI version)
-    var numTrials = NODEGAME_CONFIG.numTrials[experimentType];
-    if (experimentType === '2P2G' && typeof MapsFor2P2G !== 'undefined') {
-        var maps = Object.values(MapsFor2P2G);
-        timeline.mapData['2P2G'] = window.selectRandomMaps ? window.selectRandomMaps(maps, numTrials) : maps.slice(0, numTrials);
-    } else if (experimentType === '2P3G' && typeof MapsFor2P3G !== 'undefined') {
-        var maps = Object.values(MapsFor2P3G);
-        timeline.mapData['2P3G'] = window.selectRandomMaps ? window.selectRandomMaps(maps, numTrials) : maps.slice(0, numTrials);
-    } else if (experimentType === '1P1G' && typeof MapsFor1P1G !== 'undefined') {
-        var maps = Object.values(MapsFor1P1G);
-        timeline.mapData['1P1G'] = window.selectRandomMaps ? window.selectRandomMaps(maps, numTrials) : maps.slice(0, numTrials);
-    } else if (experimentType === '1P2G' && typeof MapsFor1P2G !== 'undefined') {
-        var maps = Object.values(MapsFor1P2G);
-        timeline.mapData['1P2G'] = window.selectRandomMaps ? window.selectRandomMaps(maps, numTrials) : maps.slice(0, numTrials);
-    }
-
-    // Add instructions stage (like human-AI version)
-    timeline.stages.push({
-        type: 'instructions',
-        experimentType: experimentType,
-        experimentIndex: 0,
-        handler: showInstructionsStage
-    });
-
-    // Add waiting for partner stage for multiplayer experiments
-    if (experimentType.includes('2P')) {
-        timeline.stages.push({
-            type: 'waiting_for_partner',
-            experimentType: experimentType,
-            experimentIndex: 0,
-            handler: showWaitingForPartnerStage
-        });
-
-        // Add game ready stage (transition from waiting to game)
-        timeline.stages.push({
-            type: 'game_ready',
-            experimentType: experimentType,
-            experimentIndex: 0,
-            handler: showGameReadyStage
-        });
-    }
-
-    // For collaboration games, create stages dynamically based on success threshold
-    if (experimentType.includes('2P') && NODEGAME_CONFIG.successThreshold.enabled) {
-        // Add a single trial stage that will be repeated dynamically
-        addCollaborationExperimentStages(experimentType, 0, 0);
-    } else {
-        // Add trial stages for this experiment (fixed number)
-        for (var i = 0; i < numTrials; i++) {
-            addTrialStages(experimentType, 0, i);
+        // Ensure currentTrialData is initialized
+        if (!gameData.currentTrialData) {
+            console.warn('currentTrialData not initialized, creating empty object');
+            gameData.currentTrialData = {};
         }
-    }
 
-    // Add completion stage
-    timeline.stages.push({
-        type: 'completion',
-        handler: showCompletionStage
-    });
+        // For multiplayer experiments (2P2G, 2P3G), use human-human handler
+        if (stage.experimentType && stage.experimentType.includes('2P')) {
+            // Check if human-human trial handler is available
+            if (typeof window.TrialHandlersHumanHuman !== 'undefined' && window.TrialHandlersHumanHuman.runTrialStageHumanHuman) {
+                return window.TrialHandlersHumanHuman.runTrialStageHumanHuman(stage);
+            } else {
+                console.warn('TrialHandlersHumanHuman not available, falling back to human-AI handler');
+                if (window.TrialHandlers && window.TrialHandlers.runTrialStage) {
+                    return window.TrialHandlers.runTrialStage(stage);
+                }
+            }
+        } else {
+            // For single-player experiments, use shared handler from expTrialHumanAI.js
+            if (window.TrialHandlers && window.TrialHandlers.runTrialStage) {
+                return window.TrialHandlers.runTrialStage(stage);
+            }
+        }
 
-    console.log('Timeline created with', timeline.stages.length, 'stages');
-    console.log('Map data loaded:', Object.keys(timeline.mapData));
-    console.log('Number of trials configured:', numTrials);
+        console.error('No trial handler available for stage:', stage);
+    };
+
+    console.log('✅ Human-human trial handler integrated with shared timeline');
 }
 
 /**
- * Run the next stage in the timeline
+ * Run the next stage in the timeline (same as human-AI)
  */
 function runNextStage() {
     if (timeline.currentStage >= timeline.stages.length) {
@@ -282,21 +183,22 @@ function runNextStage() {
     var stage = timeline.stages[timeline.currentStage];
     console.log('Running stage:', stage.type, 'Index:', timeline.currentStage);
 
-    // Use the appropriate stage handler
-    if (stage.handler) {
-        stage.handler(stage);
-    } else {
-        console.error('No handler found for stage:', stage.type);
-        nextStage(); // Skip to next stage
-    }
+    stage.handler(stage);
 }
 
 /**
- * Advance to the next stage
+ * Advance to the next stage (same as human-AI)
  */
 function nextStage() {
     timeline.currentStage++;
     runNextStage();
+}
+
+/**
+ * Check if should continue to next trial (wrapper function for compatibility)
+ */
+function shouldContinueToNextTrial(experimentType, trialIndex) {
+    return window.ExpDesign.shouldContinueToNextTrial(experimentType, trialIndex);
 }
 
 /**
@@ -380,7 +282,7 @@ function handleSinglePlayerKeyPress(event) {
 
         cleanupKeyboardControls();
         window.GameStateHumanHuman.finalizeTrial(true);
-        setTimeout(() => nextStage(), NODEGAME_CONFIG.timing.trialToFeedbackDelay);
+        setTimeout(() => window.nextStage(), NODEGAME_CONFIG.timing.trialToFeedbackDelay);
     }
 
     // Reset movement flag
@@ -394,20 +296,30 @@ function handleSinglePlayerKeyPress(event) {
  */
 function handleMultiplayerKeyPress(event) {
     // Check if game is active
-    if (!window.NetworkingHumanHuman.isGameActive()) {
+    if (!window.NetworkingHumanHuman || !window.NetworkingHumanHuman.isGameActive()) {
         event.preventDefault();
         return;
     }
 
     // Check if my player has already reached a goal
-    // In multiplayer, my player is always gameData.player1
-    if (isGoalReached(gameData.player1, gameData.currentGoals)) {
-        console.log('🎮 My player (RED) has reached goal, ignoring move');
+    // My player position depends on whether I'm first or second player
+    var myPlayerPosition;
+    var myPlayerColor;
+    if (window.playerOrder && window.playerOrder.isFirstPlayer) {
+        myPlayerPosition = gameData.player1;
+        myPlayerColor = 'RED';
+    } else {
+        myPlayerPosition = gameData.player2;
+        myPlayerColor = 'ORANGE';
+    }
+
+    if (isGoalReached(myPlayerPosition, gameData.currentGoals)) {
+        console.log(`🎮 My player (${myPlayerColor}) has reached goal, ignoring move`);
         event.preventDefault();
         return;
     }
 
-    console.log('🎮 Processing move for my player (RED) at position:', gameData.player1);
+    console.log(`🎮 Processing move for my player (${myPlayerColor}) at position:`, myPlayerPosition);
 
     timeline.isMoving = true;
     event.preventDefault();
@@ -434,8 +346,11 @@ function handleMultiplayerKeyPress(event) {
 function updateGameVisualization() {
     console.log('🎨 updateGameVisualization called');
     console.log('🎨 gameData available:', typeof gameData !== 'undefined');
-    console.log('🎨 gameData.gridMatrix:', gameData ? gameData.gridMatrix : 'undefined');
+    console.log('🎨 gameData.gridMatrix:', gameData ? (gameData.gridMatrix ? `${gameData.gridMatrix.length}x${gameData.gridMatrix[0]?.length}` : 'null') : 'undefined');
     console.log('🎨 gameData.currentGoals:', gameData ? gameData.currentGoals : 'undefined');
+    console.log('🎨 gameData.player1 position (should be red in viz):', gameData ? gameData.player1 : 'undefined');
+    console.log('🎨 gameData.player2 position (should be orange in viz):', gameData ? gameData.player2 : 'undefined');
+    console.log('🎨 playerOrder.isFirstPlayer:', window.playerOrder ? window.playerOrder.isFirstPlayer : 'undefined');
 
     // Use existing visualization functions
     if (typeof updateGameDisplay === 'function') {
@@ -472,45 +387,47 @@ function updateGameVisualization() {
 function setupTrialVisualization(experimentType) {
     console.log('🎨 setupTrialVisualization called for:', experimentType);
 
-    // Create game canvas if it doesn't exist
-    var gameCanvas = document.getElementById('gameCanvas');
-    console.log('🎨 gameCanvas element found:', gameCanvas);
+    // Look for the gameCanvas div element (created by runTrialStageMultiplayer)
+    var gameCanvasDiv = document.getElementById('gameCanvas');
+    console.log('🎨 gameCanvas div element found:', gameCanvasDiv);
 
-    if (!gameCanvas) {
-        console.log('🎨 Creating new canvas...');
-        console.log('🎨 createGameCanvas function available:', typeof createGameCanvas);
-        var canvas = createGameCanvas();
-        console.log('🎨 Canvas created:', canvas);
-        console.log('🎨 Canvas ID:', canvas ? canvas.id : 'null');
-        console.log('🎨 Canvas dimensions:', canvas ? canvas.width + 'x' + canvas.height : 'null');
+    if (gameCanvasDiv) {
+        // Check if there's already a canvas inside the div
+        var existingCanvas = gameCanvasDiv.querySelector('canvas');
+        console.log('🎨 Existing canvas found:', existingCanvas);
 
-        var container = document.getElementById('container');
-        console.log('🎨 Container found:', container);
-        if (container) {
-            container.appendChild(canvas);
-            console.log('🎨 Canvas appended to container');
+        if (!existingCanvas) {
+            console.log('🎨 Creating new canvas...');
+            console.log('🎨 createGameCanvas function available:', typeof createGameCanvas);
+            var canvas = createGameCanvas();
+            console.log('🎨 Canvas created:', canvas);
+            console.log('🎨 Canvas ID:', canvas ? canvas.id : 'null');
+            console.log('🎨 Canvas dimensions:', canvas ? canvas.width + 'x' + canvas.height : 'null');
 
-            // Verify canvas is now in the DOM
-            var verifyCanvas = document.getElementById('gameCanvas');
-            console.log('🎨 Canvas verification after append:', verifyCanvas);
+            if (canvas) {
+                // Clear the gameCanvas div and append the new canvas
+                gameCanvasDiv.innerHTML = '';
+                gameCanvasDiv.appendChild(canvas);
+                console.log('🎨 Canvas appended to gameCanvas div');
+
+                // Verify canvas is now in the DOM
+                var verifyCanvas = gameCanvasDiv.querySelector('canvas');
+                console.log('🎨 Canvas verification after append:', verifyCanvas);
+            } else {
+                console.error('🎨 Failed to create canvas!');
+            }
         } else {
-            console.error('🎨 Container not found!');
+            console.log('🎨 Canvas already exists in gameCanvas div');
         }
     } else {
-        console.log('🎨 gameCanvas already exists');
+        console.error('🎨 gameCanvas div not found! Cannot setup visualization.');
+        return;
     }
 
     // Update visualization
     console.log('🎨 Calling updateGameVisualization...');
     updateGameVisualization();
     console.log('🎨 updateGameVisualization completed');
-}
-
-/**
- * Check if should continue to next trial (wrapper function for compatibility)
- */
-function shouldContinueToNextTrial(experimentType, trialIndex) {
-    return window.ExpDesign.shouldContinueToNextTrial(experimentType, trialIndex);
 }
 
 /**
@@ -539,7 +456,12 @@ function downloadExperimentData() {
 }
 
 /**
- * Show game ready stage (transition from waiting to game)
+ * Human-human specific stage functions
+ * (most stages are handled by expTimeline.js)
+ */
+
+/**
+ * Show game ready stage (transition from waiting to game) - human-human specific
  */
 function showGameReadyStage(stage) {
     console.log('Showing game ready stage');
@@ -574,67 +496,28 @@ function showGameReadyStage(stage) {
 
     // Auto-advance to trial stage after showing game ready
     setTimeout(() => {
-        if (typeof nextStage === 'function') {
+        if (typeof window.nextStage === 'function') {
             console.log('Game ready stage complete, advancing to trial');
-            nextStage();
+            window.nextStage();
         }
     }, 3000); // Show game ready for 3 seconds
 }
 
-// Global functions for easy access
-window.NodeGameHumanHumanFull = {
-    initialize: initializeNodeGameHumanHumanFullExperiments,
+// Global functions for easy access (following human-AI pattern)
+window.NodeGameHumanHuman = {
+    initialize: initializeNodeGameHumanHumanExperiments,
     start: startNodeGameHumanHumanExperiment,
-    downloadExperimentData: downloadExperimentData,
-
-    // Utility functions
-    setupKeyboardControls: setupKeyboardControls,
-    cleanupKeyboardControls: cleanupKeyboardControls,
-    updateGameVisualization: updateGameVisualization,
-    setupTrialVisualization: setupTrialVisualization
+    nextStage: nextStage,
 };
 
-// Make human-human specific functions available after modules are loaded
-// Use a timeout to ensure all scripts are loaded
-setTimeout(() => {
-    if (typeof window.GameStateHumanHuman !== 'undefined') {
-        window.initializeTrialData = window.GameStateHumanHuman.initializeTrialData;
-        window.recordPlayerMove = window.GameStateHumanHuman.recordPlayerMove;
-        window.recordPartnerMove = window.GameStateHumanHuman.recordPartnerMove;
-        window.finalizeTrial = window.GameStateHumanHuman.finalizeTrial;
-        window.resetExperimentData = window.GameStateHumanHuman.resetExperimentData;
-        window.saveExperimentData = window.GameStateHumanHuman.saveExperimentData;
-        console.log('✅ GameStateHumanHuman functions assigned');
-    } else {
-        console.log('❌ GameStateHumanHuman not available');
-    }
+// Use the shared showPostTrialStage from expTimeline.js instead of overriding it
+// The shared implementation includes proper feedback overlays and timeline management
+console.log('Using shared showPostTrialStage from expTimeline.js for consistent feedback');
 
-    if (typeof window.NetworkingHumanHuman !== 'undefined') {
-        window.initializeSocket = window.NetworkingHumanHuman.initializeSocket;
-        window.joinMultiplayerRoom = window.NetworkingHumanHuman.joinMultiplayerRoom;
-        window.startMultiplayerTrial = window.NetworkingHumanHuman.startMultiplayerTrial;
-        window.makeMultiplayerMove = window.NetworkingHumanHuman.makeMultiplayerMove;
-        console.log('✅ NetworkingHumanHuman functions assigned');
-    } else {
-        console.log('❌ NetworkingHumanHuman not available');
-    }
+// Make human-human specific stage functions available globally (no timeout needed for this)
+window.showGameReadyStage = showGameReadyStage;  // This is unique to human-human
 
-    if (typeof window.TrialHandlersHumanHuman !== 'undefined') {
-        window.runTrialStage = window.TrialHandlersHumanHuman.runTrialStageMultiplayer;
-        window.runSinglePlayerTrial = window.TrialHandlersHumanHuman.runSinglePlayerTrial;
-        window.runMultiplayerTrial = window.TrialHandlersHumanHuman.runMultiplayerTrial;
-        console.log('✅ TrialHandlersHumanHuman functions assigned');
-    } else {
-        console.log('❌ TrialHandlersHumanHuman not available');
-    }
-
-    // Debug: Check what's available
-    console.log('🔍 Debug - Available objects after timeout:');
-    console.log('  - GameStateHumanHuman:', typeof window.GameStateHumanHuman);
-    console.log('  - NetworkingHumanHuman:', typeof window.NetworkingHumanHuman);
-    console.log('  - TrialHandlersHumanHuman:', typeof window.TrialHandlersHumanHuman);
-    console.log('  - NodeGameHumanHumanFull:', typeof window.NodeGameHumanHumanFull);
-}, 100); // 100ms delay to ensure all scripts are loaded
+console.log('NodeGame Human-Human experiments integration complete');
 
 // Don't auto-initialize - let the HTML file handle initialization
 console.log('NodeGame Human-Human Full experiments module loaded (refactored)');

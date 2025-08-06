@@ -47,6 +47,19 @@ function initializeTrialDataHumanHuman(trialIndex, experimentType, design) {
     // Use base initialization first
     window.GameState.initializeTrialData(trialIndex, experimentType, design);
 
+    // Ensure we have a proper trial data structure
+    if (!gameData.currentTrialData) {
+        gameData.currentTrialData = {
+            trialStartTime: Date.now(),
+            player1Actions: [],
+            player1RT: [],
+            player1Trajectory: [],
+            player1FinalReachedGoal: null,
+            stepCount: 0,
+            completed: false
+        };
+    }
+
     // Add human-human specific fields
     gameData.currentTrialData = {
         ...gameData.currentTrialData,
@@ -115,6 +128,21 @@ function recordPartnerMove(action, reactionTime) {
  * Finalize trial for human-human experiments
  */
 function finalizeTrial(completed) {
+    // Ensure trial data exists
+    if (!gameData.currentTrialData) {
+        console.warn('No trial data available for finalization, creating minimal structure');
+        gameData.currentTrialData = {
+            trialStartTime: gameData.gameStartTime || Date.now(),
+            trialEndTime: Date.now(),
+            player1Actions: [],
+            player1RT: [],
+            player1Trajectory: [],
+            player1FinalReachedGoal: null,
+            stepCount: gameData.stepCount || 0,
+            completed: completed
+        };
+    }
+
     // Use base finalization
     window.DataRecording.finalizeTrial(completed);
 
@@ -122,6 +150,7 @@ function finalizeTrial(completed) {
     gameData.currentTrialData.trialEndTime = Date.now();
     gameData.currentTrialData.trialDuration =
         gameData.currentTrialData.trialEndTime - gameData.currentTrialData.trialStartTime;
+    gameData.currentTrialData.completed = completed;
 
     // Calculate collaboration metrics
     if (gameData.currentExperiment && gameData.currentExperiment.includes('2P')) {

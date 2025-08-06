@@ -25,7 +25,7 @@ const NODEGAME_CONFIG = {
     // =================================================================================================
 
     // Current test configuration (2P3G only)
-    // experimentOrder: ['2P3G'],
+    experimentOrder: ['2P3G'],
 
     // Alternative configurations (uncomment to use):
     // experimentOrder: ['1P1G'],           // Test 1P1G only
@@ -33,7 +33,7 @@ const NODEGAME_CONFIG = {
     // experimentOrder: ['2P2G'],           // Test 2P2G only
     // experimentOrder: ['1P1G', '1P2G'],   // Test 1P1G and 1P2G
     // experimentOrder: ['2P2G', '2P3G'],   // Test 2P2G and 2P3G
-    experimentOrder: ['1P1G', '1P2G', '2P2G', '2P3G'], // Test all experiments
+    // experimentOrder: ['1P1G', '1P2G', '2P2G', '2P3G'], // Test all experiments
     // experimentOrder: ['1P2G', '2P3G'],
 
     // =================================================================================================
@@ -64,6 +64,17 @@ const NODEGAME_CONFIG = {
         type: 'joint', // Default agent type: 'individual' or 'joint'
         agentDelay: 500,
         independentAgentDelay: 400, // Slower delay for independent AI movement after human reaches goal
+
+        // AI Movement Mode Configuration
+        movementMode: {
+            enabled: true, // Enable independent AI movement mode
+            decisionTimeRange: {
+                min: 100, // Minimum decision time in milliseconds
+                max: 500  // Maximum decision time in milliseconds
+            },
+            // When enabled, AI moves independently with random intervals
+            // When disabled, AI moves only when human makes a move
+        }
     },
 
     // =================================================================================================
@@ -201,6 +212,44 @@ function getRLAgentType() {
     return NODEGAME_CONFIG.rlAgent.type;
 }
 
+/**
+ * Enable independent AI movement mode
+ * @param {boolean} enabled - Whether to enable independent AI movement
+ * @param {object} decisionTimeRange - Optional decision time range {min, max} in milliseconds
+ */
+function setAIMovementMode(enabled, decisionTimeRange = null) {
+    NODEGAME_CONFIG.rlAgent.movementMode.enabled = enabled;
+
+    if (decisionTimeRange) {
+        NODEGAME_CONFIG.rlAgent.movementMode.decisionTimeRange.min = decisionTimeRange.min;
+        NODEGAME_CONFIG.rlAgent.movementMode.decisionTimeRange.max = decisionTimeRange.max;
+    }
+
+    console.log(`AI Movement Mode: ${enabled ? 'ENABLED' : 'DISABLED'}`);
+    if (enabled) {
+        console.log(`Decision time range: ${NODEGAME_CONFIG.rlAgent.movementMode.decisionTimeRange.min}-${NODEGAME_CONFIG.rlAgent.movementMode.decisionTimeRange.max}ms`);
+    }
+}
+
+/**
+ * Get current AI movement mode configuration
+ * @returns {object} Current AI movement mode configuration
+ */
+function getAIMovementMode() {
+    return {
+        enabled: NODEGAME_CONFIG.rlAgent.movementMode.enabled,
+        decisionTimeRange: { ...NODEGAME_CONFIG.rlAgent.movementMode.decisionTimeRange }
+    };
+}
+
+/**
+ * Check if independent AI movement is enabled
+ * @returns {boolean} True if independent AI movement is enabled
+ */
+function isAIMovementModeEnabled() {
+    return NODEGAME_CONFIG.rlAgent.movementMode.enabled;
+}
+
 // Export configuration for module usage
 window.NodeGameConfig = {
     NODEGAME_CONFIG: NODEGAME_CONFIG,
@@ -209,6 +258,9 @@ window.NodeGameConfig = {
     TWOP3G_CONFIG: TWOP3G_CONFIG,
     setPlayer2Type: setPlayer2Type,
     setRLAgentType: setRLAgentType,
-    getRLAgentType: getRLAgentType
+    getRLAgentType: getRLAgentType,
+    setAIMovementMode: setAIMovementMode,
+    getAIMovementMode: getAIMovementMode,
+    isAIMovementModeEnabled: isAIMovementModeEnabled
 };
 

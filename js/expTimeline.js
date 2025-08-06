@@ -6,10 +6,10 @@ function createTimelineStages() {
     timeline.mapData = {};
 
     // Add consent stage (only once at the beginning)
-    timeline.stages.push({
-        type: 'consent',
-        handler: showConsentStage
-    });
+    // timeline.stages.push({
+    //     type: 'consent',
+    //     handler: showConsentStage
+    // });
 
     timeline.stages.push({
         type: 'welcome_info',
@@ -490,11 +490,29 @@ function showPostTrialStage(stage) {
     var trialIndex = stage.trialIndex;
     var experimentType = stage.experimentType;
     var experimentIndex = stage.experimentIndex;
-    var lastTrialData = gameData.allTrialsData[gameData.allTrialsData.length - 1];
 
-    var success = lastTrialData.completed;
-    var message = success ? 'Goal reached!' : 'Time up!';
-    var color = success ? 'blue' : 'orange';
+    // Safely get the last trial data with fallback
+    var lastTrialData = null;
+    if (gameData && gameData.allTrialsData && gameData.allTrialsData.length > 0) {
+        lastTrialData = gameData.allTrialsData[gameData.allTrialsData.length - 1];
+    }
+
+    // Set default values if lastTrialData is not available
+    var success = false;
+    var message = 'Trial completed';
+    var color = 'blue';
+
+    if (lastTrialData) {
+        // For 2P experiments, check collaboration success
+        if (experimentType.includes('2P') && lastTrialData.collaborationSucceeded !== undefined) {
+            success = lastTrialData.collaborationSucceeded;
+            message = success ? 'Collaboration succeeded!' : 'Collaboration failed!';
+        } else if (lastTrialData.completed !== undefined) {
+            // For 1P experiments, check individual completion
+            success = lastTrialData.completed;
+            message = success ? 'Goal reached!' : 'Time up!';
+        }
+    }
 
     // For collaboration games, show dynamic trial count
     var trialCountDisplay = '';
@@ -542,7 +560,7 @@ function showPostTrialStage(stage) {
     }
 
     // Add visual feedback overlay on top of the canvas
-    if (experimentType.includes('2P') && lastTrialData.collaborationSucceeded !== undefined) {
+    if (experimentType.includes('2P') && lastTrialData && lastTrialData.collaborationSucceeded !== undefined) {
         // For 2P experiments, use collaboration feedback overlay
         createTrialFeedbackOverlay(canvasContainer, lastTrialData.collaborationSucceeded, 'collaboration');
     } else if (experimentType.includes('1P')) {
@@ -1573,19 +1591,18 @@ function showWaitingForPartnerStage(stage) {
                 }
             }
 
+            // Initialize socket if not already done
+            if (typeof window.NetworkingHumanHuman !== 'undefined' && window.NetworkingHumanHuman.initializeSocket) {
+                window.NetworkingHumanHuman.initializeSocket();
+            }
+
             // Access the global joinMultiplayerRoom function if available
-            if (typeof window.joinMultiplayerRoom === 'function') {
-                if (window.joinMultiplayerRoom()) {
-                    updateWaitingStatus('Looking for another participant...');
-                } else {
-                    updateWaitingStatus('Connection failed. Please refresh the page.');
-                }
+            if (typeof window.NetworkingHumanHuman !== 'undefined' && window.NetworkingHumanHuman.joinMultiplayerRoom) {
+                updateWaitingStatus('Looking for another player...');
+                window.NetworkingHumanHuman.joinMultiplayerRoom();
             } else if (typeof joinMultiplayerRoom === 'function') {
-                if (joinMultiplayerRoom()) {
-                    updateWaitingStatus('Looking for another participant...');
-                } else {
-                    updateWaitingStatus('Connection failed. Please refresh the page.');
-                }
+                updateWaitingStatus('Looking for another player...');
+                joinMultiplayerRoom();
             } else {
                 console.warn('joinMultiplayerRoom function not available');
                 updateWaitingStatus('Connection failed. Please refresh the page.');
@@ -1751,7 +1768,7 @@ function showGameReadyMessage() {
                 socket.emit('player_ready', {});
             }
 
-            proceedToNextStage();
+            nextStage();
         }
     }
 
