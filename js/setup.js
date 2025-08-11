@@ -14,23 +14,6 @@ const DIRECTIONS = {
   arrowdown: {
     code: 40,
     movement: [1,0],
-  },
-  // WASD controls
-  keya: {
-    code: 65,
-    movement: [0,-1],
-  },
-  keyw: {
-    code: 87,
-    movement: [-1,0],
-  },
-  keyd: {
-    code: 68,
-    movement: [0,1],
-  },
-  keys: {
-    code: 83,
-    movement: [1,0],
   }
 };
 
@@ -41,7 +24,7 @@ const NOISEACTIONSPACE = [[0,1],[0,-1],[1,0],[-1,0]];
 
 const EXPSETTINGS = {
   padding: 2,
-  cellSize: 40,
+  cellSize: 38,
   matrixsize: 15
   };
 

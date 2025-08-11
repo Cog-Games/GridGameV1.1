@@ -42,7 +42,7 @@ const NODEGAME_CONFIG = {
     numTrials: {
         '1P1G': 3,    // Number of 1P1G trials, formal=3
         '1P2G': 12,    // Number of 1P2G trials, formal=12
-        '2P2G': 12,    // Number of 2P2G trials, formal=12
+        '2P2G': 8,    // Number of 2P2G trials, formal=12
         '2P3G': 12     // Number of 2P3G trials, formal=12
     },
 
@@ -50,7 +50,7 @@ const NODEGAME_CONFIG = {
     // SUCCESS THRESHOLD CONFIGURATION - FOR COLLABORATION GAMES (2P2G, 2P3G)
     // =================================================================================================
     successThreshold: {
-        enabled: true,                    // Enable success threshold for collaboration games
+        enabled: false,                    // Enable success threshold for collaboration games
         consecutiveSuccessesRequired: 5,  // Number of consecutive successes required, formal=5
         minTrialsBeforeCheck: 12,         // Minimum trials before checking for success threshold
         maxTrials: 24,                    // Maximum trials regardless of success
@@ -67,7 +67,7 @@ const NODEGAME_CONFIG = {
 
         // AI Movement Mode Configuration
         movementMode: {
-            enabled: true, // Enable independent AI movement mode
+            enabled: false, // Enable independent AI movement mode
             decisionTimeRange: {
                 min: 100, // Minimum decision time in milliseconds
                 max: 500  // Maximum decision time in milliseconds

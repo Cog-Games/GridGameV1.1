@@ -44,7 +44,6 @@ function runTrialStage(stage) {
         <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
             <div style="text-align: center;">
                 <h3 style="margin-bottom: 10px;">Game ${experimentIndex + 1}</h3>
-                <h4 style="margin-bottom: 20px;">${trialCountDisplay}</h4>
                 <div id="gameCanvas" style="margin-bottom: 20px;"></div>
                 <p style="font-size: 20px;">You are the player <span style="display: inline-block; width: 18px; height: 18px; background-color: red; border-radius: 50%; vertical-align: middle;"></span>. Press ↑ ↓ ← → to move.</p>
             </div>
@@ -364,7 +363,9 @@ function runTrial2P2G() {
         // Only if independent AI mode is disabled or if AI hasn't reached goal
         var player2Action = null;
         var player2NextState = null;
-        if (!isGoalReached(gameData.player2, gameData.currentGoals) && !independentAIMode) {
+        // Only allow AI to move when human's action is valid (not a wall bump)
+        var humanMoveIsValid = !(realAction[0] === 0 && realAction[1] === 0);
+        if (!isGoalReached(gameData.player2, gameData.currentGoals) && !independentAIMode && humanMoveIsValid) {
             player2Action = getAIAction(gameData.gridMatrix, gameData.player2, gameData.currentGoals, gameData.player1);
             var player2RealAction = isValidMove(gameData.gridMatrix, gameData.player2, player2Action);
             player2NextState = transition(gameData.player2, player2RealAction);
@@ -688,7 +689,9 @@ function runTrial2P3G() {
         // Only if independent AI mode is disabled or if AI hasn't reached goal
         var player2Action = null;
         var player2NextState = null;
-        if (!isGoalReached(gameData.player2, gameData.currentGoals) && !isFrozen && !independentAIMode) {
+        // Only allow AI to move when human's action is valid (not a wall bump)
+        var humanMoveIsValid = !(realAction[0] === 0 && realAction[1] === 0);
+        if (!isGoalReached(gameData.player2, gameData.currentGoals) && !isFrozen && !independentAIMode && humanMoveIsValid) {
             player2Action = getAIAction(gameData.gridMatrix, gameData.player2, gameData.currentGoals, gameData.player1);
             var player2RealAction = isValidMove(gameData.gridMatrix, gameData.player2, player2Action);
             player2NextState = transition(gameData.player2, player2RealAction);
