@@ -236,26 +236,26 @@ function showWelcomeInfoStage(stage) {
     container.innerHTML = `
         <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
             <div style="background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 800px; text-align: center;">
-                <h2 style="color: #333; margin-bottom: 30px;">Welcome to the Game!</h2>
+                <h2 style="color: #333; margin-bottom: 30px; font-size: 36px;">Welcome to the Game!</h2>
 
                 <div style="display: flex; justify-content: center; align-items: center; width: 100%;">
-                    <div style="text-align: center; line-height: 1.6; margin-bottom: 30px; font-size: 18px; max-width: 600px;">
+                    <div style="text-align: center; line-height: 1.6; margin-bottom: 30px; font-size: 22px; max-width: 600px;">
                         <p style="margin-bottom: 10px;">
-                            You will be playing a navigation game where there are hungry travelers who need to reach a restaurant as soon as possible to get some food.
+                            You will play a navigation game where hungry travelers need to reach restaurants as quickly as possible.
                         </p>
                         <p style="margin-bottom: 20px;">
                             <span style="color: #007bff; font-weight: bold;">
-                                Your goal is to use the arrow keys on the computer to control one of the travelers to reach one of the restaurants for a meal as quickly as possible, using the shortest path.
+                                Your goal: Use the arrow keys to guide your traveler to a restaurant.
                             </span>
                         </p>
                         <p style="margin-bottom: 20px;">
-                            Next, let's see how to play the game and practice for a few rounds!
+                            Next, let's see how to play the game!
                         </p>
                     </div>
                 </div>
 
                 <div style="margin-top: 30px;">
-                    <p style="font-size: 20px; font-weight: bold; color: #333; margin-bottom: 20px;">
+                    <p style="font-size: 22px; font-weight: bold; color: #333; margin-bottom: 20px;">
                         Press the <span style="background: #f0f0f0; padding: 4px 8px; border-radius: 4px; font-family: monospace;">spacebar</span> to continue!
                     </p>
                 </div>
@@ -813,28 +813,28 @@ function showQuestionnaireStage(stage) {
 
                         <div style="margin-bottom: 25px;">
                             <label style="display: block; font-weight: bold; margin-bottom: 10px; color: #333;">
-                                Have you ever told a lie?
+                                What is the color of the "Next Page" button in this survey?
                             </label>
                             <div style="display: flex; flex-direction: column; gap: 8px;">
                                 <label style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="radio" name="attention_check" value="Definitely yes" required style="margin-right: 10px;">
-                                    Definitely yes
+                                    <input type="radio" name="attention_check" value="Definitely blue" required style="margin-right: 10px;">
+                                    Definitely blue
                                 </label>
                                 <label style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="radio" name="attention_check" value="Probably yes" required style="margin-right: 10px;">
-                                    Probably yes
+                                    <input type="radio" name="attention_check" value="Probably blue" required style="margin-right: 10px;">
+                                    Probably blue
                                 </label>
                                 <label style="display: flex; align-items: center; cursor: pointer;">
                                     <input type="radio" name="attention_check" value="Not sure" required style="margin-right: 10px;">
                                     Not sure
                                 </label>
                                 <label style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="radio" name="attention_check" value="Probably not" required style="margin-right: 10px;">
-                                    Probably not
+                                    <input type="radio" name="attention_check" value="Probably red" required style="margin-right: 10px;">
+                                    Probably red
                                 </label>
                                 <label style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="radio" name="attention_check" value="Definitely not" required style="margin-right: 10px;">
-                                    Definitely not
+                                    <input type="radio" name="attention_check" value="Definitely red" required style="margin-right: 10px;">
+                                    Definitely red
                                 </label>
                             </div>
                         </div>
@@ -898,16 +898,16 @@ function showQuestionnaireStage(stage) {
 
                         <div style="margin-bottom: 25px;">
                             <label style="display: block; font-weight: bold; margin-bottom: 10px; color: #333;">
-                                Is this your first time using a computer?
+                                Some people have cats as their pets, true or false?
                             </label>
-                            <textarea name="computer_experience_page2" rows="4" style="
+                            <textarea name="cat_question" rows="4" style="
                                 width: 100%;
                                 padding: 10px;
                                 border: 1px solid #ddd;
                                 border-radius: 5px;
                                 font-family: inherit;
                                 resize: vertical;
-                            " placeholder="Please answer yes or no..."></textarea>
+                            " placeholder="Please answer true or false..."></textarea>
                         </div>
 
                         <div style="margin-bottom: 25px;">
@@ -1437,13 +1437,17 @@ function getInstructionsForExperiment(experimentType) {
             return `
                 <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
                     <div style="background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 800px; text-align: center;">
-                        <h2 style="color: #333; margin-bottom: 30px;">Game 1</h2>
-                        <div style="background: #e8f5e8; border: 1px solid #c3e6cb; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
-                            <p style="font-size: 18px; color: #155724; margin-bottom: 15px; line-height: 1.6;">
-                                In this practice, you are the traveler <span style="display: inline-block; width: 20px; height: 20px; background-color: red; border-radius: 50%; vertical-align: middle; margin: 0 4px;"></span>, and there will be one restaurant <span style="display: inline-block; width: 20px; height: 20px; background-color: #007bff; border-radius: 3px; vertical-align: middle; margin: 0 4px;"></span> on the map. Navigate to the restaurant (using ↑ ↓ ← →) as quickly as possible using the shortest path.
-                            </p>
+                        <h2 style="color: #333; margin-bottom: 30px; font-size: 36px;">Game 1</h2>
+                        <h3 style="color: #000; margin-bottom: 20px; font-size: 24px;">Before we begin, let's practice a few rounds</h3>
+                        <div style="background: #e8f5e8; border: 1px solid #c3e6cb; border-radius: 8px; padding: 28px; margin-bottom: 30px;">
+                            <ul style="font-size: 22px; color: #155724; margin-bottom: 15px; line-height: 1.6; text-align: left; padding-left: 20px;">
+                                <li>You are the traveler <span style="display: inline-block; width: 20px; height: 20px; background-color: red; border-radius: 50%; vertical-align: middle; margin: 0 4px;"></span>.</li>
+                                <li>There is one restaurant <span style="display: inline-block; width: 20px; height: 20px; background-color: #007bff; border-radius: 3px; vertical-align: middle; margin: 0 4px;"></span> on the map.</li>
+                                <li>Use the arrow keys (↑↓←→) to reach a restaurant.</li>
+                                <li>Each round, you can win by getting to one of the restaurants.</li>
+                            </ul>
                         </div>
-                        <p style="font-size: 20px; margin-top: 30px;">Press <strong>space bar</strong> to begin.</p>
+                        <p style="font-size: 22px; margin-top: 30px;">Press <strong>space bar</strong> to begin.</p>
                     </div>
                 </div>
             `;
@@ -1451,16 +1455,19 @@ function getInstructionsForExperiment(experimentType) {
             return `
                 <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
                     <div style="background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 800px; text-align: center;">
-                        <h2 style="color: #333; margin-bottom: 30px;">Game 2</h2>
-                        <div style="background: #e8f5e8; border: 1px solid #c3e6cb; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
-                            <p style="font-size: 18px; color: #155724; margin-bottom: 15px; line-height: 1.6;">
-                                Good job!
+                        <h2 style="color: #333; margin-bottom: 30px; font-size: 36px;">Game 2</h2>
+                        <h3 style="color: #000; margin-bottom: 20px; font-size: 24px;">Great job!</h3>
+                        <div style="background: #e8f5e8; border: 1px solid #c3e6cb; border-radius: 8px; padding: 28px; margin-bottom: 30px;">
+                            <p style="font-size: 22px; color: #155724; margin-bottom: 15px; line-height: 1.6; text-align: left;">
+                                Now there will be several identical restaurants on the map.
                             </p>
-                            <p style="font-size: 18px; color: #155724; margin-bottom: 15px; line-height: 1.6;">
-                                Let's continue. Now, there will be several identical restaurants <span style="display: inline-block; width: 20px; height: 20px; background-color: #007bff; border-radius: 3px; vertical-align: middle; margin: 0 4px;"></span> on the map. Note that some restaurants are already open before you start. During the game, other restaurants may open and appear on the map. All restaurants are identical, and your goal is to navigate to one of them as quickly as possible using the shortest path.
-                            </p>
+                            <ul style="font-size: 22px; color: #155724; margin-bottom: 15px; line-height: 1.6; text-align: left; padding-left: 20px;">
+                                <li>Each round, you can win by getting to one of the restaurants.</li>
+                                <li>Note that some restaurants are already open when the round starts. Others may appear later.</li>
+                                <li>For each round that you win, you earn an additional 10 cents.</li>
+                            </ul>
                         </div>
-                        <p style="font-size: 20px; margin-top: 30px;">Press <strong>space bar</strong> to begin.</p>
+                        <p style="font-size: 22px; margin-top: 30px;">Press <strong>space bar</strong> to begin.</p>
                     </div>
                 </div>
             `;
@@ -1468,19 +1475,19 @@ function getInstructionsForExperiment(experimentType) {
             return `
                 <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
                     <div style="background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 800px; text-align: center;">
-                        <h2 style="color: #333; margin-bottom: 30px;">Game 3</h2>
-                        <div style="background: #e8f5e8; border: 1px solid #c3e6cb; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
-                            <p style="font-size: 18px; color: #155724; margin-bottom: 15px; line-height: 1.6;">
-                                Good job! Now, you will be playing with another player!
+                        <h2 style="color: #333; margin-bottom: 30px; font-size: 36px;">Game 3</h2>
+                        <h3 style="color: #000; margin-bottom: 20px; font-size: 24px;">Well done!</h3>
+                        <div style="background: #e8f5e8; border: 1px solid #c3e6cb; border-radius: 8px; padding: 28px; margin-bottom: 30px;">
+                            <p style="font-size: 22px; color: #155724; margin-bottom: 15px; line-height: 1.6; text-align: left;">
+                                Let's continue. In this new game, you will collaborate with another player.
                             </p>
-                            <p style="font-size: 18px; color: #155724; margin-bottom: 15px; line-height: 1.6;">
-                                In this new game, there are only tables for two at these restaurants <span style="display: inline-block; width: 20px; height: 20px; background-color: #007bff; border-radius: 3px; vertical-align: middle; margin: 0 4px;"></span>, so you and another player have to go together in order to eat. You can also cross paths or touch sometimes on your way to your destination, and that's okay too!
-                            </p>
-                            <p style="font-size: 18px; color: #155724; margin-bottom: 15px; line-height: 1.6;">
-                                Let's practice first!
-                            </p>
+                            <ul style="font-size: 22px; color: #155724; margin-bottom: 15px; line-height: 1.6; text-align: left; padding-left: 20px;">
+                                <li>Each round, you can <strong> win </strong> if both of you go to the <strong> same </strong> restaurant.</li>
+                                <li>You lose the round if you end up at different restaurants.</li>
+                                <li>For each round that you win, you earn an additional 10 cents.</li>
+                            </ul>
                         </div>
-                        <p style="font-size: 20px; margin-top: 30px;">Press <strong>space bar</strong> to begin.</p>
+                        <p style="font-size: 22px; margin-top: 30px;">Press <strong>space bar</strong> to begin.</p>
                     </div>
                 </div>
             `;
@@ -1488,21 +1495,25 @@ function getInstructionsForExperiment(experimentType) {
             return `
                 <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
                     <div style="background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 800px; text-align: center;">
-                        <h2 style="color: #333; margin-bottom: 30px;">Game 4</h2>
-                        <div style="background: #e8f5e8; border: 1px solid #c3e6cb; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
-                            <p style="font-size: 18px; color: #155724; margin-bottom: 15px; line-height: 1.6;">
-                                Good job! Now, let's start the final game.
+                        <h2 style="color: #333; margin-bottom: 30px; font-size: 36px;">Game 4</h2>
+                        <h3 style="color: #000; margin-bottom: 20px; font-size: 24px;">Good job!</h3>
+                        <div style="background: #e8f5e8; border: 1px solid #c3e6cb; border-radius: 8px; padding: 28px; margin-bottom: 30px;">
+                            <p style="font-size: 22px; color: #155724; margin-bottom: 15px; line-height: 1.6; text-align: left;">
+                                Now, let's start the final game. You will collaborate with the same player as before.
                             </p>
-                            <p style="font-size: 18px; color: #155724; margin-bottom: 15px; line-height: 1.6;">
-                                You will still be playing the same player in the previous game. But now, there may be several identical restaurants <span style="display: inline-block; width: 20px; height: 20px; background-color: #007bff; border-radius: 3px; vertical-align: middle; margin: 0 4px;"></span> on the map. Note that some restaurants are already open before you start. During the game, other restaurants may open and appear on the map. All restaurants are identical, but you and the other player need to navigate to one of them together as quickly as possible using the shortest path.
-                            </p>
+                            <ul style="font-size: 22px; color: #155724; margin-bottom: 15px; line-height: 1.6; text-align: left; padding-left: 20px;">
+                                <li>Each round, you can <strong> win </strong> if both of you go to the <strong> same </strong> restaurant.</li>
+                                <li>You lose the round if you end up at different restaurants.</li>
+                                <li>Note that some restaurants are already open when the round starts. Others may appear later.</li>
+                                <li>For each round that you win, you earn an additional 10 cents.</li>
+                            </ul>
                         </div>
-                        <p style="font-size: 20px; margin-top: 30px;">Press <strong>space bar</strong> to begin.</p>
+                        <p style="font-size: 22px; margin-top: 30px;">Press <strong>space bar</strong> to begin.</p>
                     </div>
                 </div>
             `;
         default:
-            return '<p style="font-size:30px;">Welcome to the task. Press space bar to begin.</p>';
+            return '<p style="font-size: 36px; line-height: 1.4;">Welcome to the task. Press space bar to begin.</p>';
     }
 }
 
