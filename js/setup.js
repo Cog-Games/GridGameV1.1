@@ -50,7 +50,6 @@ const OBJECT = {
   ai_player: 3,
   goal: 9
 }
-const STEPS_THRESHOLD = 8
 
 // Responsive sizing: make cellSize/grid scale with window size
 function recalcResponsiveGridSize() {
@@ -73,7 +72,7 @@ function recalcResponsiveGridSize() {
     // Choose the limiting dimension and clamp to a sensible range
     var newCellSize = Math.min(cellFromWidth, cellFromHeight);
     var MIN_CELL_SIZE = 30; // ensure visible on tiny windows
-    var MAX_CELL_SIZE = 50; // avoid excessively large cells on huge screens
+    var MAX_CELL_SIZE = 40; // avoid excessively large cells on huge screens
     newCellSize = Math.max(MIN_CELL_SIZE, Math.min(MAX_CELL_SIZE, newCellSize));
 
     // If calculation failed, keep previous cell size

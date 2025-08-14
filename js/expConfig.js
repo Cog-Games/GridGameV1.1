@@ -28,19 +28,19 @@ const NODEGAME_CONFIG = {
     // experimentOrder: ['2P3G'],
 
     // Alternative configurations (uncomment to use):
-    experimentOrder: ['1P1G'],           // Test 1P1G only
+    // experimentOrder: ['1P1G'],           // Test 1P1G only
     // experimentOrder: ['1P2G'],           // Test 1P2G only
     // experimentOrder: ['2P2G'],           // Test 2P2G only
     // experimentOrder: ['1P1G', '1P2G'],   // Test 1P1G and 1P2G
     // experimentOrder: ['2P2G', '2P3G'],   // Test 2P2G and 2P3G
-    // experimentOrder: ['1P1G', '1P2G', '2P2G', '2P3G'], // Test all experiments
+    experimentOrder: ['1P1G', '1P2G', '2P2G', '2P3G'], // Test all experiments
     // experimentOrder: ['1P2G', '2P3G'],
 
     // =================================================================================================
     // TRIAL COUNTS
     // =================================================================================================
     numTrials: {
-        '1P1G': 1,    // Number of 1P1G trials, formal=3
+        '1P1G': 3,    // Number of 1P1G trials, formal=3
         '1P2G': 12,    // Number of 1P2G trials, formal=12
         '2P2G': 8,    // Number of 2P2G trials, formal=12
         '2P3G': 12     // Number of 2P3G trials, formal=12
@@ -82,7 +82,7 @@ const NODEGAME_CONFIG = {
     // =================================================================================================
     maxGameLength: 50, // Max steps per trial
     enableProlificRedirect: true, // Set to false for testing without redirect
-    prolificCompletionCode: 'C19EH5X9', // Prolific completion code
+    prolificCompletionCode: 'CPPNJJ39', // Prolific completion code
 
     // Timing configurations for easy manipulation
     timing: {
