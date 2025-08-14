@@ -6,10 +6,10 @@ function createTimelineStages() {
     timeline.mapData = {};
 
     // Add consent stage (only once at the beginning)
-    // timeline.stages.push({
-    //     type: 'consent',
-    //     handler: showConsentStage
-    // });
+    timeline.stages.push({
+        type: 'consent',
+        handler: showConsentStage
+    });
 
     timeline.stages.push({
         type: 'welcome_info',
@@ -524,10 +524,10 @@ function showPostTrialStage(stage) {
 
     container.innerHTML = `
         <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
-            <div style="text-align: center; max-width: 600px; width: 100%;">
+            <div style="text-align: center;">
                 <h3 style="margin-bottom: 10px;">Game ${experimentIndex + 1}</h3>
-                <h4 style="margin-bottom: 20px;">${trialCountDisplay} Results</h4>
-                <div id="gameCanvas" style="margin: 0 auto 20px auto; position: relative; display: flex; justify-content: center;"></div>
+                <div id="gameCanvas" style="margin-bottom: 20px;"></div>
+                <p style="font-size: 20px;">You are the player <span style="display: inline-block; width: 18px; height: 18px; background-color: red; border-radius: 50%; vertical-align: middle;"></span>. Press ↑ ↓ ← → to move.</p>
             </div>
         </div>
     `;
@@ -1462,7 +1462,7 @@ function getInstructionsForExperiment(experimentType) {
                                 Now there will be several identical restaurants on the map.
                             </p>
                             <ul style="font-size: 22px; color: #155724; margin-bottom: 15px; line-height: 1.6; text-align: left; padding-left: 20px;">
-                                <li>Each round, you can win by getting to one of the restaurants.</li>
+                                <li>Each round, you can <strong>win</strong> by getting to one of the restaurants.</li>
                                 <li>Note that some restaurants are already open when the round starts. Others may appear later.</li>
                                 <li>For each round that you win, you earn an additional 10 cents.</li>
                             </ul>
@@ -1504,7 +1504,7 @@ function getInstructionsForExperiment(experimentType) {
                             <ul style="font-size: 22px; color: #155724; margin-bottom: 15px; line-height: 1.6; text-align: left; padding-left: 20px;">
                                 <li>Each round, you can <strong> win </strong> if both of you go to the <strong> same </strong> restaurant.</li>
                                 <li>You lose the round if you end up at different restaurants.</li>
-                                <li>Note that some restaurants are already open when the round starts. Others may appear later.</li>
+                                <li> <strong> Note that some restaurants are already open when the round starts. Others may appear later.</strong></li>
                                 <li>For each round that you win, you earn an additional 10 cents.</li>
                             </ul>
                         </div>

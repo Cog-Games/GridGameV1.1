@@ -91,7 +91,7 @@ const NODEGAME_CONFIG = {
         preTrialDisplayDuration: 2000, // How long to show pre-trial map (ms)
         fixationDuration: 1000,         // Fixation cross duration (ms)
         newGoalMessageDuration: 0,    // New goal message and freeze duration (ms)
-        waitingForPartnerDuration: 3000, // How long to show "waiting for partner" simulation (ms)
+        waitingForPartnerDuration: 9000, // How long to show "waiting for partner" simulation (ms)
         movementDelay: 100             // Delay to prevent rapid successive movements (ms)
     }
 };
