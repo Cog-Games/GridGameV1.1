@@ -342,12 +342,6 @@ function generateNewGoalFor2P3G(player2Pos, player1Pos, oldGoals, player2Current
                 var meetsEqualCondition = distanceDiff <= equalTolerance &&
                                         Math.abs(newDistanceSum - oldDistanceSum) <= sumTolerance;
 
-                // Debug logging for EQUAL_TO_BOTH condition
-                if (!isRelaxed && distanceCondition === TWOP3G_CONFIG.distanceConditions.EQUAL_TO_BOTH) {
-                    console.log('EQUAL_TO_BOTH check: distanceDiff=', distanceDiff, 'equalTolerance=', equalTolerance,
-                               'sumDiff=', Math.abs(newDistanceSum - oldDistanceSum), 'sumTolerance=', sumTolerance,
-                               'meets=', meetsEqualCondition);
-                }
 
                 return meetsEqualCondition;
 
@@ -397,11 +391,6 @@ function generateNewGoalFor2P3G(player2Pos, player1Pos, oldGoals, player2Current
                         distanceSum: newDistanceSum
                     });
 
-                    // Log valid positions for EQUAL_TO_BOTH debugging
-                    if (distanceCondition === TWOP3G_CONFIG.distanceConditions.EQUAL_TO_BOTH && !isRelaxed) {
-                        console.log('2P3G: Valid EQUAL_TO_BOTH position [' + row + ',' + col + '] - distances: P1=' +
-                                   newGoalDistanceToPlayer1 + ', P2=' + newGoalDistanceToPlayer2);
-                    }
                 }
             }
         }
@@ -411,22 +400,12 @@ function generateNewGoalFor2P3G(player2Pos, player1Pos, oldGoals, player2Current
 
     var validPositions = findValidPositions2P3G(false);
 
-    // Debug logging for EQUAL_TO_BOTH condition
-    if (distanceCondition === TWOP3G_CONFIG.distanceConditions.EQUAL_TO_BOTH) {
-        console.log('2P3G EQUAL_TO_BOTH: Found', validPositions.length, 'valid positions with strict constraints');
-        console.log('2P3G EQUAL_TO_BOTH: Old goal distances - Player1:', player1DistanceToOldGoal, 'Player2:', player2DistanceToOldGoal);
-        console.log('2P3G EQUAL_TO_BOTH: Old distance sum:', oldDistanceSum);
-    }
 
     if (validPositions.length > 0) {
         var selectedGoalResult = validPositions[Math.floor(Math.random() * validPositions.length)];
 
-        console.log('2P3G: Selected new goal at:', selectedGoalResult.position);
-        console.log('2P3G: Player1 distance to OLD goal:', player1DistanceToOldGoal);
-        console.log('2P3G: Player1 distance to NEW goal:', selectedGoalResult.distanceToPlayer1);
-        console.log('2P3G: Player2 distance to OLD goal:', player2DistanceToOldGoal);
-        console.log('2P3G: Player2 distance to NEW goal:', selectedGoalResult.distanceToPlayer2);
-        console.log('2P3G: Distance condition:', distanceCondition);
+        console.log('Player1 and Player2 distance to OLD goal:', player1DistanceToOldGoal, player2DistanceToOldGoal);
+        console.log('Player1 and Player2 distance to NEW goal:', selectedGoalResult.distanceToPlayer1, selectedGoalResult.distanceToPlayer2);
 
         return selectedGoalResult;
     }
@@ -436,12 +415,8 @@ function generateNewGoalFor2P3G(player2Pos, player1Pos, oldGoals, player2Current
     if (relaxedValidPositions.length > 0) {
         var selectedRelaxedResult = relaxedValidPositions[Math.floor(Math.random() * relaxedValidPositions.length)];
 
-        console.log('2P3G: Selected new goal (relaxed) at:', selectedRelaxedResult.position);
-        console.log('2P3G: Player1 distance to OLD goal:', player1DistanceToOldGoal);
-        console.log('2P3G: Player1 distance to NEW goal:', selectedRelaxedResult.distanceToPlayer1);
-        console.log('2P3G: Player2 distance to OLD goal:', player2DistanceToOldGoal);
-        console.log('2P3G: Player2 distance to NEW goal:', selectedRelaxedResult.distanceToPlayer2);
-        console.log('2P3G: Distance condition:', distanceCondition);
+        console.log('Player1 and Player2 distance to OLD goal:', player1DistanceToOldGoal, player2DistanceToOldGoal);
+        console.log('Player1 and Player2 distance to NEW goal:', selectedRelaxedResult.distanceToPlayer1, selectedRelaxedResult.distanceToPlayer2);
 
         return selectedRelaxedResult;
     }
