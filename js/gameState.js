@@ -17,6 +17,7 @@ var gameData = {
     currentGoals: null,
     stepCount: 0,
     gameStartTime: 0,
+    participantId: null,  // Prolific participant ID
 
     // Player configuration
     playerConfig: {
@@ -67,6 +68,7 @@ function initializeTrialData(trialIndex, experimentType, design) {
     }
 
     gameData.currentTrialData = {
+        participantId: gameData.participantId || (window.DataRecording ? window.DataRecording.getParticipantId() : null),
         trialIndex: trialIndex,
         experimentType: experimentType,
         player1Trajectory: [],  // Changed from trajectory
@@ -94,6 +96,7 @@ function initializeTrialData(trialIndex, experimentType, design) {
         newGoalPresented: false,
         isNewGoalCloserToPlayer2: null,  // Changed from isNewGoalCloserToAI
         collaborationSucceeded: undefined, // Will be set during trial
+        rlAgentType: NODEGAME_CONFIG.rlAgent.type, // RL agent type for this trial
         ...design
     };
 

@@ -25,7 +25,7 @@ const NODEGAME_CONFIG = {
     // =================================================================================================
 
     // Current test configuration (2P3G only)
-    // experimentOrder: ['2P3G'],
+    experimentOrder: ['2P3G'],
 
     // Alternative configurations (uncomment to use):
     // experimentOrder: ['1P1G'],           // Test 1P1G only
@@ -33,7 +33,7 @@ const NODEGAME_CONFIG = {
     // experimentOrder: ['2P2G'],           // Test 2P2G only
     // experimentOrder: ['1P1G', '1P2G'],   // Test 1P1G and 1P2G
     // experimentOrder: ['2P2G', '2P3G'],   // Test 2P2G and 2P3G
-    experimentOrder: ['1P1G', '1P2G', '2P2G', '2P3G'], // Test all experiments
+    // experimentOrder: ['1P1G', '1P2G', '2P2G', '2P3G'], // Test all experiments
     // experimentOrder: ['1P2G', '2P3G'],
 
     // =================================================================================================
@@ -42,8 +42,8 @@ const NODEGAME_CONFIG = {
     numTrials: {
         '1P1G': 3,    // Number of 1P1G trials, formal=3
         '1P2G': 12,    // Number of 1P2G trials, formal=12
-        '2P2G': 8,    // Number of 2P2G trials, formal=12
-        '2P3G': 12     // Number of 2P3G trials, formal=12
+        '2P2G': 8,    // Number of 2P2G trials, formal=8
+        '2P3G': 12    // Number of 2P3G trials, formal=12
     },
 
     // =================================================================================================
@@ -127,8 +127,8 @@ var ONEP2G_CONFIG = {
 
     // Positioning constraints
     distanceConstraint: {
-        closerThreshold: 2,              // How much closer new goal should be to human
-        fartherThreshold: 2,             // How much farther new goal should be to human
+        closerThreshold: 3,              // How much closer new goal should be to human
+        fartherThreshold: 3,             // How much farther new goal should be to human
         equalTolerance: false,               // Tolerance for equal distance (in grid units)
         allowEqualDistance: false         // Allow equal distance if closer/farther not found
     },
@@ -136,7 +136,7 @@ var ONEP2G_CONFIG = {
     // Goal generation constraints
     goalConstraints: {
         minDistanceFromHuman: 1,         // Minimum distance from human player
-        maxDistanceFromHuman: 12,        // Maximum distance from human player
+        maxDistanceFromHuman: 15,        // Maximum distance from human player
         minDistanceBetweenGoals: 3,      // Minimum distance between first and new goals
         avoidRectangleArea: false,       // Avoid rectangular area between goals
         blockPathCheck: false            // Check if goal blocks path
@@ -163,7 +163,7 @@ var TWOP3G_CONFIG = {
 
     // Positioning constraints
     distanceConstraint: {
-        closerThreshold: 2,              // How much closer new goal should be to AI
+        closerThreshold: 3,              // How much closer new goal should be to AI
         allowEqualDistance: false,        // Allow equal distance if closer not found
         maxDistanceIncrease: 5           // Maximum distance increase allowed
     },
@@ -171,7 +171,7 @@ var TWOP3G_CONFIG = {
     // Goal generation constraints
     goalConstraints: {
         minDistanceFromHuman: 1,         // Minimum distance from human player
-        maxDistanceFromHuman: 12,        // Maximum distance from human player
+        maxDistanceFromHuman: 15,        // Maximum distance from human player
         avoidRectangleArea: false,       // Avoid rectangular area between AI and current goal
         maintainDistanceSum: false,      // Maintain similar total distance sum
         blockPathCheck: false            // Check if goal blocks path

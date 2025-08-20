@@ -5,6 +5,54 @@
  * Extracted from human-AI-version.js for better organization.
  */
 
+// Participant ID storage
+var participantId = null;
+
+/**
+ * Extract Prolific participant ID from URL parameters
+ */
+function extractProlificId() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const prolificPid = urlParams.get('PROLIFIC_PID') || urlParams.get('prolific_pid');
+    
+    if (prolificPid) {
+        participantId = prolificPid;
+        console.log('Prolific participant ID extracted:', participantId);
+        return participantId;
+    } else {
+        console.warn('No PROLIFIC_PID found in URL parameters');
+        // For testing/development, generate a test ID
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            participantId = 'TEST_' + Math.random().toString(36).substr(2, 9);
+            console.log('Generated test participant ID:', participantId);
+            return participantId;
+        }
+        return null;
+    }
+}
+
+/**
+ * Get current participant ID
+ */
+function getParticipantId() {
+    if (!participantId) {
+        extractProlificId();
+    }
+    return participantId;
+}
+
+/**
+ * Validate that participant ID exists
+ */
+function validateParticipantId() {
+    const id = getParticipantId();
+    if (!id) {
+        console.error('No participant ID available - experiment cannot proceed');
+        return false;
+    }
+    return true;
+}
+
 /**
  * Record player1 move
  */
@@ -64,5 +112,8 @@ function finalizeTrial(completed) {
 window.DataRecording = {
     recordPlayer1Move: recordPlayer1Move,
     recordPlayer2Move: recordPlayer2Move,
-    finalizeTrial: finalizeTrial
+    finalizeTrial: finalizeTrial,
+    extractProlificId: extractProlificId,
+    getParticipantId: getParticipantId,
+    validateParticipantId: validateParticipantId
 };

@@ -427,6 +427,7 @@ function runTrial2P2G() {
             document.removeEventListener('keydown', handleKeyPress);
             if (gameLoopInterval) clearInterval(gameLoopInterval);
             if (aiMoveInterval) clearInterval(aiMoveInterval);
+            if (goalCheckInterval) clearInterval(goalCheckInterval);
             setTimeout(() => nextStage(), NODEGAME_CONFIG.timing.trialToFeedbackDelay);
         });
 
@@ -475,6 +476,7 @@ function runTrial2P2G() {
             document.removeEventListener('keydown', handleKeyPress);
             if (gameLoopInterval) clearInterval(gameLoopInterval);
             if (aiMoveInterval) clearInterval(aiMoveInterval);
+            if (goalCheckInterval) clearInterval(goalCheckInterval);
             setTimeout(() => nextStage(), NODEGAME_CONFIG.timing.trialToFeedbackDelay);
         });
     }
@@ -568,6 +570,7 @@ function runTrial2P2G() {
                         document.removeEventListener('keydown', handleKeyPress);
                         if (gameLoopInterval) clearInterval(gameLoopInterval);
                         if (aiMoveInterval) clearInterval(aiMoveInterval);
+                        if (goalCheckInterval) clearInterval(goalCheckInterval);
                         setTimeout(() => nextStage(), NODEGAME_CONFIG.timing.trialToFeedbackDelay);
                     });
 
@@ -599,6 +602,7 @@ function runTrial2P2G() {
             document.removeEventListener('keydown', handleKeyPress);
             if (gameLoopInterval) clearInterval(gameLoopInterval);
             if (aiMoveInterval) clearInterval(aiMoveInterval);
+            if (goalCheckInterval) clearInterval(goalCheckInterval);
 
             window.DataRecording.finalizeTrial(false);
             setTimeout(() => nextStage(), NODEGAME_CONFIG.timing.trialToFeedbackDelay);
@@ -764,6 +768,7 @@ function runTrial2P3G() {
             timeline.keyListenerActive = false;
             if (gameLoopInterval) clearInterval(gameLoopInterval);
             if (aiMoveInterval) clearInterval(aiMoveInterval);
+            if (goalCheckInterval) clearInterval(goalCheckInterval);
             if (freezeTimeout) clearTimeout(freezeTimeout);
             setTimeout(() => nextStage(), NODEGAME_CONFIG.timing.trialToFeedbackDelay);
         });
@@ -833,6 +838,7 @@ function runTrial2P3G() {
             timeline.keyListenerActive = false;
             if (gameLoopInterval) clearInterval(gameLoopInterval);
             if (aiMoveInterval) clearInterval(aiMoveInterval);
+            if (goalCheckInterval) clearInterval(goalCheckInterval);
             if (freezeTimeout) clearTimeout(freezeTimeout);
             setTimeout(() => nextStage(), NODEGAME_CONFIG.timing.trialToFeedbackDelay);
         });
@@ -939,6 +945,7 @@ function runTrial2P3G() {
                         timeline.keyListenerActive = false;
                         if (gameLoopInterval) clearInterval(gameLoopInterval);
                         if (aiMoveInterval) clearInterval(aiMoveInterval);
+                        if (goalCheckInterval) clearInterval(goalCheckInterval);
                         if (freezeTimeout) clearTimeout(freezeTimeout);
                         setTimeout(() => nextStage(), NODEGAME_CONFIG.timing.trialToFeedbackDelay);
                     });
@@ -977,6 +984,7 @@ function runTrial2P3G() {
             timeline.keyListenerActive = false;
             if (gameLoopInterval) clearInterval(gameLoopInterval);
             if (aiMoveInterval) clearInterval(aiMoveInterval);
+            if (goalCheckInterval) clearInterval(goalCheckInterval);
             if (freezeTimeout) clearTimeout(freezeTimeout);
 
             window.DataRecording.finalizeTrial(false);

@@ -1349,7 +1349,9 @@ function saveDataToGoogleDrive() {
 
         // Create Excel file to send to Google Drive
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-        const excelFilename = `experiment_data_${timestamp}.xlsx`;
+        const participantId = gameData.participantId || 'unknown_participant';
+        const safeParticipantId = participantId.replace(/[^a-zA-Z0-9_-]/g, '_');
+        const excelFilename = `experiment_data_${safeParticipantId}_${timestamp}.xlsx`;
 
         sendExcelToGoogleDrive(experimentData, questionnaireArray, excelFilename);
 
