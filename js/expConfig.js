@@ -25,15 +25,15 @@ const NODEGAME_CONFIG = {
     // =================================================================================================
 
     // Current test configuration (2P3G only)
-    experimentOrder: ['2P3G'],
+    // experimentOrder: ['2P3G'],
+    // experimentOrder: ['1P2G'],           // Test 1P2G only
 
     // Alternative configurations (uncomment to use):
     // experimentOrder: ['1P1G'],           // Test 1P1G only
-    // experimentOrder: ['1P2G'],           // Test 1P2G only
     // experimentOrder: ['2P2G'],           // Test 2P2G only
     // experimentOrder: ['1P1G', '1P2G'],   // Test 1P1G and 1P2G
     // experimentOrder: ['2P2G', '2P3G'],   // Test 2P2G and 2P3G
-    // experimentOrder: ['1P1G', '1P2G', '2P2G', '2P3G'], // Test all experiments
+    experimentOrder: ['1P1G', '1P2G', '2P2G', '2P3G'], // Test all experiments
     // experimentOrder: ['1P2G', '2P3G'],
 
     // =================================================================================================
@@ -63,7 +63,7 @@ const NODEGAME_CONFIG = {
     rlAgent: {
         type: 'joint', // Default agent type: 'individual' or 'joint'
         agentDelay: 500,
-        independentAgentDelay: 400, // Slower delay for independent AI movement after human reaches goal
+        independentAgentDelay: 300, // Slower delay for independent AI movement after human reaches goal
 
         // AI Movement Mode Configuration
         movementMode: {
@@ -127,19 +127,17 @@ var ONEP2G_CONFIG = {
 
     // Positioning constraints
     distanceConstraint: {
-        closerThreshold: 3,              // How much closer new goal should be to human
-        fartherThreshold: 3,             // How much farther new goal should be to human
-        equalTolerance: false,               // Tolerance for equal distance (in grid units)
-        allowEqualDistance: false         // Allow equal distance if closer/farther not found
+        minDistanceDiff: 2,              // Minimum distance difference for new goal
+        maxDistanceDiff: 4,              // Maximum distance difference for new goal
     },
 
     // Goal generation constraints
     goalConstraints: {
-        minDistanceFromHuman: 1,         // Minimum distance from human player
+        minDistanceFromHuman: 2,         // Minimum distance from human player
         maxDistanceFromHuman: 15,        // Maximum distance from human player
-        minDistanceBetweenGoals: 3,      // Minimum distance between first and new goals
+        minDistanceBetweenGoals: 2,      // Minimum distance between first and new goals
         avoidRectangleArea: false,       // Avoid rectangular area between goals
-        blockPathCheck: false            // Check if goal blocks path
+        blockPathCheck: true            // Check if goal blocks path
     }
 };
 
@@ -163,18 +161,17 @@ var TWOP3G_CONFIG = {
 
     // Positioning constraints
     distanceConstraint: {
-        closerThreshold: 3,              // How much closer new goal should be to AI
-        allowEqualDistance: false,        // Allow equal distance if closer not found
-        maxDistanceIncrease: 5           // Maximum distance increase allowed
+        minDistanceDiff: 2,              // Minimum distance difference for new goal
+        maxDistanceDiff: 4,              // Maximum distance difference for new goal
     },
 
     // Goal generation constraints
     goalConstraints: {
-        minDistanceFromHuman: 1,         // Minimum distance from human player
+        minDistanceFromHuman: 2,         // Minimum distance from human player
         maxDistanceFromHuman: 15,        // Maximum distance from human player
         avoidRectangleArea: false,       // Avoid rectangular area between AI and current goal
         maintainDistanceSum: false,      // Maintain similar total distance sum
-        blockPathCheck: false            // Check if goal blocks path
+        blockPathCheck: true            // Check if goal blocks path
     }
 };
 

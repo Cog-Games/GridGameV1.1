@@ -370,15 +370,15 @@ function nodeGameUpdateGameDisplay() {
         if (window.RLAgent && window.RLAgent.precalculatePolicyForGoalsAsync && gameData.currentGoals && gameData.currentGoals.length > 0) {
             // Check if this is a new goal presentation (3 goals instead of 2) and hasn't been pre-calculated yet
             if (gameData.currentGoals.length === 3 && !window.newGoalPreCalculated) {
-                console.log('⚡ New goal visually rendered on map, starting async pre-calculation:', gameData.currentGoals);
+                // console.log('⚡ New goal visually rendered on map, starting async pre-calculation:', gameData.currentGoals);
                 // Use async function to ensure goal is visible before pre-calculation starts
                 // This prevents lag in goal presentation while still pre-calculating for faster AI response
                 window.RLAgent.precalculatePolicyForGoalsAsync(gameData.currentGoals, (success) => {
                     if (success) {
                         window.newGoalPreCalculated = true; // Mark as pre-calculated
-                        console.log('✅ Background pre-calculation completed - AI ready to act');
+                        // console.log('✅ Background pre-calculation completed - AI ready to act');
                     } else {
-                        console.warn('⚠️ Background pre-calculation failed');
+                        // console.warn('⚠️ Background pre-calculation failed');
                     }
                 }, gameData.currentExperiment);
             }

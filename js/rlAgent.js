@@ -1986,7 +1986,7 @@ function precalculatePolicyForGoals(goals, experimentType = null) {
 function precalculatePolicyForGoalsAsync(goals, callback = null, experimentType = null) {
     // Check if pre-calculation is enabled in config
     if (!RL_AGENT_CONFIG.enablePolicyPrecalculation) {
-        console.log('⏭️ Async policy pre-calculation disabled in config');
+        // console.log('⏭️ Async policy pre-calculation disabled in config');
         if (callback) callback(false);
         return;
     }

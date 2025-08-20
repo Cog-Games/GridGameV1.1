@@ -23,7 +23,6 @@ window.whichGoalReached = whichGoalReached;
 window.detectPlayerGoal = detectPlayerGoal;
 window.getMapsForExperiment = getMapsForExperiment;
 window.generateRandomizedDistanceSequence = generateRandomizedDistanceSequence;
-window.generateRandomized1P2GDistanceSequence = generateRandomized1P2GDistanceSequence;
 window.selectRandomMaps = selectRandomMaps;
 window.getRandomMapForCollaborationGame = getRandomMapForCollaborationGame;
 

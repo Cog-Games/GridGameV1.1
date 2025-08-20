@@ -321,6 +321,11 @@ function checkTrialEnd2P2G(callback) {
     } else if (player1AtGoal && !player2AtGoal) {
         // Show wait message when player1 reached goal but player2 hasn't
         showWaitMessage();
+    } else if (player1AtGoal && player2AtGoal) {
+        // Both players reached goals - restore movement instructions if they were hidden
+        if (typeof showMovementInstructions === 'function') {
+            showMovementInstructions();
+        }
     }
 }
 

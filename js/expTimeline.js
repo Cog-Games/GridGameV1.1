@@ -29,12 +29,12 @@ function createTimelineStages() {
 
         // Generate randomized distance condition sequence for 1P2G experiments
         if (experimentType === '1P2G') {
-            ONEP2G_CONFIG.distanceConditionSequence = generateRandomized1P2GDistanceSequence(numTrials);
+            ONEP2G_CONFIG.distanceConditionSequence = generateRandomizedDistanceSequence(numTrials, ONEP2G_CONFIG);
         }
 
         // Generate randomized distance condition sequence for 2P3G experiments
         if (experimentType === '2P3G') {
-            TWOP3G_CONFIG.distanceConditionSequence = generateRandomizedDistanceSequence(numTrials);
+            TWOP3G_CONFIG.distanceConditionSequence = generateRandomizedDistanceSequence(numTrials, TWOP3G_CONFIG);
         }
 
         // Add welcome screen for this experiment (uncomment if needed)
@@ -445,6 +445,12 @@ function showWaitMessage() {
         existingMsg.remove();
     }
 
+    // Hide the movement instructions during waiting phase
+    var movementInstructions = document.querySelector('p[style*="font-size: 20px"]');
+    if (movementInstructions && movementInstructions.textContent.includes('Press ↑ ↓ ← → to move')) {
+        movementInstructions.style.display = 'none';
+    }
+
     // Find the game canvas
     var canvas = document.querySelector('canvas');
     if (canvas) {
@@ -467,7 +473,7 @@ function showWaitMessage() {
             margin-left: auto;
             margin-right: auto;
         `;
-        waitMsg.textContent = 'Please wait for the other player to reach the goal';
+        waitMsg.textContent = 'Please wait for the other player to reach the goal!';
 
         // Try to insert after the canvas
         if (canvas.parentNode) {
@@ -1501,7 +1507,7 @@ function getInstructionsForExperiment(experimentType) {
                         <h3 style="color: #000; margin-bottom: 20px; font-size: 24px;">Good job!</h3>
                         <div style="background: #e8f5e8; border: 1px solid #c3e6cb; border-radius: 8px; padding: 28px; margin-bottom: 30px;">
                             <p style="font-size: 22px; color: #155724; margin-bottom: 15px; line-height: 1.6; text-align: left;">
-                                Now, let's start the final game. You will collaborate with the same player as before.
+                                Now, let's start the final game! You will collaborate with the same player as before.
                             </p>
                             <ul style="font-size: 22px; color: #155724; margin-bottom: 15px; line-height: 1.6; text-align: left; padding-left: 20px;">
                                 <li>Each round, you can <strong> win </strong> if both of you go to the <strong> same </strong> restaurant.</li>
@@ -2119,4 +2125,14 @@ function createTrialFeedbackOverlay(canvasContainer, success, messageType, durat
     }
 
     return overlay;
+}
+
+/**
+ * Show movement instructions (restore them after waiting phase)
+ */
+function showMovementInstructions() {
+    var movementInstructions = document.querySelector('p[style*="font-size: 20px"]');
+    if (movementInstructions && movementInstructions.textContent.includes('Press ↑ ↓ ← → to move')) {
+        movementInstructions.style.display = 'block';
+    }
 }

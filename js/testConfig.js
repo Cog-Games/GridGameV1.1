@@ -115,8 +115,8 @@ var ONEP2G_CONFIG = {
 
     // Positioning constraints
     distanceConstraint: {
-        closerThreshold: 2,              // How much closer new goal should be to human
-        fartherThreshold: 2,             // How much farther new goal should be to human
+        minDistanceDiff: 2,              // Minimum distance difference for new goal
+        maxDistanceDiff: 2,              // Maximum distance difference for new goal
         equalTolerance: false,               // Tolerance for equal distance (in grid units)
         allowEqualDistance: false         // Allow equal distance if closer/farther not found
     },
@@ -151,7 +151,8 @@ var TWOP3G_CONFIG = {
 
     // Positioning constraints
     distanceConstraint: {
-        closerThreshold: 2,              // How much closer new goal should be to AI
+        minDistanceDiff: 2,              // Minimum distance difference for new goal
+        maxDistanceDiff: 2,              // Maximum distance difference for new goal
         allowEqualDistance: false,        // Allow equal distance if closer not found
         maxDistanceIncrease: 5           // Maximum distance increase allowed
     },
