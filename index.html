@@ -55,6 +55,13 @@
   <script src="js/human-AI-version.js"></script>
 
   <script>
+    // Check URL parameters and set RL agent type
+    const urlParams = new URLSearchParams(window.location.search);
+    const rlType = urlParams.get('rlType');
+    if (rlType && ['individual', 'joint'].includes(rlType)) {
+      window.NodeGameConfig.setRLAgentType(rlType);
+    }
+
     // Initialize and start the experiment immediately on page load
     document.addEventListener('DOMContentLoaded', function () {
       console.log('Initializing NodeGame experiments...');
