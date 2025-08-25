@@ -1446,13 +1446,12 @@ function getInstructionsForExperiment(experimentType) {
                 <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
                     <div style="background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 800px; text-align: center;">
                         <h2 style="color: #333; margin-bottom: 30px; font-size: 36px;">Game 1</h2>
-                        <h3 style="color: #000; margin-bottom: 20px; font-size: 24px;">Before we begin, let's practice a few rounds</h3>
+                        <h3 style="color: #000; margin-bottom: 20px; font-size: 24px;">Before we begin, let's practice a few rounds!</h3>
                         <div style="background: #e8f5e8; border: 1px solid #c3e6cb; border-radius: 8px; padding: 28px; margin-bottom: 30px;">
                             <ul style="font-size: 22px; color: #155724; margin-bottom: 15px; line-height: 1.6; text-align: left; padding-left: 20px;">
                                 <li>You are the traveler <span style="display: inline-block; width: 20px; height: 20px; background-color: red; border-radius: 50%; vertical-align: middle; margin: 0 4px;"></span>.</li>
                                 <li>There is one restaurant <span style="display: inline-block; width: 20px; height: 20px; background-color: #007bff; border-radius: 3px; vertical-align: middle; margin: 0 4px;"></span> on the map.</li>
                                 <li>Use the arrow keys (↑↓←→) to reach a restaurant.</li>
-                                <li>Each round, you can win by getting to one of the restaurants.</li>
                             </ul>
                         </div>
                         <p style="font-size: 22px; margin-top: 30px;">Press <strong>space bar</strong> to begin.</p>
