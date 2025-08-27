@@ -403,6 +403,8 @@ function runTrial2P2G() {
 
         // ADD THIS: Detect and record first goals for both players
         var player1CurrentGoal = detectPlayerGoal(gameData.player1, aimAction, gameData.currentGoals, []);
+        gameData.currentTrialData.player1CurrentGoal.push(player1CurrentGoal);
+        
         var player2CurrentGoal = null;
         if (player2Action) {
             player2CurrentGoal = detectPlayerGoal(gameData.player2, player2Action, gameData.currentGoals, []);
