@@ -337,8 +337,8 @@ function generateNewGoalFor2P3G(player2Pos, player1Pos, oldGoals, player2Current
 
             case TWOP3G_CONFIG.distanceConditions.EQUAL_TO_BOTH:
                 var distanceDiff = Math.abs(newGoalDistanceToPlayer2 - newGoalDistanceToPlayer1);
-                var equalTolerance = isRelaxed ? 2 : 1; // Increased tolerance for equal distance
-                var sumTolerance = isRelaxed ? 2 : 1; // More relaxed sum tolerance for EQUAL_TO_BOTH
+                var equalTolerance = isRelaxed ? 1 : 0; // Increased tolerance for equal distance
+                var sumTolerance = isRelaxed ? 1 : 0; // More relaxed sum tolerance for EQUAL_TO_BOTH
                 var meetsEqualCondition = distanceDiff <= equalTolerance &&
                                         Math.abs(newDistanceSum - oldDistanceSum) <= sumTolerance;
 

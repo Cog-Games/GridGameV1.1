@@ -742,7 +742,7 @@ class GameRoom {
                                             case 'equal_to_both':
                         // New goal equal distance to both player1 and player2, equal joint distance
                         const distanceDifference = Math.abs(newGoalDistanceToPlayer2 - newGoalDistanceToPlayer1);
-                        distanceConditionMet = distanceDifference <= 1; // More reasonable tolerance
+                        distanceConditionMet = distanceDifference <= 0;
                         conditionType = 'equal_to_both';
                         break;
 

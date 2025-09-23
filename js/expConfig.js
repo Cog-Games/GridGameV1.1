@@ -25,7 +25,7 @@ const NODEGAME_CONFIG = {
     // =================================================================================================
 
     // Current test configuration (2P3G only)
-    // experimentOrder: ['2P3G'],
+    experimentOrder: ['2P3G'],
     // experimentOrder: ['1P2G'],           // Test 1P2G only
 
     // Alternative configurations (uncomment to use):
@@ -33,7 +33,7 @@ const NODEGAME_CONFIG = {
     // experimentOrder: ['2P2G'],           // Test 2P2G only
     // experimentOrder: ['1P1G', '1P2G'],   // Test 1P1G and 1P2G
     // experimentOrder: ['2P2G', '2P3G'],   // Test 2P2G and 2P3G
-    experimentOrder: ['1P1G', '1P2G', '2P2G', '2P3G'], // Test all experiments
+    // experimentOrder: ['1P1G', '1P2G', '2P2G', '2P3G'], // Test all experiments
     // experimentOrder: ['1P2G', '2P3G'],
 
     // =================================================================================================
@@ -140,7 +140,6 @@ var ONEP2G_CONFIG = {
         blockPathCheck: true            // Check if goal blocks path
     }
 };
-
 
 // Configuration object for easy manipulation of 2P3G timing and positioning
 var TWOP3G_CONFIG = {
