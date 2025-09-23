@@ -13,9 +13,10 @@ The AI Movement Mode feature allows AI agents to move freely without depending o
 
 ### Configurable Timing
 
-- **Decision Time Range**: Configurable minimum and maximum intervals for AI decisions
-- **Default Range**: 300-600 milliseconds
-- **Customizable**: Can be set to any range between 100ms and 3000ms
+- **First Move Decision Range**: Configurable minimum and maximum interval before the first independent AI move
+- **Inter-Move Decision Range**: Configurable minimum and maximum interval between subsequent moves
+- **Default Range**: 500-800 milliseconds for both first and subsequent moves
+- **Customizable**: Each range can be set independently between 100ms and 3000ms
 
 ## Configuration
 
@@ -31,8 +32,14 @@ rlAgent: {
     movementMode: {
         enabled: false, // Enable independent AI movement mode
         decisionTimeRange: {
-            min: 300, // Minimum decision time in milliseconds
-            max: 600  // Maximum decision time in milliseconds
+            firstMove: {
+                min: 500, // Minimum decision time in milliseconds before the first move
+                max: 800  // Maximum decision time in milliseconds before the first move
+            },
+            interMove: {
+                min: 500, // Minimum decision time in milliseconds between moves
+                max: 800  // Maximum decision time in milliseconds between moves
+            }
         }
     }
 }
@@ -43,10 +50,16 @@ rlAgent: {
 #### Enable/Disable Independent AI Movement
 
 ```javascript
-// Enable with default timing (300-600ms)
+// Enable with default timing (500-800ms for first/inter moves)
 NodeGameConfig.setAIMovementMode(true);
 
 // Enable with custom timing
+NodeGameConfig.setAIMovementMode(true, {
+    firstMove: {min: 200, max: 400},
+    interMove: {min: 300, max: 700}
+});
+
+// Legacy signature applies the same range to both
 NodeGameConfig.setAIMovementMode(true, {min: 200, max: 800});
 
 // Disable independent AI movement
@@ -59,7 +72,11 @@ NodeGameConfig.setAIMovementMode(false);
 // Get current configuration
 const config = NodeGameConfig.getAIMovementMode();
 console.log(config.enabled); // true/false
-console.log(config.decisionTimeRange); // {min: 300, max: 600}
+console.log(config.decisionTimeRange);
+// {
+//   firstMove: {min: 500, max: 800},
+//   interMove: {min: 500, max: 800}
+// }
 
 // Check if enabled
 if (NodeGameConfig.isAIMovementModeEnabled()) {
@@ -124,17 +141,23 @@ This feature works with the following experiment types:
 NodeGameConfig.setAIMovementMode(true);
 
 // Start a 2P2G game - AI will move independently
-// The game will use the default timing (300-600ms)
+// The game will use the default timing (500-800ms for first/inter moves)
 ```
 
 ### Custom Timing
 
 ```javascript
-// Enable with faster AI decisions (200-400ms)
-NodeGameConfig.setAIMovementMode(true, {min: 200, max: 400});
+// Faster first move, moderate inter-move pace
+NodeGameConfig.setAIMovementMode(true, {
+    firstMove: {min: 150, max: 300},
+    interMove: {min: 250, max: 450}
+});
 
-// Enable with slower AI decisions (500-1000ms)
-NodeGameConfig.setAIMovementMode(true, {min: 500, max: 1000});
+// Slow, deliberate AI on every move
+NodeGameConfig.setAIMovementMode(true, {
+    firstMove: {min: 600, max: 900},
+    interMove: {min: 700, max: 1100}
+});
 ```
 
 ### Conditional Usage
@@ -202,7 +225,10 @@ Use `test_ai_movement_mode.html` to:
 // Potential future configuration
 movementMode: {
     enabled: false,
-    decisionTimeRange: {min: 300, max: 600},
+    decisionTimeRange: {
+        firstMove: {min: 500, max: 800},
+        interMove: {min: 500, max: 800}
+    },
     adaptiveTiming: false, // Future: adaptive timing based on game state
     personality: 'normal', // Future: different AI personalities
     visualFeedback: true   // Future: show AI thinking indicators

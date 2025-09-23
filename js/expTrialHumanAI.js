@@ -530,6 +530,8 @@ function runTrial2P2G() {
             aiMoveInterval = null;
         }
 
+        var isFirstIndependentMove = true;
+
         function scheduleNextAIMove() {
             if (!gameData || !gameData.player2 || !gameData.currentGoals) {
                 return;
@@ -541,8 +543,9 @@ function runTrial2P2G() {
             }
 
             // Generate random delay within the configured range
-            var minDelay = NODEGAME_CONFIG.rlAgent.movementMode.decisionTimeRange.min;
-            var maxDelay = NODEGAME_CONFIG.rlAgent.movementMode.decisionTimeRange.max;
+            var range = NODEGAME_CONFIG.rlAgent.movementMode.decisionTimeRange;
+            var minDelay = isFirstIndependentMove ? range.firstMove.min : range.interMove.min;
+            var maxDelay = isFirstIndependentMove ? range.firstMove.max : range.interMove.max;
             var randomDelay = Math.random() * (maxDelay - minDelay) + minDelay;
 
             setTimeout(() => {
@@ -561,6 +564,8 @@ function runTrial2P2G() {
                     gameData.gridMatrix = updateMatrix(gameData.gridMatrix, gameData.player2[0], gameData.player2[1], OBJECT.blank);
                     gameData.gridMatrix = updateMatrix(gameData.gridMatrix, player2NextState[0], player2NextState[1], OBJECT.ai_player);
                     gameData.player2 = player2NextState;
+
+                    isFirstIndependentMove = false;
 
                     gameData.stepCount++;
                     nodeGameUpdateGameDisplay();
@@ -893,6 +898,8 @@ function runTrial2P3G() {
             aiMoveInterval = null;
         }
 
+        var isFirstIndependentMove = true;
+
         function scheduleNextAIMove() {
             if (!gameData || !gameData.player2 || !gameData.currentGoals) {
                 return;
@@ -904,8 +911,9 @@ function runTrial2P3G() {
             }
 
             // Generate random delay within the configured range
-            var minDelay = NODEGAME_CONFIG.rlAgent.movementMode.decisionTimeRange.min;
-            var maxDelay = NODEGAME_CONFIG.rlAgent.movementMode.decisionTimeRange.max;
+            var range = NODEGAME_CONFIG.rlAgent.movementMode.decisionTimeRange;
+            var minDelay = isFirstIndependentMove ? range.firstMove.min : range.interMove.min;
+            var maxDelay = isFirstIndependentMove ? range.firstMove.max : range.interMove.max;
             var randomDelay = Math.random() * (maxDelay - minDelay) + minDelay;
 
             setTimeout(() => {
@@ -939,6 +947,8 @@ function runTrial2P3G() {
                         gameData.currentTrialData.player2FirstDetectedGoal = player2CurrentGoal;
                         console.log(`Player2 first detected goal: ${player2CurrentGoal}`);
                     }
+
+                    isFirstIndependentMove = false;
 
                     gameData.stepCount++;
                     nodeGameUpdateGameDisplay();

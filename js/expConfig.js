@@ -67,10 +67,16 @@ const NODEGAME_CONFIG = {
 
         // AI Movement Mode Configuration
         movementMode: {
-            enabled: false, // Enable independent AI movement mode
+            enabled: true, // Enable independent AI movement mode
             decisionTimeRange: {
-                min: 100, // Minimum decision time in milliseconds
-                max: 500  // Maximum decision time in milliseconds
+                firstMove: {
+                    min: 950, // Minimum decision time in milliseconds before the first move
+                    max: 1350  // Maximum decision time in milliseconds before the first move
+                },
+                interMove: {
+                    min: 250, // Minimum decision time in milliseconds between subsequent moves
+                    max: 350  // Maximum decision time in milliseconds between subsequent moves
+                }
             },
             // When enabled, AI moves independently with random intervals
             // When disabled, AI moves only when human makes a move
@@ -217,13 +223,39 @@ function setAIMovementMode(enabled, decisionTimeRange = null) {
     NODEGAME_CONFIG.rlAgent.movementMode.enabled = enabled;
 
     if (decisionTimeRange) {
-        NODEGAME_CONFIG.rlAgent.movementMode.decisionTimeRange.min = decisionTimeRange.min;
-        NODEGAME_CONFIG.rlAgent.movementMode.decisionTimeRange.max = decisionTimeRange.max;
+        var currentRange = NODEGAME_CONFIG.rlAgent.movementMode.decisionTimeRange;
+
+        if (decisionTimeRange.firstMove) {
+            if (typeof decisionTimeRange.firstMove.min === 'number') {
+                currentRange.firstMove.min = decisionTimeRange.firstMove.min;
+            }
+            if (typeof decisionTimeRange.firstMove.max === 'number') {
+                currentRange.firstMove.max = decisionTimeRange.firstMove.max;
+            }
+        }
+
+        if (decisionTimeRange.interMove) {
+            if (typeof decisionTimeRange.interMove.min === 'number') {
+                currentRange.interMove.min = decisionTimeRange.interMove.min;
+            }
+            if (typeof decisionTimeRange.interMove.max === 'number') {
+                currentRange.interMove.max = decisionTimeRange.interMove.max;
+            }
+        }
+
+        if (typeof decisionTimeRange.min === 'number' && typeof decisionTimeRange.max === 'number') {
+            currentRange.firstMove.min = decisionTimeRange.min;
+            currentRange.firstMove.max = decisionTimeRange.max;
+            currentRange.interMove.min = decisionTimeRange.min;
+            currentRange.interMove.max = decisionTimeRange.max;
+        }
     }
 
     console.log(`AI Movement Mode: ${enabled ? 'ENABLED' : 'DISABLED'}`);
     if (enabled) {
-        console.log(`Decision time range: ${NODEGAME_CONFIG.rlAgent.movementMode.decisionTimeRange.min}-${NODEGAME_CONFIG.rlAgent.movementMode.decisionTimeRange.max}ms`);
+        var range = NODEGAME_CONFIG.rlAgent.movementMode.decisionTimeRange;
+        console.log(`First move decision time range: ${range.firstMove.min}-${range.firstMove.max}ms`);
+        console.log(`Inter-move decision time range: ${range.interMove.min}-${range.interMove.max}ms`);
     }
 }
 
@@ -234,7 +266,10 @@ function setAIMovementMode(enabled, decisionTimeRange = null) {
 function getAIMovementMode() {
     return {
         enabled: NODEGAME_CONFIG.rlAgent.movementMode.enabled,
-        decisionTimeRange: { ...NODEGAME_CONFIG.rlAgent.movementMode.decisionTimeRange }
+        decisionTimeRange: {
+            firstMove: { ...NODEGAME_CONFIG.rlAgent.movementMode.decisionTimeRange.firstMove },
+            interMove: { ...NODEGAME_CONFIG.rlAgent.movementMode.decisionTimeRange.interMove }
+        }
     };
 }
 
@@ -259,4 +294,3 @@ window.NodeGameConfig = {
     getAIMovementMode: getAIMovementMode,
     isAIMovementModeEnabled: isAIMovementModeEnabled
 };
-
