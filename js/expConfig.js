@@ -123,7 +123,7 @@ const NODEGAME_CONFIG = {
 
         // AI Movement Mode Configuration
         movementMode: {
-            enabled: true, // Enable independent AI movement mode
+            enabled: false, // Enable independent AI movement mode
             decisionTimeRange: {
                 firstMove: {
                     min: 950, // Minimum decision time in milliseconds before the first move
