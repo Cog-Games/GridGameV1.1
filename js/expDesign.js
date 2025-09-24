@@ -318,7 +318,7 @@ function generateNewGoalFor2P3G(player2Pos, player1Pos, oldGoals, player2Current
     var player1DistanceToOldGoal = calculatetGirdDistance(player1Pos, player2CurrentGoal);
 
     function checkDistanceCondition2P3G(newGoalDistanceToPlayer1, newGoalDistanceToPlayer2, newDistanceSum, isRelaxed) {
-        var tolerance = isRelaxed ? 1 : 0.1;
+        var tolerance = isRelaxed ? 1 : 0;
         var minDiff = isRelaxed ? 0 : TWOP3G_CONFIG.distanceConstraint.minDistanceDiff;
         var maxDiff = isRelaxed ? 30 : TWOP3G_CONFIG.distanceConstraint.maxDistanceDiff;
 
@@ -336,13 +336,14 @@ function generateNewGoalFor2P3G(player2Pos, player1Pos, oldGoals, player2Current
                        Math.abs(newDistanceSum - oldDistanceSum) <= tolerance;
 
             case TWOP3G_CONFIG.distanceConditions.EQUAL_TO_BOTH:
-                var distanceDiff = Math.abs(newGoalDistanceToPlayer2 - newGoalDistanceToPlayer1);
-                var equalTolerance = isRelaxed ? 1 : 0; // Increased tolerance for equal distance
-                var sumTolerance = isRelaxed ? 1 : 0; // More relaxed sum tolerance for EQUAL_TO_BOTH
-                var meetsEqualCondition = distanceDiff <= equalTolerance &&
+                var distanceDiff1 = Math.abs(newGoalDistanceToPlayer1 - player1DistanceToOldGoal);
+                var distanceDiff2 = Math.abs(newGoalDistanceToPlayer2 - player2DistanceToOldGoal);
+                var distanceDiff3 = Math.abs(newGoalDistanceToPlayer2 - newGoalDistanceToPlayer1);
+
+                var equalTolerance = isRelaxed ? 1 : 0; // tolerance for equal distance
+                var sumTolerance = isRelaxed ? 1 : 0; // relaxed sum tolerance for EQUAL_TO_BOTH
+                var meetsEqualCondition = distanceDiff1 <= equalTolerance && distanceDiff2 <= equalTolerance && distanceDiff3 <= equalTolerance &&
                                         Math.abs(newDistanceSum - oldDistanceSum) <= sumTolerance;
-
-
                 return meetsEqualCondition;
 
             default:
