@@ -92,11 +92,18 @@ function createTimelineStages() {
         handler: showEndExperimentInfoStage
     });
 
-    // Add Prolific redirect stage
-    timeline.stages.push({
-        type: 'prolific-redirect',
-        handler: showProlificRedirectStage
-    });
+    if (NODEGAME_CONFIG.enableProlificRedirect) {
+        // Add Prolific redirect stage
+        timeline.stages.push({
+            type: 'prolific-redirect',
+            handler: showProlificRedirectStage
+        });
+    } else {
+        timeline.stages.push({
+            type: 'local-complete',
+            handler: showLocalCompletionStage
+        });
+    }
 
     // Add completion stage (only once at the end)
     // timeline.stages.push({
@@ -1056,6 +1063,15 @@ function showEndExperimentInfoStage(stage) {
     `;
 
     // Save data to Google Drive (this will handle the redirect to Prolific)
+    if (window.NodeGameConfig) {
+        var storageSettings = window.NodeGameConfig.getDataStorageConfig();
+        if (storageSettings && storageSettings.type === 'local') {
+            console.log('Local mode detected — skipping Google Drive upload.');
+            nextStage();
+            return;
+        }
+    }
+
     saveDataToGoogleDrive();
 }
 
@@ -1065,6 +1081,11 @@ function showEndExperimentInfoStage(stage) {
 function showProlificRedirectStage(stage) {
     var container = document.getElementById('container');
     var completionCode = NODEGAME_CONFIG.prolificCompletionCode || 'COMPLETION_CODE';
+
+    if (!NODEGAME_CONFIG.enableProlificRedirect) {
+        showLocalCompletionStage(stage);
+        return;
+    }
 
     container.innerHTML = `
         <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
@@ -1124,119 +1145,126 @@ function showProlificRedirectStage(stage) {
     });
 }
 
+async function showLocalCompletionStage() {
+    var container = document.getElementById('container');
+    var participantId = window.DataRecording ? (window.DataRecording.getParticipantId() || 'participant') : 'participant';
+    var safeParticipantId = participantId.replace(/[^a-zA-Z0-9_-]/g, '_');
+    var timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    var excelFilename = `experiment_data_${safeParticipantId}_${timestamp}.xlsx`;
+
+    container.innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
+            <div style="max-width: 600px; background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center;">
+                <h2 style="color: #333; margin-bottom: 20px;">🎉 Thanks for Participating!</h2>
+                <p style="font-size: 18px; margin-bottom: 20px;">Your session is complete.</p>
+                <p style="font-size: 16px; color: #666;" id="saveStatus">Saving your data...</p>
+            </div>
+        </div>
+    `;
+
+    const status = document.getElementById('saveStatus');
+
+    function updateStatus(message, color) {
+        if (status) {
+            status.style.color = color || '#17a2b8';
+            status.innerHTML = message;
+        }
+    }
+
+    try {
+        updateStatus('Preparing Excel workbook...', '#17a2b8');
+
+        if (typeof XLSX === 'undefined') {
+            throw new Error('Excel library (XLSX) is not loaded.');
+        }
+
+        var questionnaireArray = convertQuestionnaireToArray(gameData.questionnaireData);
+
+        var workbook = XLSX.utils.book_new();
+
+        var allTrialsData = gameData.allTrialsData || [];
+        if (allTrialsData.length > 0) {
+            var processedData = allTrialsData.map(function(trial) {
+                var copy = {};
+                Object.keys(trial).forEach(function(key) {
+                    var value = trial[key];
+                    if (Array.isArray(value) || (typeof value === 'object' && value !== null)) {
+                        copy[key] = JSON.stringify(value);
+                    } else if (value === undefined) {
+                        copy[key] = '';
+                    } else {
+                        copy[key] = value;
+                    }
+                });
+                return copy;
+            });
+
+            var experimentSheet = XLSX.utils.json_to_sheet(processedData);
+            XLSX.utils.book_append_sheet(workbook, experimentSheet, 'Experiment Data');
+        } else {
+            var emptySheet = XLSX.utils.aoa_to_sheet([["No experiment data available"]]);
+            XLSX.utils.book_append_sheet(workbook, emptySheet, 'Experiment Data');
+        }
+
+        if (questionnaireArray && questionnaireArray.length > 0) {
+            var questionnaireSheet = XLSX.utils.aoa_to_sheet(questionnaireArray);
+            XLSX.utils.book_append_sheet(workbook, questionnaireSheet, 'Questionnaire Data');
+        } else {
+            var emptyQuestionnaireSheet = XLSX.utils.aoa_to_sheet([["No questionnaire data available"]]);
+            XLSX.utils.book_append_sheet(workbook, emptyQuestionnaireSheet, 'Questionnaire Data');
+        }
+
+        updateStatus('Saving Excel locally...', '#17a2b8');
+        downloadExcelFileLocally(workbook, excelFilename, { silent: true });
+
+        updateStatus('Uploading Excel to Google Drive...', '#17a2b8');
+        await uploadWorkbookToGoogleDrive(workbook, excelFilename);
+
+        updateStatus('✅ Excel saved locally.<br>✅ Excel uploaded to Google Drive.<br><strong>You may close this window.</strong>', '#28a745');
+    } catch (error) {
+        console.error('Failed to save session data:', error);
+        updateStatus('Error saving data: ' + (error.message || error), '#dc3545');
+    }
+}
+
 /**
  * Send Excel file to Google Drive
  */
-function sendExcelToGoogleDrive(experimentData, questionnaireData, filename) {
+function sendExcelToGoogleDrive(experimentData, questionnaireData, filename, options) {
+    options = options || {};
+
     try {
-        // Check if XLSX library is available
-        if (typeof XLSX === 'undefined') {
-            console.error('XLSX library not found. Please include the SheetJS library.');
-            alert('Excel export requires the SheetJS library. Please refresh the page and try again.');
+        console.log('sendExcelToGoogleDrive called in local mode; skipping remote upload.');
+
+        if (typeof options.resolve === 'function') {
+            options.resolve({ savedToDrive: false, mode: 'local' });
             return;
         }
 
-        // Create a new workbook
-        const wb = XLSX.utils.book_new();
-
-        // Add experiment data sheet
-        if (experimentData && experimentData.length > 0) {
-            // Pre-process the data to handle complex objects and arrays
-            const processedData = experimentData.map(trial => {
-                const processedTrial = {};
-                for (const key in trial) {
-                    if (trial.hasOwnProperty(key)) {
-                        let value = trial[key];
-                        // Convert arrays and objects to JSON strings for Excel compatibility
-                        if (Array.isArray(value) || (typeof value === 'object' && value !== null)) {
-                            processedTrial[key] = JSON.stringify(value);
-                        } else if (value === null || value === undefined) {
-                            processedTrial[key] = ''; // Keep empty for null/undefined
-                        } else {
-                            processedTrial[key] = value;
-                        }
-                    }
-                }
-                return processedTrial;
-            });
-
-            const experimentWS = XLSX.utils.json_to_sheet(processedData);
-            XLSX.utils.book_append_sheet(wb, experimentWS, "Experiment Data");
-        } else {
-            // Create empty sheet with message
-            const emptyWS = XLSX.utils.aoa_to_sheet([["No experiment data available - only questionnaire was run"]]);
-            XLSX.utils.book_append_sheet(wb, emptyWS, "Experiment Data");
-        }
-
-        // Add questionnaire data sheet
-        if (questionnaireData && questionnaireData.length > 1) {
-            const questionnaireWS = XLSX.utils.aoa_to_sheet(questionnaireData);
-            XLSX.utils.book_append_sheet(wb, questionnaireWS, "Questionnaire Data");
-        } else {
-            // Create empty questionnaire sheet
-            const emptyQuestionnaireWS = XLSX.utils.aoa_to_sheet([["No questionnaire data available"]]);
-            XLSX.utils.book_append_sheet(wb, emptyQuestionnaireWS, "Questionnaire Data");
-        }
-
-        // Convert workbook to binary array for sending to Google Drive
-        const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-
-        // Convert to base64 string for transmission
-        const base64String = btoa(String.fromCharCode.apply(null, new Uint8Array(wbout)));
-
-        // Create FormData to send file
-        const formData = new FormData();
-        formData.append('filename', filename);
-        formData.append('filedata', base64String);
-        formData.append('filetype', 'excel');
-
-        // Send to Google Drive via Apps Script
-        fetch("https://script.google.com/macros/s/AKfycbyfQ-XKsoFbmQZGM7c741rEXh2ZUpVK-uUIu9ycooXKnaxM5-hRSzIUhQ-uWZ668Qql/exec", {
-            method: "POST",
-            mode: "no-cors",  // Required for Google Apps Script from local files
-            body: formData
-        }).then(response => {
-            console.log('Google Drive save successful');
-            alert('Data saved successfully!');
-
-            // Move to next stage after successful save
+        if (!options.skipNextStage) {
             nextStage();
-
-        }).catch(error => {
-            console.error('Error saving to Google Drive:', error);
-
-            // Fallback: Download the file locally instead
-            console.log('Google Drive save failed, falling back to local download...');
-            downloadExcelFileLocally(wb, filename);
-
-            // Still move to next stage even if Google Drive failed
-            nextStage();
-        });
-
+        }
     } catch (error) {
         console.error('Error creating Excel file for Google Drive:', error);
 
-        // Fallback: Try to create and download file locally
-        try {
-            if (typeof XLSX !== 'undefined') {
-                const wb = XLSX.utils.book_new();
-                const emptyWS = XLSX.utils.aoa_to_sheet([["Error creating experiment data"], ["Error details:", error.message]]);
-                XLSX.utils.book_append_sheet(wb, emptyWS, "Error Data");
-                downloadExcelFileLocally(wb, filename);
-            }
-        } catch (fallbackError) {
-            console.error('Fallback download also failed:', fallbackError);
+        if (typeof options.resolve === 'function') {
+            options.resolve({ savedToDrive: false, error: error });
+            return;
         }
 
-        alert('Error creating Excel file. Data will be downloaded locally instead.');
-        redirectToProlific();
+        if (!options.skipNextStage) {
+            nextStage();
+        }
     }
 }
 
 /**
  * Download Excel file locally as fallback when Google Drive fails
  */
-function downloadExcelFileLocally(wb, filename) {
+function downloadExcelFileLocally(wb, filename, options) {
+    options = options || {};
+    var silent = options.silent === true;
+
     try {
         // Convert workbook to blob
         const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
@@ -1253,11 +1281,56 @@ function downloadExcelFileLocally(wb, filename) {
         URL.revokeObjectURL(url);
 
         console.log('Excel file downloaded locally:', filename);
-        alert('Data downloaded successfully! Please save this file.');
+        if (!silent) {
+            alert('Data downloaded successfully! Please save this file.');
+        }
     } catch (error) {
         console.error('Error downloading Excel file locally:', error);
-        alert('Error downloading data file. Please contact the experiment administrator.');
+        if (!silent) {
+            alert('Error downloading data file. Please contact the experiment administrator.');
+        }
     }
+}
+
+/**
+ * Upload an existing workbook to Google Drive (Apps Script endpoint).
+ * Does not change timeline stages; resolves best-effort under no-cors.
+ * @param {Object} workbook - XLSX workbook object
+ * @param {string} filename - Target filename on Drive
+ * @returns {Promise<{savedToDrive:boolean,error?:any}>}
+ */
+function uploadWorkbookToGoogleDrive(workbook, filename) {
+    return new Promise(function(resolve) {
+        try {
+            if (typeof XLSX === 'undefined') {
+                console.error('XLSX library not found.');
+                resolve({ savedToDrive: false, error: new Error('XLSX not available') });
+                return;
+            }
+
+            const wbout = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+            const base64String = btoa(String.fromCharCode.apply(null, new Uint8Array(wbout)));
+
+            const formData = new FormData();
+            formData.append('filename', filename);
+            formData.append('filedata', base64String);
+            formData.append('filetype', 'excel');
+
+            fetch("https://script.google.com/macros/s/AKfycbyfQ-XKsoFbmQZGM7c741rEXh2ZUpVK-uUIu9ycooXKnaxM5-hRSzIUhQ-uWZ668Qql/exec", {
+                method: 'POST',
+                mode: 'no-cors',
+                body: formData
+            }).then(function() {
+                resolve({ savedToDrive: true });
+            }).catch(function(error) {
+                console.error('Google Drive upload error:', error);
+                resolve({ savedToDrive: false, error: error });
+            });
+        } catch (error) {
+            console.error('Failed to upload workbook to Google Drive:', error);
+            resolve({ savedToDrive: false, error: error });
+        }
+    });
 }
 
 /**
@@ -1471,7 +1544,7 @@ function getInstructionsForExperiment(experimentType) {
                             <ul style="font-size: 22px; color: #155724; margin-bottom: 15px; line-height: 1.6; text-align: left; padding-left: 20px;">
                                 <li>Each round, you can <strong>win</strong> by getting to one of the restaurants.</li>
                                 <li>Note that some restaurants are already open when the round starts. Others may appear later.</li>
-                                <li>For each round that you win, you earn an additional 10 cents.</li>
+                                <li>For each round that you win, you earn an additional 10 points.</li>
                             </ul>
                         </div>
                         <p style="font-size: 22px; margin-top: 30px;">Press <strong>space bar</strong> to begin.</p>
@@ -1512,7 +1585,7 @@ function getInstructionsForExperiment(experimentType) {
                                 <li>Each round, you can <strong> win </strong> if both of you go to the <strong> same </strong> restaurant.</li>
                                 <li>You lose the round if you end up at different restaurants.</li>
                                 <li> <strong> Note that some restaurants are already open when the round starts. Others may appear later.</strong></li>
-                                <li>For each round that you win, you earn an additional 10 cents.</li>
+                                <li>For each round that you win, you earn an additional 10 points.</li>
                             </ul>
                         </div>
                         <p style="font-size: 22px; margin-top: 30px;">Press <strong>space bar</strong> to begin.</p>

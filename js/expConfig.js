@@ -5,6 +5,62 @@ const NODEGAME_CONFIG = {
     treatments: ['1P1G', '1P2G', '2P2G', '2P3G'],
 
     // =================================================================================================
+    // MODE CONFIGURATION
+    // =================================================================================================
+    mode: 'local',
+    modes: {
+        online: {
+            label: 'Online (Prolific)',
+            description: 'Hosted deployment for remote Prolific participants.',
+            enableProlificRedirect: true,
+            participantId: {
+                source: 'prolificPID',
+                sourceKey: 'PROLIFIC_PID',
+                manualEntry: {
+                    enabled: false,
+                    promptTitle: null,
+                    placeholder: null,
+                    validationRegex: null,
+                    validationHint: null
+                }
+            },
+            dataStorage: {
+                type: 'remote',
+                syncStrategy: 'server',
+                localFallback: false,
+                fileNameTemplate: 'session_${participantId}_${timestamp}.json'
+            }
+        },
+        local: {
+            label: 'Local (Lab)',
+            description: 'Runs on a local machine with manual participant management.',
+            enableProlificRedirect: false,
+            participantId: {
+                source: 'manual',
+                sourceKey: 'participantId',
+                manualEntry: {
+                    enabled: true,
+                    promptTitle: 'Enter Participant ID',
+                    placeholder: 'P001',
+                    validationRegex: '^[A-Za-z0-9_-]{3,32}$',
+                    validationHint: 'Use 3-32 characters: letters, numbers, underscores, or hyphens.'
+                }
+            },
+            dataStorage: {
+                type: 'local',
+                baseDirectory: 'data/local_sessions',
+                autoCreateDirectory: true,
+                fileNameTemplate: 'session_${participantId}_${timestamp}.json',
+                persistRawData: true,
+                persistAggregateData: true,
+                includeParticipantIdInPayload: true
+            }
+        }
+    },
+    participantIdConfig: null,
+    dataStorage: null,
+
+    // =================================================================================================
     // PLAYER CONFIGURATION
     // =================================================================================================
     playerConfig: {
@@ -43,7 +99,7 @@ const NODEGAME_CONFIG = {
         '1P1G': 3,    // Number of 1P1G trials, formal=3
         '1P2G': 12,    // Number of 1P2G trials, formal=12
         '2P2G': 8,    // Number of 2P2G trials, formal=8
-        '2P3G': 12    // Number of 2P3G trials, formal=12
+        '2P3G': 1    // Number of 2P3G trials, formal=12
     },
 
     // =================================================================================================
@@ -181,6 +237,66 @@ var TWOP3G_CONFIG = {
 };
 
 /**
+ * Apply experiment mode configuration
+ * @param {string} modeKey - The mode to activate ('online' | 'local')
+ */
+function applyModeConfiguration(modeKey) {
+    var modeSettings = NODEGAME_CONFIG.modes[modeKey];
+
+    if (!modeSettings) {
+        console.error('Invalid experiment mode:', modeKey);
+        return;
+    }
+
+    NODEGAME_CONFIG.mode = modeKey;
+    NODEGAME_CONFIG.enableProlificRedirect = !!modeSettings.enableProlificRedirect;
+
+    NODEGAME_CONFIG.participantIdConfig = JSON.parse(JSON.stringify(modeSettings.participantId));
+    NODEGAME_CONFIG.dataStorage = JSON.parse(JSON.stringify(modeSettings.dataStorage));
+}
+
+/**
+ * Switch between experiment modes.
+ * @param {string} modeKey - The mode to activate ('online' | 'local')
+ */
+function setExperimentMode(modeKey) {
+    if (!NODEGAME_CONFIG.modes[modeKey]) {
+        console.error('Attempted to set unknown experiment mode:', modeKey);
+        return;
+    }
+
+    applyModeConfiguration(modeKey);
+    console.log('Experiment mode set to:', modeKey);
+}
+
+/**
+ * Get current experiment mode key.
+ * @returns {string}
+ */
+function getExperimentMode() {
+    return NODEGAME_CONFIG.mode;
+}
+
+/**
+ * Get participant ID configuration for the active mode.
+ * @returns {object}
+ */
+function getParticipantIdConfig() {
+    return NODEGAME_CONFIG.participantIdConfig;
+}
+
+/**
+ * Get data storage configuration for the active mode.
+ * @returns {object}
+ */
+function getDataStorageConfig() {
+    return NODEGAME_CONFIG.dataStorage;
+}
+
+// Initialize configuration based on default mode
+applyModeConfiguration(NODEGAME_CONFIG.mode);
+
+/**
  * Set player2 type configuration
  * @param {string} type - 'ai' or 'human'
  */
@@ -292,5 +408,9 @@ window.NodeGameConfig = {
     getRLAgentType: getRLAgentType,
     setAIMovementMode: setAIMovementMode,
     getAIMovementMode: getAIMovementMode,
-    isAIMovementModeEnabled: isAIMovementModeEnabled
+    isAIMovementModeEnabled: isAIMovementModeEnabled,
+    setExperimentMode: setExperimentMode,
+    getExperimentMode: getExperimentMode,
+    getParticipantIdConfig: getParticipantIdConfig,
+    getDataStorageConfig: getDataStorageConfig
 };

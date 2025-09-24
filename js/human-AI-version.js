@@ -36,15 +36,15 @@ window.nextStage = nextStage;
 function initializeNodeGameExperiments() {
     console.log('Initializing experiments...');
 
-    // Extract and validate participant ID
-    if (window.DataRecording && window.DataRecording.extractProlificId) {
-        const participantId = window.DataRecording.extractProlificId();
-        if (participantId) {
-            gameData.participantId = participantId;
-            console.log('Participant ID initialized:', participantId);
-        } else {
-            console.error('Failed to extract participant ID - this may affect data collection');
-        }
+    if (window.DataRecording && window.DataRecording.initializeParticipantIdFlow) {
+        window.DataRecording.initializeParticipantIdFlow().then(function(participantId) {
+            if (participantId) {
+                gameData.participantId = participantId;
+                console.log('Participant ID initialized:', participantId);
+            } else {
+                console.warn('Participant ID not available. Some features may be disabled.');
+            }
+        });
     }
 
     // Ensure required dependencies are available
@@ -90,6 +90,27 @@ function startNodeGameExperiment(experimentType) {
  */
 function startStandaloneExperiment(experimentType) {
     try {
+        // Ensure participant ID is ready for local mode if required
+        if (window.DataRecording && window.NodeGameConfig) {
+            var participantConfig = window.NodeGameConfig.getParticipantIdConfig();
+            if (participantConfig && participantConfig.source === 'manual') {
+                var pendingId = window.DataRecording.getParticipantId();
+                if (!pendingId) {
+                    console.log('Waiting for manual participant ID before starting experiment...');
+                    window.DataRecording.initializeParticipantIdFlow().then(function(id) {
+                        if (!id) {
+                            alert('A participant ID is required to run the experiment. Please restart when ready.');
+                            return;
+                        }
+                        console.log('Participant ID obtained:', id);
+                        gameData.participantId = id;
+                        startStandaloneExperiment(experimentType);
+                    });
+                    return;
+                }
+            }
+        }
+
         // Clear any existing content
         document.getElementById('container').innerHTML = '';
 

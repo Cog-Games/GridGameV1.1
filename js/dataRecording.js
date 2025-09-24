@@ -8,13 +8,90 @@
 // Participant ID storage
 var participantId = null;
 
+var participantIdSource = null;
+var pendingParticipantIdResolver = null;
+
+/**
+ * Initialize participant ID flow based on experiment mode configuration
+ * @returns {Promise<string|null>} Resolves with participant ID or null if cancelled/invalid
+ */
+function initializeParticipantIdFlow() {
+    const config = window.NodeGameConfig ? window.NodeGameConfig.getParticipantIdConfig() : null;
+    participantIdSource = config ? config.source : 'prolificPID';
+
+    if (participantIdSource === 'manual') {
+        return promptForParticipantId(config.manualEntry);
+    }
+
+    return Promise.resolve(extractProlificId());
+}
+
+function promptForParticipantId(manualConfig) {
+    return new Promise(function(resolve) {
+        pendingParticipantIdResolver = resolve;
+        var promptTitle = manualConfig && manualConfig.promptTitle ? manualConfig.promptTitle : 'Enter Participant ID';
+        var placeholder = manualConfig && manualConfig.placeholder ? manualConfig.placeholder : '';
+        var validationRegex = manualConfig && manualConfig.validationRegex ? new RegExp(manualConfig.validationRegex) : null;
+        var validationHint = manualConfig && manualConfig.validationHint ? manualConfig.validationHint : 'Please enter a valid participant ID.';
+
+        var idFromLocalStorage = window.localStorage ? window.localStorage.getItem('nodegame_manual_participant_id') : null;
+        var defaultValue = idFromLocalStorage || '';
+
+        var userInput = window.prompt(promptTitle + (placeholder ? ` (e.g., ${placeholder})` : ''), defaultValue);
+
+        if (userInput === null) {
+            console.warn('Participant ID entry cancelled by user');
+            participantId = null;
+            resolve(null);
+            return;
+        }
+
+        userInput = userInput.trim();
+
+        if (!userInput) {
+            alert('Participant ID cannot be empty. ' + validationHint);
+            participantId = null;
+            resolve(null);
+            return;
+        }
+
+        if (validationRegex && !validationRegex.test(userInput)) {
+            alert('Invalid participant ID format. ' + validationHint);
+            participantId = null;
+            resolve(null);
+            return;
+        }
+
+        participantId = userInput;
+        if (window.localStorage) {
+            window.localStorage.setItem('nodegame_manual_participant_id', participantId);
+        }
+        console.log('Manual participant ID set:', participantId);
+        resolve(participantId);
+    });
+}
+
+/**
+ * Set participant ID directly (used for manual entry UIs)
+ * @param {string} id - Participant identifier
+ */
+function setParticipantId(id) {
+    participantId = id;
+    if (pendingParticipantIdResolver) {
+        pendingParticipantIdResolver(participantId);
+        pendingParticipantIdResolver = null;
+    }
+}
+
 /**
  * Extract Prolific participant ID from URL parameters
  */
 function extractProlificId() {
+    const config = window.NodeGameConfig ? window.NodeGameConfig.getParticipantIdConfig() : null;
     const urlParams = new URLSearchParams(window.location.search);
-    const prolificPid = urlParams.get('PROLIFIC_PID') || urlParams.get('prolific_pid');
-    
+    const prolificKey = config && config.sourceKey ? config.sourceKey : 'PROLIFIC_PID';
+    const prolificPid = urlParams.get(prolificKey) || urlParams.get(prolificKey.toLowerCase());
+
     if (prolificPid) {
         participantId = prolificPid;
         console.log('Prolific participant ID extracted:', participantId);
@@ -41,16 +118,78 @@ function getParticipantId() {
     return participantId;
 }
 
+function getParticipantIdAsync() {
+    if (participantId) {
+        return Promise.resolve(participantId);
+    }
+    return initializeParticipantIdFlow();
+}
+
 /**
  * Validate that participant ID exists
  */
 function validateParticipantId() {
+    const config = window.NodeGameConfig ? window.NodeGameConfig.getParticipantIdConfig() : null;
+    if (config && config.manualEntry && config.manualEntry.enabled && !participantId) {
+        console.warn('Manual participant ID missing; prompting user.');
+        return initializeParticipantIdFlow().then(function(id) {
+            if (!id) {
+                console.error('No participant ID available - experiment cannot proceed');
+                return false;
+            }
+            return true;
+        });
+    }
+
     const id = getParticipantId();
     if (!id) {
         console.error('No participant ID available - experiment cannot proceed');
         return false;
     }
     return true;
+}
+
+function getDataStorageSettings() {
+    if (!window.NodeGameConfig) {
+        return null;
+    }
+    return window.NodeGameConfig.getDataStorageConfig();
+}
+
+function saveDataLocally(data, options) {
+    var storageConfig = getDataStorageSettings();
+    if (!storageConfig || storageConfig.type !== 'local') {
+        console.warn('Local data storage is not enabled for current mode.');
+        return;
+    }
+
+    options = options || {};
+
+    var timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    var participant = options.participantId || getParticipantId() || 'unknown';
+    var fileNameTemplate = storageConfig.fileNameTemplate || 'session_${participantId}_${timestamp}.json';
+    var fileNameBase = options.fileName || fileNameTemplate;
+
+    var fileName = fileNameBase
+        .replace('${participantId}', participant)
+        .replace('${timestamp}', timestamp);
+
+    var serialized = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+    var blob = new Blob([serialized], { type: 'application/json' });
+
+    if (storageConfig.baseDirectory) {
+        console.log('Local storage base directory (informational):', storageConfig.baseDirectory);
+    }
+
+    var link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(link.href);
+
+    console.log('Saved data locally as', fileName);
 }
 
 /**
@@ -98,6 +237,13 @@ function finalizeTrial(completed) {
     // Update success threshold tracking for collaboration games
     window.ExpDesign.updateSuccessThresholdTracking(trialSuccess, gameData.currentTrial);
 
+    if (window.NodeGameConfig && window.NodeGameConfig.getDataStorageConfig) {
+        var storageConfig = window.NodeGameConfig.getDataStorageConfig();
+        if (storageConfig && storageConfig.includeParticipantIdInPayload) {
+            gameData.currentTrialData.participantId = getParticipantId();
+        }
+    }
+
     gameData.allTrialsData.push({...gameData.currentTrialData});
 
     // Reset movement flags to prevent issues in next trial
@@ -115,5 +261,9 @@ window.DataRecording = {
     finalizeTrial: finalizeTrial,
     extractProlificId: extractProlificId,
     getParticipantId: getParticipantId,
-    validateParticipantId: validateParticipantId
+    getParticipantIdAsync: getParticipantIdAsync,
+    validateParticipantId: validateParticipantId,
+    setParticipantId: setParticipantId,
+    initializeParticipantIdFlow: initializeParticipantIdFlow,
+    saveDataLocally: saveDataLocally
 };
