@@ -15,8 +15,8 @@ var RL_AGENT_CONFIG = {
     gamma: 0.9,
     goalReward: 30,
     stepCost: -1,  // Cost per step (negative reward for movement)
-    softmaxBeta: 3.0,  // Reduced from 5 to prevent numerical instability
-    proximityRewardWeight: 0.01,  // Weight for joint Manhattan distance proximity reward
+    softmaxBeta: 3.0,
+    proximityRewardWeight: 0.02,  // Weight for joint Manhattan distance proximity reward
     coordinationRewardWeight: 0.02,  // Weight for coordination reward when one player is on goal
     maxPolicyIterations: 15,  // Limit iterations for faster initial policy
     progressivePolicyBuilding: true,  // Build policy progressively

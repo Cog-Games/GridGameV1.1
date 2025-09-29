@@ -1757,6 +1757,23 @@ function showWaitingForPartnerStage(stage) {
                                 <strong>Press the space bar to start the game.</strong>
                             </p>
                         </div>
+
+                        <div style="margin-top: 20px; font-size: 18px; color: #333;">
+                            <div style="display: flex; justify-content: center; gap: 32px; align-items: center;">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <span>You are player</span>
+                                    <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" style="display:inline-block; vertical-align: middle;">
+                                        <circle cx="12" cy="12" r="10" fill="red" stroke="red" stroke-width="2"></circle>
+                                    </svg>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <span>The other player</span>
+                                    <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" style="display:inline-block; vertical-align: middle;">
+                                        <circle cx="12" cy="12" r="10" fill="orange" stroke="orange" stroke-width="2"></circle>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             `;
@@ -1842,6 +1859,23 @@ function showGameReadyMessage() {
                     <p style="margin: 0; font-size: 16px; color: #155724;">
                         <strong>Press the space bar to start the game.</strong>
                     </p>
+                </div>
+
+                <div style="margin-top: 20px; font-size: 18px; color: #333;">
+                    <div style="display: flex; justify-content: center; gap: 32px; align-items: center;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span>You are player</span>
+                            <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" style="display:inline-block; vertical-align: middle;">
+                                <circle cx="12" cy="12" r="10" fill="red" stroke="red" stroke-width="2"></circle>
+                            </svg>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span>The other player</span>
+                            <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" style="display:inline-block; vertical-align: middle;">
+                                <circle cx="12" cy="12" r="10" fill="orange" stroke="orange" stroke-width="2"></circle>
+                            </svg>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
