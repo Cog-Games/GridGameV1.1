@@ -14,7 +14,7 @@ var participantId = null;
 function extractProlificId() {
     const urlParams = new URLSearchParams(window.location.search);
     const prolificPid = urlParams.get('PROLIFIC_PID') || urlParams.get('prolific_pid');
-    
+
     if (prolificPid) {
         participantId = prolificPid;
         console.log('Prolific participant ID extracted:', participantId);

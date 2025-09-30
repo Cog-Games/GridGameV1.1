@@ -404,7 +404,7 @@ function runTrial2P2G() {
         // ADD THIS: Detect and record first goals for both players
         var player1CurrentGoal = detectPlayerGoal(gameData.player1, aimAction, gameData.currentGoals, []);
         gameData.currentTrialData.player1CurrentGoal.push(player1CurrentGoal);
-        
+
         var player2CurrentGoal = null;
         if (player2Action) {
             player2CurrentGoal = detectPlayerGoal(gameData.player2, player2Action, gameData.currentGoals, []);
@@ -765,6 +765,20 @@ function runTrial2P3G() {
             console.log(`First detected shared goal: ${player1CurrentGoal}`);
         }
 
+        // NEW: Robust shared goal detection using latest known goals (not only simultaneous moves)
+        if (gameData.currentTrialData.firstDetectedSharedGoal === null) {
+            var lastP1Goal = gameData.currentTrialData.player1CurrentGoal.length > 0
+                ? gameData.currentTrialData.player1CurrentGoal[gameData.currentTrialData.player1CurrentGoal.length - 1]
+                : null;
+            var lastP2Goal = gameData.currentTrialData.player2CurrentGoal.length > 0
+                ? gameData.currentTrialData.player2CurrentGoal[gameData.currentTrialData.player2CurrentGoal.length - 1]
+                : null;
+            if (lastP1Goal !== null && lastP2Goal !== null && lastP1Goal === lastP2Goal) {
+                gameData.currentTrialData.firstDetectedSharedGoal = lastP1Goal;
+                console.log(`First detected shared goal (asynchronous): ${lastP1Goal}`);
+            }
+        }
+
         gameData.stepCount++;
         nodeGameUpdateGameDisplay();
 
@@ -836,6 +850,20 @@ function runTrial2P3G() {
         // Update goal history
         if (player2CurrentGoal !== null) {
             player2InferredGoals.push(player2CurrentGoal);
+        }
+
+        // NEW: Robust shared goal detection during independent AI movement
+        if (gameData.currentTrialData.firstDetectedSharedGoal === null) {
+            var lastP1Goal = gameData.currentTrialData.player1CurrentGoal.length > 0
+                ? gameData.currentTrialData.player1CurrentGoal[gameData.currentTrialData.player1CurrentGoal.length - 1]
+                : null;
+            var lastP2Goal = gameData.currentTrialData.player2CurrentGoal.length > 0
+                ? gameData.currentTrialData.player2CurrentGoal[gameData.currentTrialData.player2CurrentGoal.length - 1]
+                : null;
+            if (lastP1Goal !== null && lastP2Goal !== null && lastP1Goal === lastP2Goal) {
+                gameData.currentTrialData.firstDetectedSharedGoal = lastP1Goal;
+                console.log(`First detected shared goal (independent AI): ${lastP1Goal}`);
+            }
         }
 
         gameData.stepCount++;
@@ -946,6 +974,20 @@ function runTrial2P3G() {
                     if (player2CurrentGoal !== null && gameData.currentTrialData.player2FirstDetectedGoal === null) {
                         gameData.currentTrialData.player2FirstDetectedGoal = player2CurrentGoal;
                         console.log(`Player2 first detected goal: ${player2CurrentGoal}`);
+                    }
+
+                    // NEW: Robust shared goal detection during autonomous AI movement
+                    if (gameData.currentTrialData.firstDetectedSharedGoal === null) {
+                        var lastP1Goal = gameData.currentTrialData.player1CurrentGoal.length > 0
+                            ? gameData.currentTrialData.player1CurrentGoal[gameData.currentTrialData.player1CurrentGoal.length - 1]
+                            : null;
+                        var lastP2Goal = gameData.currentTrialData.player2CurrentGoal.length > 0
+                            ? gameData.currentTrialData.player2CurrentGoal[gameData.currentTrialData.player2CurrentGoal.length - 1]
+                            : null;
+                        if (lastP1Goal !== null && lastP2Goal !== null && lastP1Goal === lastP2Goal) {
+                            gameData.currentTrialData.firstDetectedSharedGoal = lastP1Goal;
+                            console.log(`First detected shared goal (autonomous AI): ${lastP1Goal}`);
+                        }
                     }
 
                     isFirstIndependentMove = false;
