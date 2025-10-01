@@ -95,7 +95,7 @@ function createTimelineStages() {
     if (NODEGAME_CONFIG.enableProlificRedirect) {
         // Add Prolific redirect stage
         timeline.stages.push({
-            type:git
+            type: 'prolific-redirect',
             handler: showProlificRedirectStage
         });
     } else {
@@ -1062,7 +1062,7 @@ function showEndExperimentInfoStage(stage) {
         </style>
     `;
 
-    // Sagitthis will handle the redirect to Prolific)
+    // Save data to Google Drive (this will handle the redirect to Prolific)
     if (window.NodeGameConfig) {
         var storageSettings = window.NodeGameConfig.getDataStorageConfig();
         if (storageSettings && storageSettings.type === 'local') {
@@ -1789,7 +1789,7 @@ function showWaitingForPartnerStage(stage) {
         // Human-AI mode: Simulate waiting process
         console.log('Human-AI mode detected: Simulating partner matching');
 
-git        // Simulate waiting process with status updates
+        // Simulate waiting process with status updates
         const statusMessages = [
             'Connecting to matching service...',
             'Looking for another participant...',
