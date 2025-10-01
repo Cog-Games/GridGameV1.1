@@ -95,7 +95,7 @@ function createTimelineStages() {
     if (NODEGAME_CONFIG.enableProlificRedirect) {
         // Add Prolific redirect stage
         timeline.stages.push({
-            type: 'prolific-redirect',
+            type:git
             handler: showProlificRedirectStage
         });
     } else {
@@ -1062,7 +1062,7 @@ function showEndExperimentInfoStage(stage) {
         </style>
     `;
 
-    // Save data to Google Drive (this will handle the redirect to Prolific)
+    // Sagitthis will handle the redirect to Prolific)
     if (window.NodeGameConfig) {
         var storageSettings = window.NodeGameConfig.getDataStorageConfig();
         if (storageSettings && storageSettings.type === 'local') {
@@ -1554,7 +1554,7 @@ function getInstructionsForExperiment(experimentType) {
         case '2P2G':
             return `
                 <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
-                    <div style="background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 800px; text-align: center;">
+                    <div style="background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 900px; text-align: center;">
                         <h2 style="color: #333; margin-bottom: 30px; font-size: 36px;">Game 3</h2>
                         <h3 style="color: #000; margin-bottom: 20px; font-size: 24px;">Well done!</h3>
                         <div style="background: #e8f5e8; border: 1px solid #c3e6cb; border-radius: 8px; padding: 28px; margin-bottom: 30px;">
@@ -1567,6 +1567,88 @@ function getInstructionsForExperiment(experimentType) {
                                 <li>For each round that you win, you earn an additional 10 cents.</li>
                             </ul>
                         </div>
+
+                        <!-- Demo Map Figure -->
+                        <div style="background: #f8f9fa; border: 2px solid #007bff; border-radius: 10px; padding: 25px; margin: 30px 0;">
+                            <h4 style="color: #007bff; margin-bottom: 20px; font-size: 20px;">Example Map:</h4>
+
+                            <!-- Grid Demo -->
+                            <div style="display: flex; justify-content: center; margin-bottom: 20px;">
+                                <div style="display: grid; grid-template-columns: repeat(5, 40px); grid-template-rows: repeat(5, 40px); gap: 2px; border: 2px solid #333; padding: 10px; background: white; border-radius: 8px;">
+                                    <!-- Row 1 -->
+                                    <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+                                    <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+                                    <div style="background: #007bff; border: 1px solid #ddd; border-radius: 3px; position: relative;">
+                                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 20px; height: 20px; background: #007bff; border-radius: 3px;"></div>
+                                    </div>
+                                    <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+                                    <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+
+                                    <!-- Row 2 -->
+                                    <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+                                    <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+                                    <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+                                    <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+                                    <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+
+                                    <!-- Row 3 -->
+                                    <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+                                    <div style="background: red; border: 1px solid #ddd; border-radius: 50%; position: relative;">
+                                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 20px; height: 20px; background: red; border-radius: 50%;"></div>
+                                    </div>
+                                    <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+                                    <div style="background: orange; border: 1px solid #ddd; border-radius: 50%; position: relative;">
+                                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 20px; height: 20px; background: orange; border-radius: 50%;"></div>
+                                    </div>
+                                    <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+
+                                    <!-- Row 4 -->
+                                    <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+                                    <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+                                    <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+                                    <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+                                    <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+
+                                    <!-- Row 5 -->
+                                    <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+                                    <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+                                    <div style="background: #007bff; border: 1px solid #ddd; border-radius: 3px; position: relative;">
+                                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 20px; height: 20px; background: #007bff; border-radius: 3px;"></div>
+                                    </div>
+                                    <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+                                    <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+                                </div>
+                            </div>
+
+                            <!-- Legend -->
+                            <div style="display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; font-size: 16px; color: #333;">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div style="width: 20px; height: 20px; background: red; border-radius: 50%;"></div>
+                                    <span>You (Player 1)</span>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div style="width: 20px; height: 20px; background: orange; border-radius: 50%;"></div>
+                                    <span>Other Player (Player 2)</span>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div style="width: 20px; height: 20px; background: #007bff; border-radius: 3px;"></div>
+                                    <span>Restaurant</span>
+                                </div>
+                            </div>
+
+                            <!-- Success/Failure Examples -->
+                            <div style="margin-top: 20px; display: flex; justify-content: space-around; gap: 20px; flex-wrap: wrap;">
+                                <div style="background: #d4edda; border: 2px solid #28a745; border-radius: 8px; padding: 15px; flex: 1; min-width: 200px;">
+                                    <h5 style="color: #28a745; margin-bottom: 10px; font-size: 16px;">✅ WIN: Both at same restaurant</h5>
+                                    <p style="font-size: 14px; color: #155724; margin: 0;">Both players reach the same restaurant = Success!</p>
+                                </div>
+                                <div style="background: #f8d7da; border: 2px solid #dc3545; border-radius: 8px; padding: 15px; flex: 1; min-width: 200px;">
+                                    <h5 style="color: #dc3545; margin-bottom: 10px; font-size: 16px;">❌ LOSE: Different restaurants</h5>
+                                    <p style="font-size: 14px; color: #721c24; margin: 0;">Players at different restaurants = Failure!</p>
+                                </div>
+                            </div>
+                        </div>
+
                         <p style="font-size: 22px; margin-top: 30px;">Press <strong>space bar</strong> to begin.</p>
                     </div>
                 </div>
@@ -1707,7 +1789,7 @@ function showWaitingForPartnerStage(stage) {
         // Human-AI mode: Simulate waiting process
         console.log('Human-AI mode detected: Simulating partner matching');
 
-        // Simulate waiting process with status updates
+git        // Simulate waiting process with status updates
         const statusMessages = [
             'Connecting to matching service...',
             'Looking for another participant...',
