@@ -1617,7 +1617,7 @@ function runTrialStage(stage) {
         <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
             <div style="text-align: center;">
                 <h3 style="margin-bottom: 10px;">Game ${experimentIndex + 1}</h3>
-                <h4 style="margin-bottom: 20px;">Round ${trialIndex + 1}</h4>
+                <h4 style="margin-bottom: 20px;">Round ${trialIndex + 1} of ${NODEGAME_CONFIG.numTrials[experimentType]}</h4>
                 <div id="gameCanvas" style="margin-bottom: 20px; position: relative;"></div>
                 <p style="font-size: 20px;">You are the player <span style="display: inline-block; width: 18px; height: 18px; background-color: ${playerColor}; border-radius: 50%; vertical-align: middle;"></span>. Press ↑ ↓ ← → to move.</p>
             </div>

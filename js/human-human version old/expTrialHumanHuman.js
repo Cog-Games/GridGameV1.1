@@ -96,9 +96,11 @@ function runTrialStageHumanHuman(stage) {
     // For collaboration games, show dynamic trial count
     var trialCountDisplay = '';
     if (experimentType.includes('2P') && NODEGAME_CONFIG.successThreshold.enabled) {
+        // For dynamic trials (success threshold enabled), don't show total since it can vary
         trialCountDisplay = `Round ${trialIndex + 1}`;
     } else {
-        trialCountDisplay = `Round ${trialIndex + 1}`;
+        // For fixed trials, show current/total format
+        trialCountDisplay = `Round ${trialIndex + 1} of ${NODEGAME_CONFIG.numTrials[experimentType]}`;
     }
 
     // Determine player color for display - must match actual game state
