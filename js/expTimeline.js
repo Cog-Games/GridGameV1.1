@@ -763,182 +763,120 @@ function showQuestionnaireStage(stage) {
     var container = document.getElementById('container');
 
     container.innerHTML = `
-        <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
-            <div style="background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 800px; width: 100%;">
-                <h2 style="color: #333; margin-bottom: 30px; text-align: center;">Post-Experiment Questionnaire</h2>
+        <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px;">
+            <div style="background: white; padding: 50px; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.15); max-width: 900px; width: 100%; position: relative; overflow: hidden;">
+                <!-- Decorative elements -->
+                <div style="position: absolute; top: -50px; right: -50px; width: 100px; height: 100px; background: linear-gradient(45deg, #667eea, #764ba2); border-radius: 50%; opacity: 0.1;"></div>
+                <div style="position: absolute; bottom: -30px; left: -30px; width: 60px; height: 60px; background: linear-gradient(45deg, #764ba2, #667eea); border-radius: 50%; opacity: 0.1;"></div>
+
+                <div style="text-align: center; margin-bottom: 40px;">
+                    <div style="display: inline-block; padding: 15px 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50px; margin-bottom: 20px;">
+                        <h2 style="color: white; margin: 0; font-size: 24px; font-weight: 600;">📋 Post-Experiment Questionnaire</h2>
+                    </div>
+                    <p style="color: #666; font-size: 16px; margin: 0;">Please share your experience with us</p>
+                </div>
 
                 <form id="questionnaireForm">
                     <div id="questionnairePage1">
-                        <h3 style="color: #666; margin-bottom: 20px;">Page 1 of 2</h3>
+                        <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 15px 25px; border-radius: 15px; margin-bottom: 30px; text-align: center;">
+                            <h3 style="margin: 0; font-size: 18px; font-weight: 500;">📄 Page 1 of 2</h3>
+                        </div>
 
-                        <div style="margin-bottom: 25px;">
-                            <label style="display: block; font-weight: bold; margin-bottom: 10px; color: #333;">
-                                Do you think the other player is a person or an AI?
-                            </label>
-                            <div style="display: flex; flex-direction: column; gap: 8px;">
-                                <label style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="radio" name="ai_detection" value="Definitely a person" required style="margin-right: 10px;">
-                                    Definitely a person
+                        <div style="background: #f8f9ff; border: 2px solid #e0e7ff; border-radius: 15px; padding: 25px; margin-bottom: 30px; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.1);">
+                            <div style="display: flex; align-items: center; margin-bottom: 20px;">
+                                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 50%; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; margin-right: 15px; font-weight: bold;">1</div>
+                                <label style="font-weight: 600; font-size: 18px; color: #333; margin: 0;">
+                                    🤖 Do you think the other player is a person or an computer /AI?
                                 </label>
-                                <label style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="radio" name="ai_detection" value="Probably a person" required style="margin-right: 10px;">
-                                    Probably a person
-                                </label>
-                                <label style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="radio" name="ai_detection" value="Not sure" required style="margin-right: 10px;">
-                                    Not sure
-                                </label>
-                                <label style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="radio" name="ai_detection" value="Probably an AI" required style="margin-right: 10px;">
-                                    Probably an AI
-                                </label>
-                                <label style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="radio" name="ai_detection" value="Definitely an AI" required style="margin-right: 10px;">
-                                    Definitely an AI
-                                </label>
+                            </div>
+                            <div style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                                    <input type="radio" name="ai_detection" value="Definitely a person" required id="ai_detection_1" style="cursor: pointer; transform: scale(1.2); accent-color: #667eea;">
+                                    <input type="radio" name="ai_detection" value="Probably a person" required id="ai_detection_2" style="cursor: pointer; transform: scale(1.2); accent-color: #667eea;">
+                                    <input type="radio" name="ai_detection" value="Not sure" required id="ai_detection_3" style="cursor: pointer; transform: scale(1.2); accent-color: #667eea;">
+                                    <input type="radio" name="ai_detection" value="Probably an AI" required id="ai_detection_4" style="cursor: pointer; transform: scale(1.2); accent-color: #667eea;">
+                                    <input type="radio" name="ai_detection" value="Definitely an AI" required id="ai_detection_5" style="cursor: pointer; transform: scale(1.2); accent-color: #667eea;">
+                                </div>
+                                <div style="display: flex; justify-content: space-between; font-size: 13px; text-align: center; color: #555;">
+                                    <label for="ai_detection_1" style="cursor: pointer; flex: 1; padding: 8px; border-radius: 8px; transition: all 0.2s ease;" onmouseover="this.style.background='#f0f4ff'; this.style.color='#667eea'" onmouseout="this.style.background='transparent'; this.style.color='#555'">👤 Definitely a person</label>
+                                    <label for="ai_detection_2" style="cursor: pointer; flex: 1; padding: 8px; border-radius: 8px; transition: all 0.2s ease;" onmouseover="this.style.background='#f0f4ff'; this.style.color='#667eea'" onmouseout="this.style.background='transparent'; this.style.color='#555'">🤔 Probably a person</label>
+                                    <label for="ai_detection_3" style="cursor: pointer; flex: 1; padding: 8px; border-radius: 8px; transition: all 0.2s ease;" onmouseover="this.style.background='#f0f4ff'; this.style.color='#667eea'" onmouseout="this.style.background='transparent'; this.style.color='#555'">❓ Not sure</label>
+                                    <label for="ai_detection_4" style="cursor: pointer; flex: 1; padding: 8px; border-radius: 8px; transition: all 0.2s ease;" onmouseover="this.style.background='#f0f4ff'; this.style.color='#667eea'" onmouseout="this.style.background='transparent'; this.style.color='#555'">🤖 Probably an AI</label>
+                                    <label for="ai_detection_5" style="cursor: pointer; flex: 1; padding: 8px; border-radius: 8px; transition: all 0.2s ease;" onmouseover="this.style.background='#f0f4ff'; this.style.color='#667eea'" onmouseout="this.style.background='transparent'; this.style.color='#555'">🎯 Definitely an AI</label>
+                                </div>
                             </div>
                         </div>
 
-                        <div style="margin-bottom: 25px;">
-                            <label style="display: block; font-weight: bold; margin-bottom: 10px; color: #333;">
-                                To what extent do you think the other player was a good collaborator?
-                            </label>
-                            <div style="display: flex; flex-direction: column; gap: 8px;">
-                                <label style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="radio" name="collaboration_rating" value="Very poor collaborator" required style="margin-right: 10px;">
-                                    Very poor collaborator
+                        <div style="background: #f0fff4; border: 2px solid #dcfce7; border-radius: 15px; padding: 25px; margin-bottom: 30px; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(34, 197, 94, 0.1);">
+                            <div style="display: flex; align-items: center; margin-bottom: 20px;">
+                                <div style="background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: white; border-radius: 50%; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; margin-right: 15px; font-weight: bold;">2</div>
+                                <label style="font-weight: 600; font-size: 18px; color: #333; margin: 0;">
+                                    🤝 To what extent do you think the other player was a good collaborator?
                                 </label>
-                                <label style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="radio" name="collaboration_rating" value="Poor collaborator" required style="margin-right: 10px;">
-                                    Poor collaborator
-                                </label>
-                                <label style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="radio" name="collaboration_rating" value="Neutral" required style="margin-right: 10px;">
-                                    Neutral
-                                </label>
-                                <label style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="radio" name="collaboration_rating" value="Good collaborator" required style="margin-right: 10px;">
-                                    Good collaborator
-                                </label>
-                                <label style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="radio" name="collaboration_rating" value="Very good collaborator" required style="margin-right: 10px;">
-                                    Very good collaborator
-                                </label>
+                            </div>
+                            <div style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                                    <input type="radio" name="collaboration_rating" value="Very poor collaborator" required id="collaboration_rating_1" style="cursor: pointer; transform: scale(1.2); accent-color: #22c55e;">
+                                    <input type="radio" name="collaboration_rating" value="Poor collaborator" required id="collaboration_rating_2" style="cursor: pointer; transform: scale(1.2); accent-color: #22c55e;">
+                                    <input type="radio" name="collaboration_rating" value="Neutral" required id="collaboration_rating_3" style="cursor: pointer; transform: scale(1.2); accent-color: #22c55e;">
+                                    <input type="radio" name="collaboration_rating" value="Good collaborator" required id="collaboration_rating_4" style="cursor: pointer; transform: scale(1.2); accent-color: #22c55e;">
+                                    <input type="radio" name="collaboration_rating" value="Very good collaborator" required id="collaboration_rating_5" style="cursor: pointer; transform: scale(1.2); accent-color: #22c55e;">
+                                </div>
+                                <div style="display: flex; justify-content: space-between; font-size: 13px; text-align: center; color: #555;">
+                                    <label for="collaboration_rating_1" style="cursor: pointer; flex: 1; padding: 8px; border-radius: 8px; transition: all 0.2s ease;" onmouseover="this.style.background='#f0fdf4'; this.style.color='#22c55e'" onmouseout="this.style.background='transparent'; this.style.color='#555'">😞 Very poor collaborator</label>
+                                    <label for="collaboration_rating_2" style="cursor: pointer; flex: 1; padding: 8px; border-radius: 8px; transition: all 0.2s ease;" onmouseover="this.style.background='#f0fdf4'; this.style.color='#22c55e'" onmouseout="this.style.background='transparent'; this.style.color='#555'">😐 Poor collaborator</label>
+                                    <label for="collaboration_rating_3" style="cursor: pointer; flex: 1; padding: 8px; border-radius: 8px; transition: all 0.2s ease;" onmouseover="this.style.background='#f0fdf4'; this.style.color='#22c55e'" onmouseout="this.style.background='transparent'; this.style.color='#555'">😑 Neutral</label>
+                                    <label for="collaboration_rating_4" style="cursor: pointer; flex: 1; padding: 8px; border-radius: 8px; transition: all 0.2s ease;" onmouseover="this.style.background='#f0fdf4'; this.style.color='#22c55e'" onmouseout="this.style.background='transparent'; this.style.color='#555'">😊 Good collaborator</label>
+                                    <label for="collaboration_rating_5" style="cursor: pointer; flex: 1; padding: 8px; border-radius: 8px; transition: all 0.2s ease;" onmouseover="this.style.background='#f0fdf4'; this.style.color='#22c55e'" onmouseout="this.style.background='transparent'; this.style.color='#555'">🤩 Very good collaborator</label>
+                                </div>
                             </div>
                         </div>
 
-                        <div style="margin-bottom: 25px;">
-                            <label style="display: block; font-weight: bold; margin-bottom: 10px; color: #333;">
-                                What is the color of the "Next Page" button in this survey?
-                            </label>
-                            <div style="display: flex; flex-direction: column; gap: 8px;">
-                                <label style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="radio" name="attention_check" value="Definitely blue" required style="margin-right: 10px;">
-                                    Definitely blue
-                                </label>
-                                <label style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="radio" name="attention_check" value="Probably blue" required style="margin-right: 10px;">
-                                    Probably blue
-                                </label>
-                                <label style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="radio" name="attention_check" value="Not sure" required style="margin-right: 10px;">
-                                    Not sure
-                                </label>
-                                <label style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="radio" name="attention_check" value="Probably red" required style="margin-right: 10px;">
-                                    Probably red
-                                </label>
-                                <label style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="radio" name="attention_check" value="Definitely red" required style="margin-right: 10px;">
-                                    Definitely red
+                        <div style="background: #fff7ed; border: 2px solid #fed7aa; border-radius: 15px; padding: 25px; margin-bottom: 30px; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(251, 146, 60, 0.1);">
+                            <div style="display: flex; align-items: center; margin-bottom: 20px;">
+                                <div style="background: linear-gradient(135deg, #fb923c 0%, #f97316 100%); color: white; border-radius: 50%; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; margin-right: 15px; font-weight: bold;">3</div>
+                                <label style="font-weight: 600; font-size: 18px; color: #333; margin: 0;">
+                                    🎮 Will you play with the other player again?
                                 </label>
                             </div>
-                        </div>
-
-                        <div style="margin-bottom: 25px;">
-                            <label style="display: block; font-weight: bold; margin-bottom: 10px; color: #333;">
-                                Will you play with the other player again?
-                            </label>
-                            <div style="display: flex; flex-direction: column; gap: 8px;">
-                                <label style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="radio" name="play_again" value="Definitely not play again" required style="margin-right: 10px;">
-                                    Definitely not play again
-                                </label>
-                                <label style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="radio" name="play_again" value="Probably not play again" required style="margin-right: 10px;">
-                                    Probably not play again
-                                </label>
-                                <label style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="radio" name="play_again" value="Not sure" required style="margin-right: 10px;">
-                                    Not sure
-                                </label>
-                                <label style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="radio" name="play_again" value="Probably play again" required style="margin-right: 10px;">
-                                    Probably play again
-                                </label>
-                                <label style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="radio" name="play_again" value="Definitely play again" required style="margin-right: 10px;">
-                                    Definitely play again
-                                </label>
+                            <div style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                                    <input type="radio" name="play_again" value="Definitely not play again" required id="play_again_1" style="cursor: pointer; transform: scale(1.2); accent-color: #fb923c;">
+                                    <input type="radio" name="play_again" value="Probably not play again" required id="play_again_2" style="cursor: pointer; transform: scale(1.2); accent-color: #fb923c;">
+                                    <input type="radio" name="play_again" value="Not sure" required id="play_again_3" style="cursor: pointer; transform: scale(1.2); accent-color: #fb923c;">
+                                    <input type="radio" name="play_again" value="Probably play again" required id="play_again_4" style="cursor: pointer; transform: scale(1.2); accent-color: #fb923c;">
+                                    <input type="radio" name="play_again" value="Definitely play again" required id="play_again_5" style="cursor: pointer; transform: scale(1.2); accent-color: #fb923c;">
+                                </div>
+                                <div style="display: flex; justify-content: space-between; font-size: 13px; text-align: center; color: #555;">
+                                    <label for="play_again_1" style="cursor: pointer; flex: 1; padding: 8px; border-radius: 8px; transition: all 0.2s ease;" onmouseover="this.style.background='#fff7ed'; this.style.color='#fb923c'" onmouseout="this.style.background='transparent'; this.style.color='#555'">❌ Definitely not play again</label>
+                                    <label for="play_again_2" style="cursor: pointer; flex: 1; padding: 8px; border-radius: 8px; transition: all 0.2s ease;" onmouseover="this.style.background='#fff7ed'; this.style.color='#fb923c'" onmouseout="this.style.background='transparent'; this.style.color='#555'">🤷 Probably not play again</label>
+                                    <label for="play_again_3" style="cursor: pointer; flex: 1; padding: 8px; border-radius: 8px; transition: all 0.2s ease;" onmouseover="this.style.background='#fff7ed'; this.style.color='#fb923c'" onmouseout="this.style.background='transparent'; this.style.color='#555'">🤔 Not sure</label>
+                                    <label for="play_again_4" style="cursor: pointer; flex: 1; padding: 8px; border-radius: 8px; transition: all 0.2s ease;" onmouseover="this.style.background='#fff7ed'; this.style.color='#fb923c'" onmouseout="this.style.background='transparent'; this.style.color='#555'">👍 Probably play again</label>
+                                    <label for="play_again_5" style="cursor: pointer; flex: 1; padding: 8px; border-radius: 8px; transition: all 0.2s ease;" onmouseover="this.style.background='#fff7ed'; this.style.color='#fb923c'" onmouseout="this.style.background='transparent'; this.style.color='#555'">🎉 Definitely play again</label>
+                                </div>
                             </div>
                         </div>
-                        <div style="text-align: center; margin-top: 30px;">
+                        <div style="text-align: center; margin-top: 40px;">
                             <button type="button" id="nextPageBtn" style="
-                                background: #007bff;
+                                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
                                 color: white;
                                 border: none;
-                                padding: 12px 24px;
+                                padding: 15px 40px;
                                 font-size: 16px;
-                                border-radius: 5px;
+                                font-weight: 600;
+                                border-radius: 50px;
                                 cursor: pointer;
-                            ">Next Page</button>
+                                box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+                                transition: all 0.3s ease;
+                                transform: translateY(0);
+                            " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 12px 35px rgba(102, 126, 234, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 8px 25px rgba(102, 126, 234, 0.3)'">
+                                ➡️ Next Page
+                            </button>
                         </div>
                     </div>
 
                     <div id="questionnairePage2" style="display: none;">
                         <h3 style="color: #666; margin-bottom: 20px;">Page 2 of 2</h3>
-
-                        <div style="margin-bottom: 25px;">
-                            <label style="display: block; font-weight: bold; margin-bottom: 10px; color: #333;">
-                                Did you use any strategy in the game? If yes, what was it?
-                            </label>
-                            <textarea name="strategy" rows="4" style="
-                                width: 100%;
-                                padding: 10px;
-                                border: 1px solid #ddd;
-                                border-radius: 5px;
-                                font-family: inherit;
-                                resize: vertical;
-                            " placeholder="Please describe your strategy..."></textarea>
-                        </div>
-
-                        <div style="margin-bottom: 25px;">
-                            <label style="display: block; font-weight: bold; margin-bottom: 10px; color: #333;">
-                                Some people have cats as their pets, true or false?
-                            </label>
-                            <textarea name="cat_question" rows="4" style="
-                                width: 100%;
-                                padding: 10px;
-                                border: 1px solid #ddd;
-                                border-radius: 5px;
-                                font-family: inherit;
-                                resize: vertical;
-                            " placeholder="Please answer true or false..."></textarea>
-                        </div>
-
-                        <div style="margin-bottom: 25px;">
-                            <label style="display: block; font-weight: bold; margin-bottom: 10px; color: #333;">
-                                What do you think the purpose of this experiment is?
-                            </label>
-                            <textarea name="purpose" rows="4" style="
-                                width: 100%;
-                                padding: 10px;
-                                border: 1px solid #ddd;
-                                border-radius: 5px;
-                                font-family: inherit;
-                                resize: vertical;
-                            " placeholder="Please share your thoughts..."></textarea>
-                        </div>
 
                         <div style="margin-bottom: 25px;">
                             <label style="display: block; font-weight: bold; margin-bottom: 10px; color: #333;">
@@ -983,8 +921,8 @@ function showQuestionnaireStage(stage) {
 
     // Handle page navigation
     document.getElementById('nextPageBtn').addEventListener('click', function () {
-        // Validate required fields on page 1
-        var requiredFields = ['ai_detection', 'collaboration_rating', 'attention_check', 'play_again'];
+        // Validate required fields on page 1 (only the 3 remaining questions)
+        var requiredFields = ['ai_detection', 'collaboration_rating', 'play_again'];
         var isValid = true;
 
         requiredFields.forEach(function (field) {
