@@ -786,7 +786,7 @@ function showQuestionnaireStage(stage) {
                             <div style="display: flex; align-items: center; margin-bottom: 20px;">
                                 <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 50%; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; margin-right: 15px; font-weight: bold;">1</div>
                                 <label style="font-weight: 600; font-size: 18px; color: #333; margin: 0;">
-                                    🤖 Do you think the other player is a person or an computer /AI?
+                                    🤖 Do you think the other player is a person or a computer?
                                 </label>
                             </div>
                             <div style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
@@ -794,8 +794,8 @@ function showQuestionnaireStage(stage) {
                                     <input type="radio" name="ai_detection" value="Definitely a person" required id="ai_detection_1" style="cursor: pointer; transform: scale(1.2); accent-color: #667eea;">
                                     <input type="radio" name="ai_detection" value="Probably a person" required id="ai_detection_2" style="cursor: pointer; transform: scale(1.2); accent-color: #667eea;">
                                     <input type="radio" name="ai_detection" value="Not sure" required id="ai_detection_3" style="cursor: pointer; transform: scale(1.2); accent-color: #667eea;">
-                                    <input type="radio" name="ai_detection" value="Probably an AI" required id="ai_detection_4" style="cursor: pointer; transform: scale(1.2); accent-color: #667eea;">
-                                    <input type="radio" name="ai_detection" value="Definitely an AI" required id="ai_detection_5" style="cursor: pointer; transform: scale(1.2); accent-color: #667eea;">
+                                    <input type="radio" name="ai_detection" value="Probably a computer" required id="ai_detection_4" style="cursor: pointer; transform: scale(1.2); accent-color: #667eea;">
+                                    <input type="radio" name="ai_detection" value="Definitely a computer" required id="ai_detection_5" style="cursor: pointer; transform: scale(1.2); accent-color: #667eea;">
                                 </div>
                                 <div style="display: flex; justify-content: space-between; font-size: 13px; text-align: center; color: #555;">
                                     <label for="ai_detection_1" style="cursor: pointer; flex: 1; padding: 8px; border-radius: 8px; transition: all 0.2s ease;" onmouseover="this.style.background='#f0f4ff'; this.style.color='#667eea'" onmouseout="this.style.background='transparent'; this.style.color='#555'">👤 Definitely a person</label>
@@ -836,7 +836,7 @@ function showQuestionnaireStage(stage) {
                             <div style="display: flex; align-items: center; margin-bottom: 20px;">
                                 <div style="background: linear-gradient(135deg, #fb923c 0%, #f97316 100%); color: white; border-radius: 50%; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; margin-right: 15px; font-weight: bold;">3</div>
                                 <label style="font-weight: 600; font-size: 18px; color: #333; margin: 0;">
-                                    🎮 Will you play with the other player again?
+                                    🎮 Would you play with the other player again?
                                 </label>
                             </div>
                             <div style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">

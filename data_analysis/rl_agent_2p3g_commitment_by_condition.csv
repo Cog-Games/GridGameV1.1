@@ -1,7 +1,0 @@
-newGoalConditionType,rlAgentType,count,mean,std,sem
-closer_to_player1,individual,89,1.0,0.0,0.0
-closer_to_player1,joint,89,0.865,0.343,0.036
-closer_to_player2,individual,85,0.0,0.0,0.0
-closer_to_player2,joint,88,0.545,0.501,0.053
-equal_to_both,individual,90,0.711,0.456,0.048
-equal_to_both,joint,90,0.711,0.456,0.048

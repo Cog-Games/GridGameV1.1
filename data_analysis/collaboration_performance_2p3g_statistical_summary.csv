@@ -1,4 +1,0 @@
-Metric,Individual_Mean,Individual_SD,Joint_Mean,Joint_SD,p_value,cohens_d,Effect_Size,Significance,Better_Condition
-human Trajectory,13.8,2.8,13.4,2.6,0.138,0.136,Small,ns,Joint
-ai Trajectory,22.9,3.3,24.8,4.2,0.000,-0.503,Medium,***,Individual
-total Trajectory,36.7,4.5,38.2,5.8,0.001,-0.295,Small,**,Individual
