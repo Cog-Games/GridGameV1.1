@@ -762,6 +762,101 @@ function addCollaborationExperimentStages(experimentType, experimentIndex, trial
 function showQuestionnaireStage(stage) {
     var container = document.getElementById('container');
 
+    // Keyboard-first, 3-page questionnaire (no mouse needed)
+    try {
+        var questions = [
+            {
+                name: 'ai_detection',
+                title: 'Page 1 of 3',
+                prompt: 'Do you think the other player is a person or a computer?',
+                options: [
+                    'Definitely a person',
+                    'Probably a person',
+                    'Not sure',
+                    'Probably a computer',
+                    'Definitely a computer'
+                ]
+            },
+            {
+                name: 'collaboration_rating',
+                title: 'Page 2 of 3',
+                prompt: 'How well did the other player collaborate with you?',
+                options: [
+                    'Very poor collaborator',
+                    'Poor collaborator',
+                    'Neutral',
+                    'Good collaborator',
+                    'Very good collaborator'
+                ]
+            },
+            {
+                name: 'play_again',
+                title: 'Page 3 of 3',
+                prompt: 'Would you like to play this game again in the future?',
+                options: [
+                    'Definitely not play again',
+                    'Probably not play again',
+                    'Not sure',
+                    'Probably play again',
+                    'Definitely play again'
+                ]
+            }
+        ];
+
+        var answers = {};
+        var qIndex = 0;
+        var selIndex = 2; // default to middle
+
+        function renderQuestion() {
+            var q = questions[qIndex];
+            var optionsHtml = q.options.map(function(opt, idx) {
+                var isSelected = idx === selIndex;
+                return `
+                    <div data-idx="${idx}" style="
+                        padding: 12px 16px;
+                        margin: 8px 0;
+                        border-radius: 10px;
+                        border: 2px solid ${isSelected ? '#4f46e5' : '#e5e7eb'};
+                        background: ${isSelected ? '#eef2ff' : '#ffffff'};
+                        color: #333;
+                        font-size: 18px;
+                        text-align: center;
+                    ">${opt}</div>`;
+            }).join('');
+
+            container.innerHTML = `
+                <div style=\"display:flex; align-items:center; justify-content:center; min-height:100vh; background:#f8f9fa; padding:20px;\">\n                    <div style=\"background:white; padding:32px; border-radius:16px; box-shadow:0 10px 25px rgba(0,0,0,0.1); width:100%; max-width:720px;\">\n                        <div style=\"text-align:center; margin-bottom:12px; color:#6b7280; font-weight:600;\">📋 Post-Experiment Questionnaire</div>\n                        <div style=\"text-align:center; margin-bottom:8px; color:#6b7280; font-weight:600;\">${q.title}</div>\n                        <h2 style=\"text-align:center; margin:8px 0 20px; color:#111827;\">${q.prompt}</h2>\n                        <div id=\"options\" style=\"display:flex; flex-direction:column;\">${optionsHtml}</div>\n                        <div style=\"margin-top:16px; text-align:center; color:#6b7280;\">Use ↑ ↓ to choose, press Space to confirm</div>\n                    </div>\n                </div>`;
+        }
+
+        function handleKeys(e) {
+            if (e.code === 'ArrowUp' || e.key === 'ArrowUp') {
+                e.preventDefault();
+                selIndex = Math.max(0, selIndex - 1);
+                renderQuestion();
+            } else if (e.code === 'ArrowDown' || e.key === 'ArrowDown') {
+                e.preventDefault();
+                selIndex = Math.min(questions[qIndex].options.length - 1, selIndex + 1);
+                renderQuestion();
+            } else if (e.code === 'Space' || e.key === ' ') {
+                e.preventDefault();
+                answers[questions[qIndex].name] = questions[qIndex].options[selIndex];
+                if (qIndex < questions.length - 1) {
+                    qIndex += 1;
+                    selIndex = 2;
+                    renderQuestion();
+                } else {
+                    document.removeEventListener('keydown', handleKeys);
+                    gameData.questionnaireData = answers;
+                    nextStage();
+                }
+            }
+        }
+
+        renderQuestion();
+        document.addEventListener('keydown', handleKeys);
+        return; // Keep the keyboard-first version only
+    } catch (e) {}
+
     container.innerHTML = `
         <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px;">
             <div style="background: white; padding: 50px; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.15); max-width: 900px; width: 100%; position: relative; overflow: hidden;">
@@ -1577,17 +1672,7 @@ function getInstructionsForExperiment(experimentType) {
                                 </div>
                             </div>
 
-                            <!-- Success/Failure Examples -->
-                            <div style="margin-top: 20px; display: flex; justify-content: space-around; gap: 20px; flex-wrap: wrap;">
-                                <div style="background: #d4edda; border: 2px solid #28a745; border-radius: 8px; padding: 15px; flex: 1; min-width: 200px;">
-                                    <h5 style="color: #28a745; margin-bottom: 10px; font-size: 16px;">✅ WIN: Both at same restaurant</h5>
-                                    <p style="font-size: 14px; color: #155724; margin: 0;">Both players reach the same restaurant = Success!</p>
-                                </div>
-                                <div style="background: #f8d7da; border: 2px solid #dc3545; border-radius: 8px; padding: 15px; flex: 1; min-width: 200px;">
-                                    <h5 style="color: #dc3545; margin-bottom: 10px; font-size: 16px;">❌ LOSE: Different restaurants</h5>
-                                    <p style="font-size: 14px; color: #721c24; margin: 0;">Players at different restaurants = Failure!</p>
-                                </div>
-                            </div>
+                            
                         </div>
 
                         <p style="font-size: 22px; margin-top: 30px;">Press <strong>space bar</strong> to begin.</p>
@@ -2017,47 +2102,31 @@ function showGameFeedbackStage(stage) {
         totalTimeMinutes = Math.round(totalTimeMs / (1000 * 60));
     }
 
-    // Determine what type of experiments were run
-    var hasCollaborationTrials = gameData.allTrialsData.some(trial =>
-        trial.experimentType && trial.experimentType.includes('2P')
-    );
-    var hasSinglePlayerTrials = gameData.allTrialsData.some(trial =>
+    // Calculate different success rates and counts (always render 4 metrics)
+    var singlePlayerTrials = gameData.allTrialsData.filter(trial =>
         trial.experimentType && trial.experimentType.includes('1P')
     );
-
-    // Calculate different success rates based on experiment types
-    var singlePlayerSuccessRate = 0;
-    var collaborationSuccessRate = 0;
-
-    if (hasSinglePlayerTrials) {
-        var singlePlayerTrials = gameData.allTrialsData.filter(trial =>
-            trial.experimentType && trial.experimentType.includes('1P')
-        );
-        var successfulSinglePlayer = singlePlayerTrials.filter(trial =>
-            trial.completed === true
-        ).length;
-        singlePlayerSuccessRate = Math.round((successfulSinglePlayer / singlePlayerTrials.length) * 100);
-    }
-
-    if (hasCollaborationTrials) {
-        var collaborationTrials = gameData.allTrialsData.filter(trial =>
-            trial.experimentType && trial.experimentType.includes('2P')
-        );
-        var successfulCollaborations = collaborationTrials.filter(trial =>
-            trial.collaborationSucceeded === true
-        ).length;
-        collaborationSuccessRate = Math.round((successfulCollaborations / collaborationTrials.length) * 100);
-    }
+    var collaborationTrials = gameData.allTrialsData.filter(trial =>
+        trial.experimentType && trial.experimentType.includes('2P')
+    );
+    var singleCount = singlePlayerTrials.length;
+    var collabCount = collaborationTrials.length;
+    var successfulSinglePlayer = singlePlayerTrials.filter(trial => trial.completed === true).length;
+    var successfulCollaborations = collaborationTrials.filter(trial => trial.collaborationSucceeded === true).length;
+    var singlePlayerSuccessRate = singleCount ? Math.round((successfulSinglePlayer / singleCount) * 100) : null;
+    var collaborationSuccessRate = collabCount ? Math.round((successfulCollaborations / collabCount) * 100) : null;
+    var singleRateDisplay = singlePlayerSuccessRate === null ? '—' : singlePlayerSuccessRate + '%';
+    var collabRateDisplay = collaborationSuccessRate === null ? '—' : collaborationSuccessRate + '%';
 
     container.innerHTML = `
         <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
-            <div style="background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 700px; width: 100%; text-align: center;">
+            <div style="background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 1100px; width: 100%; text-align: center;">
                 <h2 style="color: #333; margin-bottom: 30px;">🎮 Game Performance Summary</h2>
 
                 <div style="background: #f8f9fa; border-radius: 8px; padding: 30px; margin-bottom: 30px;">
                     <h3 style="color: #666; margin-bottom: 20px;">Your Results</h3>
 
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 20px;">
+                    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; margin-bottom: 20px; align-items: stretch;">
                         <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #007bff;">
                             <h4 style="color: #007bff; margin-bottom: 10px; font-size: 18px;">📊 Total Trials</h4>
                             <p style="font-size: 24px; font-weight: bold; color: #333; margin: 0;">${totalTrials}</p>
@@ -2068,21 +2137,17 @@ function showGameFeedbackStage(stage) {
                             <p style="font-size: 24px; font-weight: bold; color: #333; margin: 0;">${totalTimeMinutes} min</p>
                         </div>
 
-                        ${hasSinglePlayerTrials ? `
-                            <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #ffc107;">
-                                <h4 style="color: #ffc107; margin-bottom: 10px; font-size: 18px;">🎯 Single Player Success</h4>
-                                <p style="font-size: 24px; font-weight: bold; color: #333; margin: 0;">${singlePlayerSuccessRate}%</p>
-                                <p style="font-size: 14px; color: #666; margin: 5px 0 0 0;">(${gameData.allTrialsData.filter(t => t.experimentType && t.experimentType.includes('1P')).length} single player trials)</p>
-                            </div>
-                        ` : ''}
+                        <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #ffc107;">
+                            <h4 style="color: #ffc107; margin-bottom: 10px; font-size: 18px;">🎯 Single Player Success</h4>
+                            <p style="font-size: 24px; font-weight: bold; color: #333; margin: 0;">${singleRateDisplay}</p>
+                            <p style="font-size: 14px; color: #666; margin: 5px 0 0 0;">(${singleCount} single player trials)</p>
+                        </div>
 
-                        ${hasCollaborationTrials ? `
-                            <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #dc3545;">
-                                <h4 style="color: #dc3545; margin-bottom: 10px; font-size: 18px;">🤝 Collaboration Success</h4>
-                                <p style="font-size: 24px; font-weight: bold; color: #333; margin: 0;">${collaborationSuccessRate}%</p>
-                                <p style="font-size: 14px; color: #666; margin: 5px 0 0 0;">(${gameData.allTrialsData.filter(t => t.experimentType && t.experimentType.includes('2P')).length} collaboration trials)</p>
-                            </div>
-                        ` : ''}
+                        <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #dc3545;">
+                            <h4 style="color: #dc3545; margin-bottom: 10px; font-size: 18px;">🤝 Collaboration Success</h4>
+                            <p style="font-size: 24px; font-weight: bold; color: #333; margin: 0;">${collabRateDisplay}</p>
+                            <p style="font-size: 14px; color: #666; margin: 5px 0 0 0;">(${collabCount} collaboration trials)</p>
+                        </div>
                     </div>
                 </div>
 
@@ -2109,7 +2174,7 @@ function showGameFeedbackStage(stage) {
                         box-shadow: 0 4px 8px rgba(0,0,0,0.2);
                         transition: all 0.3s ease;
                     " onmouseover="this.style.background='#218838'" onmouseout="this.style.background='#28a745'">
-                        📋 Continue to Questionnaire
+                        Press the space bar to continue
                     </button>
                 </div>
             </div>
@@ -2133,6 +2198,21 @@ function showGameFeedbackStage(stage) {
         console.log('🎮 Game Feedback Stage: Proceeding to next stage');
         nextStage();
     });
+
+    // Allow pressing Space to continue
+    function handleFeedbackSpace(e) {
+        if (e.code === 'Space' || e.key === ' ') {
+            e.preventDefault();
+            document.removeEventListener('keydown', handleFeedbackSpace);
+            // Add questionnaire stage if missing
+            var hasQuestionnaireStage = timeline.stages.some(stage => stage.type === 'questionnaire');
+            if (!hasQuestionnaireStage) {
+                timeline.stages.push({ type: 'questionnaire', handler: showQuestionnaireStage });
+            }
+            nextStage();
+        }
+    }
+    document.addEventListener('keydown', handleFeedbackSpace);
 
     console.log('🎮 Game Feedback Stage: Setup complete');
 }
