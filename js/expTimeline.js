@@ -261,6 +261,28 @@ function showWelcomeInfoStage(stage) {
                     </div>
                 </div>
 
+                <!-- Keyboard illustration: Space on the left, Arrow keys on the right -->
+                <div style="display:flex; justify-content:center; align-items:flex-end; gap: 24px; margin: 0 auto 12px; max-width: 640px;">
+                    <!-- Space bar (left) -->
+                    <div style="display:flex; flex-direction:column; align-items:center;">
+                        <div style="width:240px; height:48px; border:1px solid #bbb; border-radius:8px; display:flex; align-items:center; justify-content:center; background:#f7f7f7; box-shadow: inset 0 1px 0 #fff; font-size: 16px; letter-spacing: 1px;">SPACE BAR</div>
+                        <div style="margin-top:8px; color:#555; font-size:14px;">Press this button for continuing the game</div>
+                    </div>
+
+                    <!-- Arrow keys (right) -->
+                    <div style="display:flex; flex-direction:column; align-items:center;">
+                        <div style="display:grid; grid-template-columns: repeat(3, 46px); grid-template-rows: repeat(2, 46px); gap: 6px;">
+                            <div></div>
+                            <div style="width:46px;height:46px;border:1px solid #bbb;border-radius:6px;display:flex;align-items:center;justify-content:center;background:#f7f7f7;box-shadow: inset 0 1px 0 #fff; font-size: 20px;">↑</div>
+                            <div></div>
+                            <div style="width:46px;height:46px;border:1px solid #bbb;border-radius:6px;display:flex;align-items:center;justify-content:center;background:#f7f7f7;box-shadow: inset 0 1px 0 #fff; font-size: 20px;">←</div>
+                            <div style="width:46px;height:46px;border:1px solid #bbb;border-radius:6px;display:flex;align-items:center;justify-content:center;background:#f7f7f7;box-shadow: inset 0 1px 0 #fff; font-size: 20px;">↓</div>
+                            <div style="width:46px;height:46px;border:1px solid #bbb;border-radius:6px;display:flex;align-items:center;justify-content:center;background:#f7f7f7;box-shadow: inset 0 1px 0 #fff; font-size: 20px;">→</div>
+                        </div>
+                        <div style="margin-top:8px; color:#555; font-size:14px;">Arrow keys for navigation</div>
+                    </div>
+                </div>
+
                 <div style="margin-top: 30px;">
                     <p style="font-size: 22px; font-weight: bold; color: #333; margin-bottom: 20px;">
                         Press the <span style="background: #f0f0f0; padding: 4px 8px; border-radius: 4px; font-family: monospace;">spacebar</span> to continue!
