@@ -367,11 +367,18 @@ function showPreTrialStage(stage) {
     // Setup grid matrix for display
     setupGridMatrixForTrial(currentDesign, experimentType);
 
+    // Compute how to display round count
+    var preTrialCountDisplay = '';
+    if (experimentType.includes('2P') && NODEGAME_CONFIG.successThreshold.enabled) {
+        preTrialCountDisplay = `Round ${trialIndex + 1}`;
+    } else {
+        preTrialCountDisplay = `Round ${trialIndex + 1} of ${NODEGAME_CONFIG.numTrials[experimentType]}`;
+    }
+
     container.innerHTML = `
         <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
             <div style="text-align: center;">
-                <h3 style="margin-bottom: 10px;">Game ${experimentIndex + 1}</h3>
-                <h4 style="margin-bottom: 20px;">Round ${trialIndex + 1} of ${NODEGAME_CONFIG.numTrials[experimentType]}</h4>
+                <h3 style="margin-bottom: 20px;">Game ${experimentIndex + 1}: ${preTrialCountDisplay}</h3>
                 <div id="gameCanvas" style="margin-bottom: 20px;"></div>
                 <p style="font-size: 20px;">You are the player <span style="display: inline-block; width: 18px; height: 18px; background-color: red; border-radius: 50%; vertical-align: middle;"></span>. Press ↑ ↓ ← → to move.</p>
             </div>
@@ -540,8 +547,7 @@ function showPostTrialStage(stage) {
     container.innerHTML = `
         <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
             <div style="text-align: center;">
-                <h3 style="margin-bottom: 10px;">Game ${experimentIndex + 1}</h3>
-                <h4 style="margin-bottom: 20px;">${trialCountDisplay}</h4>
+                <h3 style="margin-bottom: 20px;">Game ${experimentIndex + 1}: ${trialCountDisplay}</h3>
                 <div id="gameCanvas" style="margin-bottom: 20px;"></div>
                 <p style="font-size: 20px;">You are the player <span style="display: inline-block; width: 18px; height: 18px; background-color: red; border-radius: 50%; vertical-align: middle;"></span>. Press ↑ ↓ ← → to move.</p>
             </div>
