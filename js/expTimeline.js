@@ -831,7 +831,7 @@ function showQuestionnaireStage(stage) {
             }).join('');
 
             container.innerHTML = `
-                <div style=\"display:flex; align-items:center; justify-content:center; min-height:100vh; background:#f8f9fa; padding:20px;\">\n                    <div style=\"background:white; padding:32px; border-radius:16px; box-shadow:0 10px 25px rgba(0,0,0,0.1); width:100%; max-width:720px;\">\n                        <div style=\"text-align:center; margin-bottom:12px; color:#6b7280; font-weight:600;\">📋 Post-Experiment Questionnaire</div>\n                        <div style=\"text-align:center; margin-bottom:8px; color:#6b7280; font-weight:600;\">${q.title}</div>\n                        <h2 style=\"text-align:center; margin:8px 0 20px; color:#111827;\">${q.prompt}</h2>\n                        <div id=\"options\" style=\"display:flex; flex-direction:column;\">${optionsHtml}</div>\n                        <div style=\"margin-top:16px; text-align:center; color:#6b7280;\">Use ↑ ↓ to choose, press Space to confirm</div>\n                    </div>\n                </div>`;
+                <div style=\"display:flex; align-items:center; justify-content:center; min-height:100vh; background:#f8f9fa; padding:20px;\">\n                    <div style=\"background:white; padding:32px; border-radius:16px; box-shadow:0 10px 25px rgba(0,0,0,0.1); width:100%; max-width:720px;\">\n                        <div style=\"text-align:center; margin-bottom:12px; color:#6b7280; font-weight:600;\">📋 Post-Experiment Questionnaire</div>\n                        <div style=\"text-align:center; margin-bottom:8px; color:#6b7280; font-weight:600;\">${q.title}</div>\n                        <h2 style=\"text-align:center; margin:8px 0 20px; color:#111827;\">${q.prompt}</h2>\n                        <div style=\"margin-bottom:16px; text-align:center; color:#6b7280;\">Use ↑ ↓ to choose, press Space to confirm</div>\n                        <div id=\"options\" style=\"display:flex; flex-direction:column;\">${optionsHtml}</div>\n                    </div>\n                </div>`;
         }
 
         function handleKeys(e) {
@@ -2177,11 +2177,7 @@ function showGameFeedbackStage(stage) {
                 <div style="background: #e8f5e8; border: 2px solid #28a745; border-radius: 8px; padding: 25px; margin-bottom: 30px;">
                     <h3 style="color: #28a745; margin-bottom: 15px;">📝 Almost Done!</h3>
                     <p style="font-size: 18px; color: #333; margin-bottom: 15px;">
-                        Thank you for completing the game trials!
-                    </p>
-                    <p style="font-size: 16px; color: #666; margin-bottom: 0;">
-                        To finish the experiment, we kindly ask you to fill out a short questionnaire about your experience.
-                        This will help us understand your thoughts and improve our research.
+                        Thank you for completing the game! We just have few more questions for you to answer!
                     </p>
                 </div>
 
@@ -2197,7 +2193,7 @@ function showGameFeedbackStage(stage) {
                         box-shadow: 0 4px 8px rgba(0,0,0,0.2);
                         transition: all 0.3s ease;
                     " onmouseover="this.style.background='#218838'" onmouseout="this.style.background='#28a745'">
-                        Press the space bar to continue
+                        Press the space bar to continue!
                     </button>
                 </div>
             </div>

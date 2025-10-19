@@ -58,8 +58,8 @@ function recalcResponsiveGridSize() {
     var pad = EXPSETTINGS.padding;
 
     // Safety margins so canvas doesn't touch window edges or overlays
-    var horizontalMargin = 50; // px (reduced to allow tighter fit)
-    var verticalMargin = 50;   // px (reduced to allow tighter fit)
+    var horizontalMargin = 100; // px (reduced to allow tighter fit)
+    var verticalMargin = 100;   // px (reduced to allow tighter fit)
 
     // Compute the maximum canvas size that fits in the window
     var maxCanvasWidth = Math.max(200, (window.innerWidth || document.documentElement.clientWidth || 800) - horizontalMargin);
