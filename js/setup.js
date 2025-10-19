@@ -58,8 +58,8 @@ function recalcResponsiveGridSize() {
     var pad = EXPSETTINGS.padding;
 
     // Safety margins so canvas doesn't touch window edges or overlays
-    var horizontalMargin = 20; // px (reduced to allow tighter fit)
-    var verticalMargin = 20;   // px (reduced to allow tighter fit)
+    var horizontalMargin = 50; // px (reduced to allow tighter fit)
+    var verticalMargin = 50;   // px (reduced to allow tighter fit)
 
     // Compute the maximum canvas size that fits in the window
     var maxCanvasWidth = Math.max(200, (window.innerWidth || document.documentElement.clientWidth || 800) - horizontalMargin);
@@ -75,7 +75,6 @@ function recalcResponsiveGridSize() {
     var MAX_CELL_SIZE = 35; // avoid excessively large cells on huge screens
     // Lower the minimum so the full grid fits on smaller laptops
     // e.g., on short viewports where 30px cells would overflow vertically
-    var MIN_CELL_SIZE = 16;
     newCellSize = Math.max(MIN_CELL_SIZE, Math.min(MAX_CELL_SIZE, newCellSize));
 
     // If calculation failed, keep previous cell size
