@@ -256,7 +256,7 @@ function showWelcomeInfoStage(stage) {
                             </span>
                         </p>
                         <p style="margin-bottom: 20px;">
-                            Next, let's see how to play the game!
+                            Here are the buttons you will use to play the game:
                         </p>
                     </div>
                 </div>
@@ -285,7 +285,7 @@ function showWelcomeInfoStage(stage) {
 
                 <div style="margin-top: 30px;">
                     <p style="font-size: 22px; font-weight: bold; color: #333; margin-bottom: 20px;">
-                        Press the <span style="background: #f0f0f0; padding: 4px 8px; border-radius: 4px; font-family: monospace;">spacebar</span> to continue!
+                        Next, let's see how to play the game! Press the <span style="background: #f0f0f0; padding: 4px 8px; border-radius: 4px; font-family: monospace;">spacebar</span> to begin!
                     </p>
                 </div>
             </div>
