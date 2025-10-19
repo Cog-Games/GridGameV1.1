@@ -1589,93 +1589,110 @@ function getInstructionsForExperiment(experimentType) {
             `;
         case '2P2G':
             return `
-                <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
-                    <div style="background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 900px; text-align: center;">
-                        <h2 style="color: #333; margin-bottom: 30px; font-size: 36px;">Game 3</h2>
-                        <h3 style="color: #000; margin-bottom: 20px; font-size: 24px;">Well done!</h3>
-                        <div style="background: #e8f5e8; border: 1px solid #c3e6cb; border-radius: 8px; padding: 28px; margin-bottom: 30px;">
-                            <p style="font-size: 22px; color: #155724; margin-bottom: 15px; line-height: 1.6; text-align: left;">
+                <div style="display: flex; align-items: center; justify-content: center; height: 100vh; background: #f8f9fa; overflow: hidden;">
+                    <div style="background: white; padding: 24px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 900px; text-align: center; width: 92%; max-height: 92vh;">
+                        <h2 style="color: #333; margin-bottom: 16px; font-size: 32px;">Game 3</h2>
+                        <h3 style="color: #000; margin-bottom: 12px; font-size: 20px;">Well done!</h3>
+                        <div style="background: #e8f5e8; border: 1px solid #c3e6cb; border-radius: 8px; padding: 16px; margin-bottom: 16px;">
+                            <p style="font-size: 18px; color: #155724; margin-bottom: 12px; line-height: 1.5; text-align: left;">
                                 Let's continue. In this new game, you will collaborate with another player.
                             </p>
-                            <ul style="font-size: 22px; color: #155724; margin-bottom: 15px; line-height: 1.6; text-align: left; padding-left: 20px;">
-                                <li>Each round, you can <strong> win </strong> if both of you go to the <strong> same </strong> restaurant.</li>
+
+                            <!-- Demo Map Figure (moved directly after intro sentence) -->
+                            <div style="background: #f8f9fa; border: 2px solid #007bff; border-radius: 10px; padding: 16px; margin: 12px 0 16px 0;">
+                                <h4 style="color: #007bff; margin-bottom: 12px; font-size: 18px;">Example Map:</h4>
+
+                                <!-- Grid Demo -->
+                                <div style="display: flex; justify-content: center; margin-bottom: 12px;">
+                                    <div class="example-grid" style="display: grid; grid-template-columns: repeat(5, 30px); grid-template-rows: repeat(5, 30px); gap: 2px; border: 2px solid #333; padding: 6px; background: white; border-radius: 8px;">
+                                        <!-- Row 1 -->
+                                        <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+                                        <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+                                        <div style="background: #007bff; border: 1px solid #ddd; border-radius: 3px; position: relative;">
+                                            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 14px; height: 14px; background: #007bff; border-radius: 3px;"></div>
+                                        </div>
+                                        <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+                                        <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+
+                                        <!-- Row 2 -->
+                                        <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+                                        <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+                                        <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+                                        <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+                                        <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+
+                                        <!-- Row 3 -->
+                                        <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+                                        <div style="background: red; border: 1px solid #ddd; border-radius: 50%; position: relative;">
+                                            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 14px; height: 14px; background: red; border-radius: 50%;"></div>
+                                        </div>
+                                        <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+                                        <div style="background: orange; border: 1px solid #ddd; border-radius: 50%; position: relative;">
+                                            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 14px; height: 14px; background: orange; border-radius: 50%;"></div>
+                                        </div>
+                                        <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+
+                                        <!-- Row 4 -->
+                                        <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+                                        <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+                                        <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+                                        <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+                                        <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+
+                                        <!-- Row 5 -->
+                                        <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+                                        <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+                                        <div style="background: #007bff; border: 1px solid #ddd; border-radius: 3px; position: relative;">
+                                            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 14px; height: 14px; background: #007bff; border-radius: 3px;"></div>
+                                        </div>
+                                        <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+                                        <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+                                    </div>
+                                </div>
+
+                                <!-- Legend -->
+                                <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; font-size: 14px; color: #333;">
+                                    <div style="display: flex; align-items: center; gap: 6px;">
+                                        <div style="width: 14px; height: 14px; background: red; border-radius: 50%;"></div>
+                                        <span>You (Player 1)</span>
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 6px;">
+                                        <div style="width: 14px; height: 14px; background: orange; border-radius: 50%;"></div>
+                                        <span>Other Player (Player 2)</span>
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 6px;">
+                                        <div style="width: 14px; height: 14px; background: #007bff; border-radius: 3px;"></div>
+                                        <span>Restaurant</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <ul style="font-size: 18px; color: #155724; margin-bottom: 8px; line-height: 1.5; text-align: left; padding-left: 20px;">
+                                <li>Each round, you can <strong>win</strong> if both of you go to the <strong>same</strong> restaurant.</li>
                                 <li>You lose the round if you end up at different restaurants.</li>
-                                <li>For each round that you win, you earn an additional 10 cents.</li>
+                                <li>For each round that you win, you earn an additional 10 points.</li>
                             </ul>
                         </div>
 
-                        <!-- Demo Map Figure -->
-                        <div style="background: #f8f9fa; border: 2px solid #007bff; border-radius: 10px; padding: 25px; margin: 30px 0;">
-                            <h4 style="color: #007bff; margin-bottom: 20px; font-size: 20px;">Example Map:</h4>
+                        <p style="font-size: 18px; margin-top: 8px;">Press <strong>space bar</strong> to begin.</p>
 
-                            <!-- Grid Demo -->
-                            <div style="display: flex; justify-content: center; margin-bottom: 20px;">
-                                <div style="display: grid; grid-template-columns: repeat(5, 40px); grid-template-rows: repeat(5, 40px); gap: 2px; border: 2px solid #333; padding: 10px; background: white; border-radius: 8px;">
-                                    <!-- Row 1 -->
-                                    <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
-                                    <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
-                                    <div style="background: #007bff; border: 1px solid #ddd; border-radius: 3px; position: relative;">
-                                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 20px; height: 20px; background: #007bff; border-radius: 3px;"></div>
-                                    </div>
-                                    <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
-                                    <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
-
-                                    <!-- Row 2 -->
-                                    <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
-                                    <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
-                                    <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
-                                    <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
-                                    <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
-
-                                    <!-- Row 3 -->
-                                    <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
-                                    <div style="background: red; border: 1px solid #ddd; border-radius: 50%; position: relative;">
-                                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 20px; height: 20px; background: red; border-radius: 50%;"></div>
-                                    </div>
-                                    <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
-                                    <div style="background: orange; border: 1px solid #ddd; border-radius: 50%; position: relative;">
-                                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 20px; height: 20px; background: orange; border-radius: 50%;"></div>
-                                    </div>
-                                    <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
-
-                                    <!-- Row 4 -->
-                                    <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
-                                    <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
-                                    <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
-                                    <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
-                                    <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
-
-                                    <!-- Row 5 -->
-                                    <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
-                                    <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
-                                    <div style="background: #007bff; border: 1px solid #ddd; border-radius: 3px; position: relative;">
-                                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 20px; height: 20px; background: #007bff; border-radius: 3px;"></div>
-                                    </div>
-                                    <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
-                                    <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
-                                </div>
-                            </div>
-
-                            <!-- Legend -->
-                            <div style="display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; font-size: 16px; color: #333;">
-                                <div style="display: flex; align-items: center; gap: 8px;">
-                                    <div style="width: 20px; height: 20px; background: red; border-radius: 50%;"></div>
-                                    <span>You (Player 1)</span>
-                                </div>
-                                <div style="display: flex; align-items: center; gap: 8px;">
-                                    <div style="width: 20px; height: 20px; background: orange; border-radius: 50%;"></div>
-                                    <span>Other Player (Player 2)</span>
-                                </div>
-                                <div style="display: flex; align-items: center; gap: 8px;">
-                                    <div style="width: 20px; height: 20px; background: #007bff; border-radius: 3px;"></div>
-                                    <span>Restaurant</span>
-                                </div>
-                            </div>
-
-                            
-                        </div>
-
-                        <p style="font-size: 22px; margin-top: 30px;">Press <strong>space bar</strong> to begin.</p>
+                        <style>
+                            /* Shrink content on short viewports to avoid scroll */
+                            @media (max-height: 820px) {
+                                #container h2 { font-size: 28px !important; margin-bottom: 12px !important; }
+                                #container h3 { font-size: 18px !important; margin-bottom: 10px !important; }
+                                #container p, #container li { font-size: 16px !important; }
+                            }
+                            @media (max-height: 720px) {
+                                #container h2 { font-size: 26px !important; }
+                                #container h3 { font-size: 16px !important; }
+                                #container p, #container li { font-size: 15px !important; }
+                                #container .example-grid { transform: scale(0.9); transform-origin: center top; }
+                            }
+                            @media (max-height: 650px) {
+                                #container .example-grid { transform: scale(0.8); }
+                            }
+                        </style>
                     </div>
                 </div>
             `;
