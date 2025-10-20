@@ -41,6 +41,14 @@ function initializeNodeGameExperiments() {
             if (participantId) {
                 gameData.participantId = participantId;
                 console.log('Participant ID initialized:', participantId);
+                // Also capture DOB if available
+                try {
+                    var dob = window.DataRecording.getParticipantDob && window.DataRecording.getParticipantDob();
+                    if (dob) {
+                        gameData.participantDob = dob;
+                        console.log('Participant DOB initialized:', dob);
+                    }
+                } catch (e) {}
             } else {
                 console.warn('Participant ID not available. Some features may be disabled.');
             }
@@ -177,4 +185,3 @@ window.NodeGameExperiments = {
     initialize: initializeNodeGameExperiments,
     start: startNodeGameExperiment,
 };
-

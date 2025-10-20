@@ -5,8 +5,9 @@
  * Extracted from human-AI-version.js for better organization.
  */
 
-// Participant ID storage
+// Participant ID and DOB storage
 var participantId = null;
+var participantDob = null; // 'YYYY-MM-DD'
 
 var participantIdSource = null;
 var pendingParticipantIdResolver = null;
@@ -20,10 +21,25 @@ function initializeParticipantIdFlow() {
     participantIdSource = config ? config.source : 'prolificPID';
 
     if (participantIdSource === 'manual') {
-        return promptForParticipantId(config.manualEntry);
+        return promptForParticipantId(config && config.manualEntry)
+            .then(function(id) {
+                if (!id) return null;
+                // Prompt for DOB after participant ID is entered
+                return promptForDob(config && config.dobEntry).then(function(dob) {
+                    // Store DOB even if null to avoid reprompting later
+                    setParticipantDob(dob);
+                    return id;
+                });
+            });
     }
 
-    return Promise.resolve(extractProlificId());
+    // Prolific or other auto sources: still prompt for DOB
+    const id = extractProlificId();
+    if (!id) return Promise.resolve(null);
+    return promptForDob(config && config.dobEntry).then(function(dob) {
+        setParticipantDob(dob);
+        return id;
+    });
 }
 
 function promptForParticipantId(manualConfig) {
@@ -84,6 +100,98 @@ function setParticipantId(id) {
 }
 
 /**
+ * Prompt for Date of Birth (DOB) after participant ID
+ * Accepts format YYYY-MM-DD and stores in localStorage
+ * @param {Object} dobConfig - Optional config { promptTitle, placeholder, required }
+ * @returns {Promise<string|null>} Resolves with DOB string or null
+ */
+function promptForDob(dobConfig) {
+    return new Promise(function(resolve) {
+        try {
+            const title = (dobConfig && dobConfig.promptTitle) || 'Enter Date of Birth (YYYY-MM-DD)';
+            const placeholder = (dobConfig && dobConfig.placeholder) || 'YYYY-MM-DD';
+            const required = dobConfig && dobConfig.required === true;
+
+            // Use stored value if present
+            var saved = window.localStorage ? window.localStorage.getItem('nodegame_participant_dob') : null;
+            var defaultValue = saved || '';
+
+            // Helper to validate DOB
+            function isValidDob(s) {
+                if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
+                const parts = s.split('-');
+                const y = parseInt(parts[0], 10);
+                const m = parseInt(parts[1], 10);
+                const d = parseInt(parts[2], 10);
+                if (y < 1900 || y > new Date().getFullYear()) return false;
+                if (m < 1 || m > 12) return false;
+                if (d < 1 || d > 31) return false;
+                const dt = new Date(s);
+                return !isNaN(dt.getTime());
+            }
+
+            // Prompt loop (max 3 attempts if required)
+            let attempts = 0;
+            function ask() {
+                attempts += 1;
+                var input = window.prompt(title + (placeholder ? ` (e.g., ${placeholder})` : ''), defaultValue);
+                if (input === null) {
+                    if (required) {
+                        if (attempts < 3) {
+                            alert('Date of birth is required to continue.');
+                            ask();
+                            return;
+                        }
+                        console.warn('DOB entry cancelled after multiple attempts');
+                        resolve(null);
+                        return;
+                    }
+                    console.warn('DOB entry cancelled by user');
+                    resolve(null);
+                    return;
+                }
+                input = input.trim();
+                if (!input) {
+                    if (required) {
+                        alert('Date of birth cannot be empty. Please enter in YYYY-MM-DD format.');
+                        ask();
+                        return;
+                    }
+                    resolve(null);
+                    return;
+                }
+                if (!isValidDob(input)) {
+                    alert('Invalid date format. Please enter in YYYY-MM-DD format.');
+                    ask();
+                    return;
+                }
+                // Save and resolve
+                participantDob = input;
+                if (window.localStorage) {
+                    window.localStorage.setItem('nodegame_participant_dob', participantDob);
+                }
+                console.log('Participant DOB set:', participantDob);
+                resolve(participantDob);
+            }
+            ask();
+        } catch (e) {
+            console.warn('DOB prompt failed:', e);
+            resolve(null);
+        }
+    });
+}
+
+function setParticipantDob(dob) {
+    participantDob = dob || null;
+    if (dob && window.localStorage) {
+        window.localStorage.setItem('nodegame_participant_dob', participantDob);
+    }
+    if (window.gameData) {
+        window.gameData.participantDob = participantDob;
+    }
+}
+
+/**
  * Extract Prolific participant ID from URL parameters
  */
 function extractProlificId() {
@@ -116,6 +224,13 @@ function getParticipantId() {
         extractProlificId();
     }
     return participantId;
+}
+
+function getParticipantDob() {
+    if (!participantDob && window.localStorage) {
+        participantDob = window.localStorage.getItem('nodegame_participant_dob');
+    }
+    return participantDob;
 }
 
 function getParticipantIdAsync() {
@@ -264,6 +379,8 @@ window.DataRecording = {
     getParticipantIdAsync: getParticipantIdAsync,
     validateParticipantId: validateParticipantId,
     setParticipantId: setParticipantId,
+    getParticipantDob: getParticipantDob,
+    setParticipantDob: setParticipantDob,
     initializeParticipantIdFlow: initializeParticipantIdFlow,
     saveDataLocally: saveDataLocally
 };

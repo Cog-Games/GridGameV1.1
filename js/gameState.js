@@ -17,7 +17,8 @@ var gameData = {
     currentGoals: null,
     stepCount: 0,
     gameStartTime: 0,
-    participantId: null,  // Prolific participant ID
+    participantId: null,  // Prolific or manual participant ID
+    participantDob: null, // Date of birth 'YYYY-MM-DD'
 
     // Player configuration
     playerConfig: {
