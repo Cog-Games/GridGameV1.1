@@ -2217,39 +2217,39 @@ function showGameFeedbackStage(stage) {
     container.innerHTML = `
         <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
             <div style="background: white; padding: 10px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 1100px; width: 100%; text-align: center;">
-                <h2 style="color: #333; margin-bottom: 10px;">🎮 Game Performance Summary</h2>
+                <h2 style="color: #333; margin-bottom: 5px;">🎮 Game Performance Summary</h2>
 
-                <div style="background: #f8f9fa; border-radius: 8px; padding: 30px; margin-bottom: 30px;">
-                    <h3 style="color: #666; margin-bottom: 20px;">Your Results</h3>
+                <div style="background: #f8f9fa; border-radius: 8px; padding: 15px; margin-bottom: 10px;">
+                    <h3 style="color: #666; margin-bottom: 10px; font-size: 16px;">Your Results</h3>
 
-                    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; margin-bottom: 20px; align-items: stretch;">
-                        <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #007bff;">
-                            <h4 style="color: #007bff; margin-bottom: 10px; font-size: 18px;">📊 Total Trials</h4>
-                            <p style="font-size: 24px; font-weight: bold; color: #333; margin: 0;">${totalTrials}</p>
+                    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-bottom: 10px; align-items: stretch;">
+                        <div style="background: white; padding: 12px; border-radius: 8px; border-left: 4px solid #007bff;">
+                            <h4 style="color: #007bff; margin-bottom: 5px; font-size: 14px;">📊 Total Trials</h4>
+                            <p style="font-size: 20px; font-weight: bold; color: #333; margin: 0;">${totalTrials}</p>
                         </div>
 
-                        <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #28a745;">
-                            <h4 style="color: #28a745; margin-bottom: 10px; font-size: 18px;">⏱️ Total Time</h4>
-                            <p style="font-size: 24px; font-weight: bold; color: #333; margin: 0;">${totalTimeMinutes} min</p>
+                        <div style="background: white; padding: 12px; border-radius: 8px; border-left: 4px solid #28a745;">
+                            <h4 style="color: #28a745; margin-bottom: 5px; font-size: 14px;">⏱️ Total Time</h4>
+                            <p style="font-size: 20px; font-weight: bold; color: #333; margin: 0;">${totalTimeMinutes} min</p>
                         </div>
 
-                        <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #ffc107;">
-                            <h4 style="color: #ffc107; margin-bottom: 10px; font-size: 18px;">🎯 Single Player Success</h4>
-                            <p style="font-size: 24px; font-weight: bold; color: #333; margin: 0;">${singleRateDisplay}</p>
-                            <p style="font-size: 14px; color: #666; margin: 5px 0 0 0;">(${singleCount} single player trials)</p>
+                        <div style="background: white; padding: 12px; border-radius: 8px; border-left: 4px solid #ffc107;">
+                            <h4 style="color: #ffc107; margin-bottom: 5px; font-size: 14px;">🎯 Single Player Success</h4>
+                            <p style="font-size: 20px; font-weight: bold; color: #333; margin: 0;">${singleRateDisplay}</p>
+                            <p style="font-size: 12px; color: #666; margin: 2px 0 0 0;">(${singleCount} single player trials)</p>
                         </div>
 
-                        <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #dc3545;">
-                            <h4 style="color: #dc3545; margin-bottom: 10px; font-size: 18px;">🤝 Collaboration Success</h4>
-                            <p style="font-size: 24px; font-weight: bold; color: #333; margin: 0;">${collabRateDisplay}</p>
-                            <p style="font-size: 14px; color: #666; margin: 5px 0 0 0;">(${collabCount} collaboration trials)</p>
+                        <div style="background: white; padding: 12px; border-radius: 8px; border-left: 4px solid #dc3545;">
+                            <h4 style="color: #dc3545; margin-bottom: 5px; font-size: 14px;">🤝 Collaboration Success</h4>
+                            <p style="font-size: 20px; font-weight: bold; color: #333; margin: 0;">${collabRateDisplay}</p>
+                            <p style="font-size: 12px; color: #666; margin: 2px 0 0 0;">(${collabCount} collaboration trials)</p>
                         </div>
                     </div>
                 </div>
 
-                <div style="background: #e8f5e8; border: 2px solid #28a745; border-radius: 8px; padding: 25px; margin-bottom: 10px;">
-                    <h3 style="color: #28a745; margin-bottom: 15px;">📝 Almost Done!</h3>
-                    <p style="font-size: 18px; color: #333; margin-bottom: 15px;">
+                <div style="background: #e8f5e8; border: 2px solid #28a745; border-radius: 8px; padding: 15px; margin-bottom: 5px;">
+                    <h3 style="color: #28a745; margin-bottom: 8px; font-size: 16px;">📝 Almost Done!</h3>
+                    <p style="font-size: 16px; color: #333; margin-bottom: 8px;">
                         Thank you for completing the game! We just have few more questions for you to answer!
                     </p>
                 </div>
@@ -2259,8 +2259,8 @@ function showGameFeedbackStage(stage) {
                         background: #28a745;
                         color: white;
                         border: none;
-                        padding: 15px 30px;
-                        font-size: 18px;
+                        padding: 12px 25px;
+                        font-size: 16px;
                         border-radius: 8px;
                         cursor: pointer;
                         box-shadow: 0 4px 8px rgba(0,0,0,0.2);
