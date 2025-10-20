@@ -1311,6 +1311,11 @@ async function showLocalCompletionStage() {
                         copy[key] = value;
                     }
                 });
+                // Ensure participant metadata present on each row
+                var pid = gameData.participantId || (window.DataRecording && window.DataRecording.getParticipantId && window.DataRecording.getParticipantId()) || '';
+                if (!copy.participantId) copy.participantId = pid;
+                var pdob = gameData.participantDob || (window.DataRecording && window.DataRecording.getParticipantDob && window.DataRecording.getParticipantDob()) || '';
+                copy.participantDob = pdob;
                 return copy;
             });
 
@@ -1327,6 +1332,19 @@ async function showLocalCompletionStage() {
         } else {
             var emptyQuestionnaireSheet = XLSX.utils.aoa_to_sheet([["No questionnaire data available"]]);
             XLSX.utils.book_append_sheet(workbook, emptyQuestionnaireSheet, 'Questionnaire Data');
+        }
+
+        // Add participant info sheet (ID and DOB)
+        try {
+            var pid = gameData.participantId || (window.DataRecording && window.DataRecording.getParticipantId && window.DataRecording.getParticipantId()) || '';
+            var pdob = gameData.participantDob || (window.DataRecording && window.DataRecording.getParticipantDob && window.DataRecording.getParticipantDob()) || '';
+            var participantInfo = XLSX.utils.aoa_to_sheet([
+                ['participantId', 'participantDob', 'exportTimestamp'],
+                [pid, pdob, new Date().toISOString()]
+            ]);
+            XLSX.utils.book_append_sheet(workbook, participantInfo, 'Participant Info');
+        } catch (e) {
+            console.warn('Unable to append Participant Info sheet:', e);
         }
 
         updateStatus('Saving Excel locally...', '#17a2b8');
@@ -1536,6 +1554,20 @@ function saveDataToGoogleDrive() {
                 note: 'No experimental data collected - experiment may not have been completed',
                 timestamp: new Date().toISOString()
             }];
+        }
+
+        // Ensure participant metadata present on each row for remote builder
+        try {
+            var pid = gameData.participantId || (window.DataRecording && window.DataRecording.getParticipantId && window.DataRecording.getParticipantId()) || '';
+            var pdob = gameData.participantDob || (window.DataRecording && window.DataRecording.getParticipantDob && window.DataRecording.getParticipantDob()) || '';
+            experimentData = experimentData.map(function(trial) {
+                var copy = Object.assign({}, trial);
+                if (!copy.participantId) copy.participantId = pid;
+                copy.participantDob = pdob;
+                return copy;
+            });
+        } catch (e) {
+            console.warn('Could not annotate experiment data with participant metadata:', e);
         }
 
         // Convert questionnaire data to array format
