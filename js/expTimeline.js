@@ -242,49 +242,100 @@ function showWelcomeInfoStage(stage) {
 
     container.innerHTML = `
         <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
-            <div style="background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 800px; text-align: center;">
-                <h2 style="color: #333; margin-bottom: 30px; font-size: 36px;">Welcome to the Game!</h2>
+            <div style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 800px; text-align: center;">
+                <h2 style="color: #333; margin-bottom: 10px; font-size: 22px;">Welcome to the Game!</h2>
 
                 <div style="display: flex; justify-content: center; align-items: center; width: 100%;">
-                    <div style="text-align: center; line-height: 1.6; margin-bottom: 30px; font-size: 22px; max-width: 600px;">
-                        <p style="margin-bottom: 10px;">
+                    <div style="text-align: center; line-height: 1.6; margin-bottom: 10; font-size: 18px; max-width: 600px;">
+                        <p style="margin-bottom: 5px;">
                             You will play a navigation game where hungry travelers need to reach restaurants as quickly as possible.
                         </p>
-                        <p style="margin-bottom: 20px;">
+                        <p style="margin-bottom: 5px;">
                             <span style="color: #007bff; font-weight: bold;">
                                 Your goal: Use the arrow keys to guide your traveler to a restaurant.
                             </span>
                         </p>
-                        <p style="margin-bottom: 20px;">
-                            Here are the buttons you will use to play the game:
-                        </p>
                     </div>
                 </div>
 
-                <!-- Keyboard illustration: Space on the left, Arrow keys on the right -->
-                <div style="display:flex; justify-content:center; align-items:flex-end; gap: 24px; margin: 0 auto 12px; max-width: 640px;">
-                    <!-- Space bar (left) -->
-                    <div style="display:flex; flex-direction:column; align-items:center;">
-                        <div style="width:240px; height:48px; border:1px solid #bbb; border-radius:8px; display:flex; align-items:center; justify-content:center; background:#f7f7f7; box-shadow: inset 0 1px 0 #fff; font-size: 16px; letter-spacing: 1px;">SPACE BAR</div>
-                        <div style="margin-top:8px; color:#555; font-size:14px;">Press this button for continuing the game</div>
-                    </div>
+                <!-- Example Map: 1 Player and 1 Restaurant -->
+                <div style="background: #f8f9fa; border: 2px solid #007bff; border-radius: 10px; padding: 16px; margin: 8px auto 16px; max-width: 520px;">
+                    <h4 style="color:rgb(14, 14, 15); margin: 0 0 12px; font-size: 14px; text-align:center;">Example Game Map and Controls</h4>
+                    <div style="display: flex; justify-content: center; margin-bottom: 10px;">
+                        <div class="example-grid" style="display: grid; grid-template-columns: repeat(5, 32px); grid-template-rows: repeat(5, 32px); gap: 3px; border: 2px solid #333; padding: 6px; background: white; border-radius: 8px;">
+                            <!-- Row 1 -->
+                            <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+                            <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+                            <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+                            <div style="background: #007bff; border: 1px solid #ddd; border-radius: 3px;"></div>
+                            <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
 
-                    <!-- Arrow keys (right) -->
-                    <div style="display:flex; flex-direction:column; align-items:center;">
-                        <div style="display:grid; grid-template-columns: repeat(3, 46px); grid-template-rows: repeat(2, 46px); gap: 6px;">
-                            <div></div>
-                            <div style="width:46px;height:46px;border:1px solid #bbb;border-radius:6px;display:flex;align-items:center;justify-content:center;background:#f7f7f7;box-shadow: inset 0 1px 0 #fff; font-size: 20px;">↑</div>
-                            <div></div>
-                            <div style="width:46px;height:46px;border:1px solid #bbb;border-radius:6px;display:flex;align-items:center;justify-content:center;background:#f7f7f7;box-shadow: inset 0 1px 0 #fff; font-size: 20px;">←</div>
-                            <div style="width:46px;height:46px;border:1px solid #bbb;border-radius:6px;display:flex;align-items:center;justify-content:center;background:#f7f7f7;box-shadow: inset 0 1px 0 #fff; font-size: 20px;">↓</div>
-                            <div style="width:46px;height:46px;border:1px solid #bbb;border-radius:6px;display:flex;align-items:center;justify-content:center;background:#f7f7f7;box-shadow: inset 0 1px 0 #fff; font-size: 20px;">→</div>
+                            <!-- Row 2 -->
+                            <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+                            <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+                            <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+                            <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+                            <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+
+                            <!-- Row 3 -->
+                            <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+                            <div style="background: red; border: 1px solid #ddd; border-radius: 50%;"></div>
+                            <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+                            <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+                            <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+
+                            <!-- Row 4 -->
+                            <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+                            <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+                            <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+                            <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+                            <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+
+                            <!-- Row 5 -->
+                            <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+                            <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+                            <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+                            <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
+                            <div style="background: #f8f9fa; border: 1px solid #ddd;"></div>
                         </div>
-                        <div style="margin-top:8px; color:#555; font-size:14px;">Arrow keys for navigation</div>
+                    </div>
+                    <!-- Legend -->
+                    <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; font-size: 14px; color: #333;">
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <div style="width: 14px; height: 14px; background: red; border-radius: 50%;"></div>
+                            <span>Traveler</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <div style="width: 14px; height: 14px; background: #007bff; border-radius: 3px;"></div>
+                            <span>Restaurant</span>
+                        </div>
+                    </div>
+                    <!-- Controls inside the same figure -->
+                    <div style="margin-top: 12px;"></div>
+                    <div style="display:flex; justify-content:center; align-items:flex-end; gap: 24px; margin: 0 auto 4px; max-width: 640px;">
+                        <!-- Space bar (left) -->
+                        <div style="display:flex; flex-direction:column; align-items:center;">
+                            <div style="width:240px; height:48px; border:1px solid #bbb; border-radius:8px; display:flex; align-items:center; justify-content:center; background:#f7f7f7; box-shadow: inset 0 1px 0 #fff; font-size: 16px; letter-spacing: 1px;">SPACE BAR</div>
+                            <div style="margin-top:8px; color:#555; font-size:14px;">Press this button for continuing the game</div>
+                        </div>
+
+                        <!-- Arrow keys (right) -->
+                        <div style="display:flex; flex-direction:column; align-items:center;">
+                            <div style="display:grid; grid-template-columns: repeat(3, 46px); grid-template-rows: repeat(2, 46px); gap: 6px;">
+                                <div></div>
+                                <div style="width:46px;height:46px;border:1px solid #bbb;border-radius:6px;display:flex;align-items:center;justify-content:center;background:#f7f7f7;box-shadow: inset 0 1px 0 #fff; font-size: 20px;">↑</div>
+                                <div></div>
+                                <div style="width:46px;height:46px;border:1px solid #bbb;border-radius:6px;display:flex;align-items:center;justify-content:center;background:#f7f7f7;box-shadow: inset 0 1px 0 #fff; font-size: 20px;">←</div>
+                                <div style="width:46px;height:46px;border:1px solid #bbb;border-radius:6px;display:flex;align-items:center;justify-content:center;background:#f7f7f7;box-shadow: inset 0 1px 0 #fff; font-size: 20px;">↓</div>
+                                <div style="width:46px;height:46px;border:1px solid #bbb;border-radius:6px;display:flex;align-items:center;justify-content:center;background:#f7f7f7;box-shadow: inset 0 1px 0 #fff; font-size: 20px;">→</div>
+                            </div>
+                            <div style="margin-top:8px; color:#555; font-size:14px;">Arrow keys for navigation</div>
+                        </div>
                     </div>
                 </div>
 
-                <div style="margin-top: 30px;">
-                    <p style="font-size: 22px; font-weight: bold; color: #333; margin-bottom: 20px;">
+                <div style="margin-top: 20px;">
+                    <p style="font-size: 18px; font-weight: bold; color: #333; margin-bottom: 20px;">
                         Next, let's see how to play the game! Press the <span style="background: #f0f0f0; padding: 4px 8px; border-radius: 4px; font-family: monospace;">spacebar</span> to begin!
                     </p>
                 </div>
