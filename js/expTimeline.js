@@ -2276,6 +2276,12 @@ function showGameFeedbackStage(stage) {
         // Handle button click to continue to questionnaire
     document.getElementById('continueToQuestionnaireBtn').addEventListener('click', function() {
         console.log('🎮 Game Feedback Stage: Continue button clicked');
+        // Ensure any lingering key handlers from this stage are removed
+        try {
+            document.removeEventListener('keydown', handleFeedbackSpace);
+        } catch (e) {
+            // no-op
+        }
         // Add questionnaire stage to timeline if it doesn't exist
         var hasQuestionnaireStage = timeline.stages.some(stage => stage.type === 'questionnaire');
         if (!hasQuestionnaireStage) {
