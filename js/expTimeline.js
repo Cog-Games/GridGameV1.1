@@ -2216,8 +2216,8 @@ function showGameFeedbackStage(stage) {
 
     container.innerHTML = `
         <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
-            <div style="background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 1100px; width: 100%; text-align: center;">
-                <h2 style="color: #333; margin-bottom: 30px;">🎮 Game Performance Summary</h2>
+            <div style="background: white; padding: 10px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 1100px; width: 100%; text-align: center;">
+                <h2 style="color: #333; margin-bottom: 10px;">🎮 Game Performance Summary</h2>
 
                 <div style="background: #f8f9fa; border-radius: 8px; padding: 30px; margin-bottom: 30px;">
                     <h3 style="color: #666; margin-bottom: 20px;">Your Results</h3>
@@ -2247,7 +2247,7 @@ function showGameFeedbackStage(stage) {
                     </div>
                 </div>
 
-                <div style="background: #e8f5e8; border: 2px solid #28a745; border-radius: 8px; padding: 25px; margin-bottom: 30px;">
+                <div style="background: #e8f5e8; border: 2px solid #28a745; border-radius: 8px; padding: 25px; margin-bottom: 10px;">
                     <h3 style="color: #28a745; margin-bottom: 15px;">📝 Almost Done!</h3>
                     <p style="font-size: 18px; color: #333; margin-bottom: 15px;">
                         Thank you for completing the game! We just have few more questions for you to answer!
