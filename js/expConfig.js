@@ -85,20 +85,20 @@ const NODEGAME_CONFIG = {
     // experimentOrder: ['1P2G'],           // Test 1P2G only
 
     // Alternative configurations (uncomment to use):
-    experimentOrder: ['1P1G'],           // Test 1P1G only
+    // experimentOrder: ['1P1G'],           // Test 1P1G only
     // experimentOrder: ['2P2G'],           // Test 2P2G only
     // experimentOrder: ['1P1G', '1P2G'],   // Test 1P1G and 1P2G
     // experimentOrder: ['2P2G', '2P3G'],   // Test 2P2G and 2P3G
-    // experimentOrder: ['1P1G', '1P2G', '2P2G', '2P3G'], // Test all experiments
+    experimentOrder: ['1P1G', '1P2G', '2P2G', '2P3G'], // Test all experiments
     // experimentOrder: ['1P2G', '2P3G'],
 
     // =================================================================================================
     // TRIAL COUNTS
     // =================================================================================================
     numTrials: {
-        '1P1G': 2,    // Number of 1P1G trials, formal=2
+        '1P1G': 1,    // Number of 1P1G trials, formal=2
         '1P2G': 1,    // Number of 1P2G trials, formal=8
-        '2P2G': 4,    // Number of 2P2G trials, formal=4
+        '2P2G': 1,    // Number of 2P2G trials, formal=4
         '2P3G': 1    // Number of 2P3G trials, formal=8
     },
 
