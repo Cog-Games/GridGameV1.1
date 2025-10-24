@@ -11,6 +11,12 @@ function createTimelineStages() {
     //     handler: showConsentStage
     // });
 
+    // Add a blank fullscreen prompt stage before the welcome page
+    timeline.stages.push({
+        type: 'fullscreen_prompt',
+        handler: showFullscreenPromptStage
+    });
+
     timeline.stages.push({
         type: 'welcome_info',
         handler: showWelcomeInfoStage
@@ -233,6 +239,39 @@ function showConsentStage(stage) {
     });
 }
 
+
+/**
+ * Show fullscreen prompt stage (blank page with instruction)
+ */
+function showFullscreenPromptStage(stage) {
+    var container = document.getElementById('container');
+
+    container.innerHTML = `
+        <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#fff;">
+            <div style="color:#333;text-align:center;font-family:Arial, sans-serif;max-width:720px;padding:30px;font-size:24px;">
+                <h2 style="margin:0 0 10px;">Please press <span style=\"font-family:monospace;background:#f0f0f0;padding:2px 6px;border-radius:4px;\">Space Bar</span> to start the game in fullscreen!</h2>
+            </div>
+        </div>
+    `;
+
+    function handleSpacebar(event) {
+        if (event.code === 'Space' || event.key === ' ') {
+            event.preventDefault();
+            document.removeEventListener('keydown', handleSpacebar);
+            try {
+                if (window.NodeGameConfig && window.NodeGameConfig.NODEGAME_CONFIG && window.NodeGameConfig.NODEGAME_CONFIG.fullscreen && window.NodeGameConfig.NODEGAME_CONFIG.fullscreen.enabled) {
+                    window.NodeGameConfig.enterFullscreen();
+                }
+            } catch (e) {
+                console.warn('enterFullscreen failed:', e);
+            }
+            nextStage();
+        }
+    }
+
+    document.addEventListener('keydown', handleSpacebar);
+    document.body.focus();
+}
 
 /**
  * Show welcome info stage
@@ -1151,6 +1190,12 @@ function showQuestionnaireStage(stage) {
  */
 function showEndExperimentInfoStage(stage) {
     var container = document.getElementById('container');
+
+    // Exit fullscreen mode when experiment ends
+    if (window.NodeGameConfig && window.NodeGameConfig.NODEGAME_CONFIG.fullscreen.enabled) {
+        console.log('Exiting fullscreen mode at experiment end...');
+        window.NodeGameConfig.exitFullscreen();
+    }
 
     container.innerHTML = `
         <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">

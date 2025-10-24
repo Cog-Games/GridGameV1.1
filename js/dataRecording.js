@@ -165,7 +165,7 @@ function promptForDob(dobConfig) {
                     ask();
                     return;
                 }
-                // Save and resolve
+                // Save and resolve; a fullscreen prompt stage will appear before welcome
                 participantDob = input;
                 if (window.localStorage) {
                     window.localStorage.setItem('nodegame_participant_dob', participantDob);

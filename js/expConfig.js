@@ -155,6 +155,13 @@ const NODEGAME_CONFIG = {
         newGoalMessageDuration: 0,    // New goal message and freeze duration (ms)
         waitingForPartnerDuration: 9000, // How long to show "waiting for partner" simulation (ms)
         movementDelay: 100             // Delay to prevent rapid successive movements (ms)
+    },
+
+    // =================================================================================================
+    // FULLSCREEN CONFIGURATION
+    // =================================================================================================
+    fullscreen: {
+        enabled: true                   // Enable fullscreen functionality
     }
 };
 
@@ -397,6 +404,59 @@ function isAIMovementModeEnabled() {
     return NODEGAME_CONFIG.rlAgent.movementMode.enabled;
 }
 
+// =================================================================================================
+// FULLSCREEN FUNCTIONALITY
+// =================================================================================================
+
+/**
+ * Enter fullscreen mode
+ */
+function enterFullscreen() {
+    if (!NODEGAME_CONFIG.fullscreen.enabled) {
+        return;
+    }
+
+    var docElement = document.documentElement;
+    var requestFullscreen = docElement.requestFullscreen ||
+                           docElement.mozRequestFullScreen ||
+                           docElement.webkitRequestFullscreen ||
+                           docElement.msRequestFullscreen;
+
+    if (requestFullscreen) {
+        requestFullscreen.call(docElement)
+            .then(function() {
+                console.log('Entered fullscreen mode');
+            })
+            .catch(function(error) {
+                console.error('Failed to enter fullscreen:', error);
+            });
+    }
+}
+
+/**
+ * Exit fullscreen mode
+ */
+function exitFullscreen() {
+    if (!NODEGAME_CONFIG.fullscreen.enabled) {
+        return;
+    }
+
+    var exitFullscreen = document.exitFullscreen ||
+                        document.mozCancelFullScreen ||
+                        document.webkitExitFullscreen ||
+                        document.msExitFullscreen;
+
+    if (exitFullscreen) {
+        exitFullscreen.call(document)
+            .then(function() {
+                console.log('Exited fullscreen mode');
+            })
+            .catch(function(error) {
+                console.error('Failed to exit fullscreen:', error);
+            });
+    }
+}
+
 // Export configuration for module usage
 window.NodeGameConfig = {
     NODEGAME_CONFIG: NODEGAME_CONFIG,
@@ -412,5 +472,8 @@ window.NodeGameConfig = {
     setExperimentMode: setExperimentMode,
     getExperimentMode: getExperimentMode,
     getParticipantIdConfig: getParticipantIdConfig,
-    getDataStorageConfig: getDataStorageConfig
+    getDataStorageConfig: getDataStorageConfig,
+    // Fullscreen functions
+    enterFullscreen: enterFullscreen,
+    exitFullscreen: exitFullscreen
 };

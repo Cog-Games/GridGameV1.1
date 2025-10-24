@@ -72,7 +72,7 @@ function recalcResponsiveGridSize() {
     // Choose the limiting dimension and clamp to a sensible range
     var newCellSize = Math.min(cellFromWidth, cellFromHeight);
     var MIN_CELL_SIZE = 20; // ensure visible on tiny windows
-    var MAX_CELL_SIZE = 35; // avoid excessively large cells on huge screens
+    var MAX_CELL_SIZE = 40; // avoid excessively large cells on huge screens
     // Lower the minimum so the full grid fits on smaller laptops
     // e.g., on short viewports where 30px cells would overflow vertically
     newCellSize = Math.max(MIN_CELL_SIZE, Math.min(MAX_CELL_SIZE, newCellSize));
