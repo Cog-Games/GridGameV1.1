@@ -7,15 +7,20 @@ const NODEGAME_CONFIG = {
     // =================================================================================================
     // MODE CONFIGURATION
     // =================================================================================================
-    mode: 'local',
+    mode: 'online',
     modes: {
         online: {
-            label: 'Online (Prolific)',
-            description: 'Hosted deployment for remote Prolific participants.',
-            enableProlificRedirect: true,
+            label: 'Online (CHS)',
+            description: 'Hosted deployment on CHS; participant ID from URL parameter.',
             participantId: {
-                source: 'prolificPID',
-                sourceKey: 'PROLIFIC_PID',
+                // Use childId from URL (?childId=...) as the participant identifier
+                source: 'urlParam',
+                sourceKey: 'child',
+                dobEntry: {
+                    promptTitle: 'Enter Date of Birth (YYYY-MM-DD)',
+                    placeholder: 'YYYY-MM-DD',
+                    required: true
+                },
                 manualEntry: {
                     enabled: false,
                     promptTitle: null,
@@ -34,12 +39,17 @@ const NODEGAME_CONFIG = {
         local: {
             label: 'Local (Lab)',
             description: 'Runs on a local machine with manual participant management.',
-            enableProlificRedirect: false,
             participantId: {
-                source: 'manual',
-                sourceKey: 'participantId',
+                // Disable manual ID; mirror CHS behavior using childId
+                source: 'urlParam',
+                sourceKey: 'child',
+                dobEntry: {
+                    promptTitle: 'Enter Date of Birth (YYYY-MM-DD)',
+                    placeholder: 'YYYY-MM-DD',
+                    required: true
+                },
                 manualEntry: {
-                    enabled: true,
+                    enabled: false,
                     promptTitle: 'Enter Participant ID',
                     placeholder: 'P001',
                     validationRegex: '^[A-Za-z0-9_-]{3,32}$',
@@ -85,8 +95,8 @@ const NODEGAME_CONFIG = {
     // experimentOrder: ['1P2G'],           // Test 1P2G only
 
     // Alternative configurations (uncomment to use):
-    experimentOrder: ['1P1G'],           // Test 1P1G only
-    // experimentOrder: ['2P2G'],           // Test 2P2G only
+    // experimentOrder: ['1P1G'],           // Test 1P1G only
+    experimentOrder: ['2P2G'],           // Test 2P2G only
     // experimentOrder: ['1P1G', '1P2G'],   // Test 1P1G and 1P2G
     // experimentOrder: ['2P2G', '2P3G'],   // Test 2P2G and 2P3G
     // experimentOrder: ['1P1G', '1P2G', '2P2G', '2P3G'], // Test all experiments
@@ -98,7 +108,7 @@ const NODEGAME_CONFIG = {
     numTrials: {
         '1P1G': 2,    // Number of 1P1G trials, formal=2
         '1P2G': 8,    // Number of 1P2G trials, formal=8
-        '2P2G': 4,    // Number of 2P2G trials, formal=4
+        '2P2G': 2,    // Number of 2P2G trials, formal=4
         '2P3G': 8    // Number of 2P3G trials, formal=8
     },
 
@@ -118,6 +128,7 @@ const NODEGAME_CONFIG = {
     // =================================================================================================
     rlAgent: {
         type: 'joint', // Default agent type: 'individual' or 'joint'
+        randomizeOnStart: true, // If true, assign 'individual' or 'joint' at experiment start
         agentDelay: 500,
         independentAgentDelay: 300, // Slower delay for independent AI movement after human reaches goal
 
@@ -143,8 +154,7 @@ const NODEGAME_CONFIG = {
     // GAME SETTINGS
     // =================================================================================================
     maxGameLength: 50, // Max steps per trial
-    enableProlificRedirect: true, // Set to false for testing without redirect
-    prolificCompletionCode: 'CPPNJJ39', // Prolific completion code
+    // Prolific redirect removed
 
     // Timing configurations for easy manipulation
     timing: {

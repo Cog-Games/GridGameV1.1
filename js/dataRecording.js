@@ -8,9 +8,6 @@
 // Participant ID and DOB storage
 var participantId = null;
 var participantDob = null; // 'YYYY-MM-DD'
-// External identifiers from URL (e.g., Lookit)
-var childId = null;
-var sessionId = null;
 
 var participantIdSource = null;
 var pendingParticipantIdResolver = null;
@@ -21,7 +18,7 @@ var pendingParticipantIdResolver = null;
  */
 function initializeParticipantIdFlow() {
     const config = window.NodeGameConfig ? window.NodeGameConfig.getParticipantIdConfig() : null;
-    participantIdSource = config ? config.source : 'prolificPID';
+    participantIdSource = config ? config.source : 'urlParam';
 
     if (participantIdSource === 'manual') {
         return promptForParticipantId(config && config.manualEntry)
@@ -36,47 +33,12 @@ function initializeParticipantIdFlow() {
             });
     }
 
-    // Prolific or other auto sources: still prompt for DOB
-    const id = extractProlificId();
-    if (!id) return Promise.resolve(null);
+    // URL param or other auto sources: always prompt for DOB (even if ID missing)
+    const id = extractIdFromUrlParam();
     return promptForDob(config && config.dobEntry).then(function(dob) {
         setParticipantDob(dob);
-        return id;
+        return id; // may be null if not present in URL
     });
-}
-
-/**
- * Extract childId and sessionId from URL parameters and cache them
- * Also stores them on window.gameData if available
- */
-function extractChildAndSessionIds() {
-    try {
-        const params = new URLSearchParams(window.location.search);
-        // Accept both camelCase and lowercase variants
-        var c = params.get('childId') || params.get('child') || null;
-        var s = params.get('sessionId') || params.get('session') || null;
-
-        if (c) childId = c;
-        if (s) sessionId = s;
-
-        if (window.gameData) {
-            if (childId) window.gameData.childId = childId;
-            if (sessionId) window.gameData.sessionId = sessionId;
-        }
-    } catch (e) {
-        // Best-effort only; keep values null on failure
-        console.warn('Failed to extract childId/sessionId from URL:', e);
-    }
-}
-
-function getChildId() {
-    if (!childId) extractChildAndSessionIds();
-    return childId;
-}
-
-function getSessionId() {
-    if (!sessionId) extractChildAndSessionIds();
-    return sessionId;
 }
 
 function promptForParticipantId(manualConfig) {
@@ -202,7 +164,7 @@ function promptForDob(dobConfig) {
                     ask();
                     return;
                 }
-                // Save and resolve; a fullscreen prompt stage will appear before welcome
+                // Save and resolve
                 participantDob = input;
                 if (window.localStorage) {
                     window.localStorage.setItem('nodegame_participant_dob', participantDob);
@@ -229,20 +191,20 @@ function setParticipantDob(dob) {
 }
 
 /**
- * Extract Prolific participant ID from URL parameters
+ * Extract participant ID from URL parameter configured by sourceKey
  */
-function extractProlificId() {
+function extractIdFromUrlParam() {
     const config = window.NodeGameConfig ? window.NodeGameConfig.getParticipantIdConfig() : null;
     const urlParams = new URLSearchParams(window.location.search);
-    const prolificKey = config && config.sourceKey ? config.sourceKey : 'PROLIFIC_PID';
-    const prolificPid = urlParams.get(prolificKey) || urlParams.get(prolificKey.toLowerCase());
+    const key = config && config.sourceKey ? String(config.sourceKey) : 'childId';
+    const val = urlParams.get(key) || urlParams.get(String(key).toLowerCase());
 
-    if (prolificPid) {
-        participantId = prolificPid;
-        console.log('Prolific participant ID extracted:', participantId);
+    if (val) {
+        participantId = val;
+        console.log('Participant ID (URL param) extracted:', participantId);
         return participantId;
     } else {
-        console.warn('No PROLIFIC_PID found in URL parameters');
+        console.warn('No participant ID found in URL parameters for key:', key);
         // For testing/development, generate a test ID
         if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
             participantId = 'TEST_' + Math.random().toString(36).substr(2, 9);
@@ -258,7 +220,7 @@ function extractProlificId() {
  */
 function getParticipantId() {
     if (!participantId) {
-        extractProlificId();
+        extractIdFromUrlParam();
     }
     return participantId;
 }
@@ -393,11 +355,6 @@ function finalizeTrial(completed) {
         var storageConfig = window.NodeGameConfig.getDataStorageConfig();
         if (storageConfig && storageConfig.includeParticipantIdInPayload) {
             gameData.currentTrialData.participantId = getParticipantId();
-            // Include external identifiers if present for downstream analysis
-            var cid = getChildId();
-            var sid = getSessionId();
-            if (cid) gameData.currentTrialData.childId = cid;
-            if (sid) gameData.currentTrialData.sessionId = sid;
         }
     }
 
@@ -416,16 +373,13 @@ window.DataRecording = {
     recordPlayer1Move: recordPlayer1Move,
     recordPlayer2Move: recordPlayer2Move,
     finalizeTrial: finalizeTrial,
-    extractProlificId: extractProlificId,
-    extractChildAndSessionIds: extractChildAndSessionIds,
+    extractIdFromUrlParam: extractIdFromUrlParam,
     getParticipantId: getParticipantId,
     getParticipantIdAsync: getParticipantIdAsync,
     validateParticipantId: validateParticipantId,
     setParticipantId: setParticipantId,
     getParticipantDob: getParticipantDob,
     setParticipantDob: setParticipantDob,
-    getChildId: getChildId,
-    getSessionId: getSessionId,
     initializeParticipantIdFlow: initializeParticipantIdFlow,
     saveDataLocally: saveDataLocally
 };

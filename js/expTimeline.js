@@ -98,18 +98,11 @@ function createTimelineStages() {
         handler: showEndExperimentInfoStage
     });
 
-    if (NODEGAME_CONFIG.enableProlificRedirect) {
-        // Add Prolific redirect stage
-        timeline.stages.push({
-            type: 'prolific-redirect',
-            handler: showProlificRedirectStage
-        });
-    } else {
-        timeline.stages.push({
-            type: 'local-complete',
-            handler: showLocalCompletionStage
-        });
-    }
+    // Always use local completion stage (Prolific redirect removed)
+    timeline.stages.push({
+        type: 'local-complete',
+        handler: showLocalCompletionStage
+    });
 
     // Add completion stage (only once at the end)
     // timeline.stages.push({
@@ -1489,16 +1482,11 @@ async function showLocalCompletionStage() {
                         copy[key] = value;
                     }
                 });
-                // Ensure participant and session metadata present on each row
+                // Ensure participant metadata present on each row
                 var pid = gameData.participantId || (window.DataRecording && window.DataRecording.getParticipantId && window.DataRecording.getParticipantId()) || '';
                 if (!copy.participantId) copy.participantId = pid;
                 var pdob = gameData.participantDob || (window.DataRecording && window.DataRecording.getParticipantDob && window.DataRecording.getParticipantDob()) || '';
                 copy.participantDob = pdob;
-                // Add childId/sessionId if available
-                var cid = (window.gameData && window.gameData.childId) || (window.DataRecording && window.DataRecording.getChildId && window.DataRecording.getChildId()) || '';
-                var sid = (window.gameData && window.gameData.sessionId) || (window.DataRecording && window.DataRecording.getSessionId && window.DataRecording.getSessionId()) || '';
-                copy.childId = cid;
-                copy.sessionId = sid;
                 return copy;
             });
 
@@ -1517,15 +1505,14 @@ async function showLocalCompletionStage() {
             XLSX.utils.book_append_sheet(workbook, emptyQuestionnaireSheet, 'Questionnaire Data');
         }
 
-        // Add participant info sheet (ID, DOB, childId, sessionId)
+        // Add participant info sheet (ID and DOB)
         try {
             var pid = gameData.participantId || (window.DataRecording && window.DataRecording.getParticipantId && window.DataRecording.getParticipantId()) || '';
             var pdob = gameData.participantDob || (window.DataRecording && window.DataRecording.getParticipantDob && window.DataRecording.getParticipantDob()) || '';
-            var cid = (window.gameData && window.gameData.childId) || (window.DataRecording && window.DataRecording.getChildId && window.DataRecording.getChildId()) || '';
-            var sid = (window.gameData && window.gameData.sessionId) || (window.DataRecording && window.DataRecording.getSessionId && window.DataRecording.getSessionId()) || '';
+            var assignedRL = (gameData && gameData.assignedRlAgentType) || (window.NodeGameConfig && window.NodeGameConfig.getRLAgentType && window.NodeGameConfig.getRLAgentType()) || '';
             var participantInfo = XLSX.utils.aoa_to_sheet([
-                ['participantId', 'participantDob', 'childId', 'sessionId', 'exportTimestamp'],
-                [pid, pdob, cid, sid, new Date().toISOString()]
+                ['participantId', 'participantDob', 'assignedRlAgentType', 'exportTimestamp'],
+                [pid, pdob, assignedRL, new Date().toISOString()]
             ]);
             XLSX.utils.book_append_sheet(workbook, participantInfo, 'Participant Info');
         } catch (e) {
@@ -2364,9 +2351,9 @@ function exportExperimentData() {
             timestamp: new Date().toISOString(),
             experimentOrder: NODEGAME_CONFIG.experimentOrder,
             allTrialsData: gameData.allTrialsData || [],
+            assignedRlAgentType: (gameData && gameData.assignedRlAgentType) || (window.NodeGameConfig && window.NodeGameConfig.getRLAgentType && window.NodeGameConfig.getRLAgentType()) || '',
             questionnaireData: gameData.questionnaireData || null,
             successThreshold: gameData.successThreshold || {},
-            completionCode: NODEGAME_CONFIG.prolificCompletionCode,
             version: NODEGAME_CONFIG.version,
             experimentType: 'human-AI'
         };

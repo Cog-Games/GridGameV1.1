@@ -135,6 +135,32 @@ function startStandaloneExperiment(experimentType) {
             window.RLAgent.enableAutoPolicyPrecalculation();
         }
 
+        // Randomize RL agent type once per participant if configured
+        try {
+            var cfg = window.NodeGameConfig && window.NodeGameConfig.NODEGAME_CONFIG;
+            if (cfg && cfg.rlAgent && cfg.rlAgent.randomizeOnStart) {
+                var pid = (window.gameData && window.gameData.participantId) || null;
+                var storageKey = pid ? ('nodegame_rl_agent_type_' + String(pid)) : 'nodegame_rl_agent_type_default';
+                var existing = null;
+                try { existing = window.localStorage && window.localStorage.getItem(storageKey); } catch(e) {}
+                var assigned = existing;
+                if (assigned !== 'individual' && assigned !== 'joint') {
+                    assigned = Math.random() < 0.5 ? 'individual' : 'joint';
+                    try { if (window.localStorage) window.localStorage.setItem(storageKey, assigned); } catch(e) {}
+                }
+                if (assigned && typeof window.NodeGameConfig.setRLAgentType === 'function') {
+                    window.NodeGameConfig.setRLAgentType(assigned);
+                    console.log('RL Agent randomized/loaded for participant:', pid, '=>', assigned);
+                }
+                // Also keep in gameData for export/meta
+                if (window.gameData) {
+                    window.gameData.assignedRlAgentType = assigned;
+                }
+            }
+        } catch (e) {
+            console.warn('RL agent randomization skipped:', e);
+        }
+
         // Initialize timeline
         timeline.currentStage = 0;
 
