@@ -8,6 +8,9 @@
 // Participant ID and DOB storage
 var participantId = null;
 var participantDob = null; // 'YYYY-MM-DD'
+// External identifiers from URL (e.g., Lookit)
+var childId = null;
+var sessionId = null;
 
 var participantIdSource = null;
 var pendingParticipantIdResolver = null;
@@ -40,6 +43,40 @@ function initializeParticipantIdFlow() {
         setParticipantDob(dob);
         return id;
     });
+}
+
+/**
+ * Extract childId and sessionId from URL parameters and cache them
+ * Also stores them on window.gameData if available
+ */
+function extractChildAndSessionIds() {
+    try {
+        const params = new URLSearchParams(window.location.search);
+        // Accept both camelCase and lowercase variants
+        var c = params.get('childId') || params.get('childid') || null;
+        var s = params.get('sessionId') || params.get('sessionid') || null;
+
+        if (c) childId = c;
+        if (s) sessionId = s;
+
+        if (window.gameData) {
+            if (childId) window.gameData.childId = childId;
+            if (sessionId) window.gameData.sessionId = sessionId;
+        }
+    } catch (e) {
+        // Best-effort only; keep values null on failure
+        console.warn('Failed to extract childId/sessionId from URL:', e);
+    }
+}
+
+function getChildId() {
+    if (!childId) extractChildAndSessionIds();
+    return childId;
+}
+
+function getSessionId() {
+    if (!sessionId) extractChildAndSessionIds();
+    return sessionId;
 }
 
 function promptForParticipantId(manualConfig) {
@@ -356,6 +393,11 @@ function finalizeTrial(completed) {
         var storageConfig = window.NodeGameConfig.getDataStorageConfig();
         if (storageConfig && storageConfig.includeParticipantIdInPayload) {
             gameData.currentTrialData.participantId = getParticipantId();
+            // Include external identifiers if present for downstream analysis
+            var cid = getChildId();
+            var sid = getSessionId();
+            if (cid) gameData.currentTrialData.childId = cid;
+            if (sid) gameData.currentTrialData.sessionId = sid;
         }
     }
 
@@ -375,12 +417,15 @@ window.DataRecording = {
     recordPlayer2Move: recordPlayer2Move,
     finalizeTrial: finalizeTrial,
     extractProlificId: extractProlificId,
+    extractChildAndSessionIds: extractChildAndSessionIds,
     getParticipantId: getParticipantId,
     getParticipantIdAsync: getParticipantIdAsync,
     validateParticipantId: validateParticipantId,
     setParticipantId: setParticipantId,
     getParticipantDob: getParticipantDob,
     setParticipantDob: setParticipantDob,
+    getChildId: getChildId,
+    getSessionId: getSessionId,
     initializeParticipantIdFlow: initializeParticipantIdFlow,
     saveDataLocally: saveDataLocally
 };

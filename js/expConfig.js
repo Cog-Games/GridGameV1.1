@@ -85,11 +85,11 @@ const NODEGAME_CONFIG = {
     // experimentOrder: ['1P2G'],           // Test 1P2G only
 
     // Alternative configurations (uncomment to use):
-    // experimentOrder: ['1P1G'],           // Test 1P1G only
+    experimentOrder: ['1P1G'],           // Test 1P1G only
     // experimentOrder: ['2P2G'],           // Test 2P2G only
     // experimentOrder: ['1P1G', '1P2G'],   // Test 1P1G and 1P2G
     // experimentOrder: ['2P2G', '2P3G'],   // Test 2P2G and 2P3G
-    experimentOrder: ['1P1G', '1P2G', '2P2G', '2P3G'], // Test all experiments
+    // experimentOrder: ['1P1G', '1P2G', '2P2G', '2P3G'], // Test all experiments
     // experimentOrder: ['1P2G', '2P3G'],
 
     // =================================================================================================
@@ -162,6 +162,34 @@ const NODEGAME_CONFIG = {
     // =================================================================================================
     fullscreen: {
         enabled: true                   // Enable fullscreen functionality
+    }
+};
+
+// Optional kids mode helpers for welcome audio + guide figure
+NODEGAME_CONFIG.kidsGuide = {
+    enabled: true,
+    gifSrc: 'js/figs/guide-kid.gif', // Place your cartoon GIF here
+    tts: {
+        enabled: true,
+        languageHint: 'en-US',
+        rate: 0.8,  // Slightly slower than default for kids
+        pitch: 1.15, // Natural but friendly
+        volume: 1.0,
+        // Try these voices first if available on the system/browser
+        preferredVoiceNames: [
+            'Google US English',
+            'Google UK English Female',
+            'Google UK English Male',
+            'Microsoft Aria Online (Natural)',
+            'Microsoft Guy Online (Natural)',
+            'Microsoft Jenny',
+            'Microsoft Zira',
+            'Samantha',
+            'Alex',
+            'Ava',
+            'Victoria',
+            'Moira'
+        ]
     }
 };
 

@@ -278,6 +278,7 @@ function showFullscreenPromptStage(stage) {
  */
 function showWelcomeInfoStage(stage) {
     var container = document.getElementById('container');
+    var kidsCfg = (typeof NODEGAME_CONFIG !== 'undefined' && NODEGAME_CONFIG.kidsGuide) ? NODEGAME_CONFIG.kidsGuide : { enabled: false };
 
     container.innerHTML = `
         <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f8f9fa;">
@@ -382,11 +383,143 @@ function showWelcomeInfoStage(stage) {
         </div>
     `;
 
+    // Place cartoon guide to the LEFT of the main white box
+    try {
+        var outer = container && container.firstElementChild ? container.firstElementChild : null; // centered wrapper
+        var whiteCard = outer && outer.firstElementChild ? outer.firstElementChild : null; // the white card
+        if (outer && whiteCard && kidsCfg && (kidsCfg.enabled || (kidsCfg.tts && kidsCfg.tts.enabled))) {
+            var row = document.createElement('div');
+            row.style.display = 'flex';
+            row.style.alignItems = 'center';
+            row.style.justifyContent = 'center';
+            row.style.gap = '16px';
+            row.style.flexWrap = 'wrap';
+
+            var aside = document.createElement('div');
+            aside.style.display = 'flex';
+            aside.style.flexDirection = 'column';
+            aside.style.alignItems = 'center';
+            aside.style.justifyContent = 'center';
+            aside.innerHTML = `
+                <img id="kidsGuideImg" src="${kidsCfg.gifSrc || ''}" alt="Friendly guide" style="width: 160px; height: 160px; object-fit: contain; image-rendering: -webkit-optimize-contrast;" onerror="this.onerror=null; this.src='figs/smile-face.svg'">
+                <div id="speakControls" style="margin-top:8px; display:${kidsCfg.tts && kidsCfg.tts.enabled ? 'flex' : 'none'}; gap:8px; align-items:center;">
+                    <button id="btnSpeak" style="background:#007bff;color:#fff;border:none;padding:8px 12px;border-radius:6px;cursor:pointer;">▶️ Listen</button>
+                    <button id="btnStop" style="background:#dc3545;color:#fff;border:none;padding:8px 12px;border-radius:6px;cursor:pointer;">⏹ Stop</button>
+                    <span id="speakStatus" style="font-size:12px;color:#555;"></span>
+                </div>`;
+
+            // Move white card to the right of the aside without destroying outer layout
+            row.appendChild(aside);
+            row.appendChild(whiteCard);
+            if (whiteCard.parentNode === outer) {
+                outer.replaceChild(row, whiteCard);
+            } else {
+                // Fallback if DOM changed unexpectedly
+                outer.appendChild(row);
+            }
+        }
+    } catch (e) { /* ignore layout injection errors */ }
+
+    // TTS setup using Web Speech API
+    try {
+        if (kidsCfg && kidsCfg.tts && kidsCfg.tts.enabled && 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window) {
+            const btnSpeak = document.getElementById('btnSpeak');
+            const btnStop = document.getElementById('btnStop');
+            const statusEl = document.getElementById('speakStatus');
+
+            const text = [
+                "Hello! Welcome to the game.",
+                "You will play a navigation game.",
+                "Hungry travelers need to reach restaurants as quickly as possible.",
+                "Your goal is to use the arrow keys to guide your traveler to a restaurant.",
+                "Here is an example of the game map and how to play the game.",
+                "The traveler is represented by a red circle.",
+                "The restaurant is represented by a blue square.",
+                "You can use the arrow keys to navigate the traveler to the restaurant.",
+                "The traveler will move one step at a time.",
+                "The traveler will stop when they reach the restaurant.",
+                "When you are ready, press the space bar to begin."
+            ].join(' ');
+
+            let voices = [];
+            const synth = window.speechSynthesis;
+            const getVoices = () => { voices = synth.getVoices(); return voices; };
+            getVoices();
+            if (typeof window.speechSynthesis.onvoiceschanged !== 'undefined') {
+                window.speechSynthesis.onvoiceschanged = getVoices;
+            }
+
+            let isSpeaking = false;
+            function pickVoice() {
+                const langHint = (kidsCfg.tts && kidsCfg.tts.languageHint) || 'en-US';
+                const prefs = (kidsCfg.tts && kidsCfg.tts.preferredVoiceNames) || [];
+                const normalized = (s) => (s || '').toLowerCase();
+                const langVoices = voices.filter(v => v.lang && v.lang.indexOf(langHint) === 0);
+
+                // Try preferred names first (substring match, case-insensitive)
+                for (const name of prefs) {
+                    const target = normalized(name);
+                    const found = voices.find(v => normalized(v.name).includes(target) || normalized(v.voiceURI).includes(target));
+                    if (found) return found;
+                }
+
+                // Otherwise pick a friendly-sounding match in the right language
+                const friendly = langVoices.find(vx => /aria|jenny|guy|samantha|ava|victoria|moira|natural|english/i.test(vx.name)) || langVoices[0];
+                return friendly || voices[0] || null;
+            }
+            function makeUtterance() {
+                const u = new SpeechSynthesisUtterance(text);
+                const cfg = kidsCfg.tts || {};
+                u.rate = typeof cfg.rate === 'number' ? cfg.rate : 1.0;
+                u.pitch = typeof cfg.pitch === 'number' ? cfg.pitch : 1.0;
+                u.volume = typeof cfg.volume === 'number' ? cfg.volume : 1.0;
+                if (kidsCfg.tts && kidsCfg.tts.languageHint) u.lang = kidsCfg.tts.languageHint;
+                const voice = pickVoice();
+                if (voice) u.voice = voice;
+                u.onstart = () => { isSpeaking = true; if (statusEl) statusEl.textContent = 'Speaking...'; if (btnSpeak) btnSpeak.textContent = '⏸ Pause'; };
+                u.onend = () => { isSpeaking = false; if (statusEl) statusEl.textContent = ''; if (btnSpeak) btnSpeak.textContent = '▶️ Listen'; };
+                u.onerror = () => { isSpeaking = false; if (statusEl) statusEl.textContent = 'Audio unavailable'; if (btnSpeak) btnSpeak.textContent = '▶️ Listen'; };
+                return u;
+            }
+            function pauseOrResume() {
+                if (!btnSpeak) return;
+                if (isSpeaking) {
+                    synth.pause();
+                    isSpeaking = false;
+                    if (statusEl) statusEl.textContent = 'Paused';
+                    btnSpeak.textContent = '▶️ Resume';
+                } else if (synth.paused) {
+                    synth.resume();
+                    isSpeaking = true;
+                    if (statusEl) statusEl.textContent = 'Speaking...';
+                    btnSpeak.textContent = '⏸ Pause';
+                } else {
+                    try { synth.cancel(); } catch(e) {}
+                    const u = makeUtterance();
+                    synth.speak(u);
+                }
+            }
+            function stopTTS() {
+                try { synth.cancel(); } catch(e) {}
+                isSpeaking = false;
+                if (statusEl) statusEl.textContent = '';
+                if (btnSpeak) btnSpeak.textContent = '▶️ Listen';
+            }
+            if (btnSpeak) btnSpeak.addEventListener('click', (e) => { e.preventDefault(); pauseOrResume(); });
+            if (btnStop) btnStop.addEventListener('click', (e) => { e.preventDefault(); stopTTS(); });
+            document.addEventListener('visibilitychange', () => { if (document.hidden) { stopTTS(); } });
+        } else {
+            const controls = document.getElementById('speakControls');
+            if (controls) controls.style.display = 'none';
+        }
+    } catch (e) { /* ignore TTS errors */ }
+
     // Handle spacebar to continue
     function handleSpacebar(event) {
         if (event.code === 'Space' || event.key === ' ') {
             event.preventDefault();
             document.removeEventListener('keydown', handleSpacebar);
+            try { if (window.speechSynthesis) { window.speechSynthesis.cancel(); } } catch(e) {}
             nextStage();
         }
     }
@@ -1356,11 +1489,16 @@ async function showLocalCompletionStage() {
                         copy[key] = value;
                     }
                 });
-                // Ensure participant metadata present on each row
+                // Ensure participant and session metadata present on each row
                 var pid = gameData.participantId || (window.DataRecording && window.DataRecording.getParticipantId && window.DataRecording.getParticipantId()) || '';
                 if (!copy.participantId) copy.participantId = pid;
                 var pdob = gameData.participantDob || (window.DataRecording && window.DataRecording.getParticipantDob && window.DataRecording.getParticipantDob()) || '';
                 copy.participantDob = pdob;
+                // Add childId/sessionId if available
+                var cid = (window.gameData && window.gameData.childId) || (window.DataRecording && window.DataRecording.getChildId && window.DataRecording.getChildId()) || '';
+                var sid = (window.gameData && window.gameData.sessionId) || (window.DataRecording && window.DataRecording.getSessionId && window.DataRecording.getSessionId()) || '';
+                copy.childId = cid;
+                copy.sessionId = sid;
                 return copy;
             });
 
@@ -1379,13 +1517,15 @@ async function showLocalCompletionStage() {
             XLSX.utils.book_append_sheet(workbook, emptyQuestionnaireSheet, 'Questionnaire Data');
         }
 
-        // Add participant info sheet (ID and DOB)
+        // Add participant info sheet (ID, DOB, childId, sessionId)
         try {
             var pid = gameData.participantId || (window.DataRecording && window.DataRecording.getParticipantId && window.DataRecording.getParticipantId()) || '';
             var pdob = gameData.participantDob || (window.DataRecording && window.DataRecording.getParticipantDob && window.DataRecording.getParticipantDob()) || '';
+            var cid = (window.gameData && window.gameData.childId) || (window.DataRecording && window.DataRecording.getChildId && window.DataRecording.getChildId()) || '';
+            var sid = (window.gameData && window.gameData.sessionId) || (window.DataRecording && window.DataRecording.getSessionId && window.DataRecording.getSessionId()) || '';
             var participantInfo = XLSX.utils.aoa_to_sheet([
-                ['participantId', 'participantDob', 'exportTimestamp'],
-                [pid, pdob, new Date().toISOString()]
+                ['participantId', 'participantDob', 'childId', 'sessionId', 'exportTimestamp'],
+                [pid, pdob, cid, sid, new Date().toISOString()]
             ]);
             XLSX.utils.book_append_sheet(workbook, participantInfo, 'Participant Info');
         } catch (e) {
