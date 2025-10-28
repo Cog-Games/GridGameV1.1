@@ -53,8 +53,8 @@ function extractChildAndSessionIds() {
     try {
         const params = new URLSearchParams(window.location.search);
         // Accept both camelCase and lowercase variants
-        var c = params.get('childId') || params.get('childid') || null;
-        var s = params.get('sessionId') || params.get('sessionid') || null;
+        var c = params.get('childId') || params.get('child') || null;
+        var s = params.get('sessionId') || params.get('session') || null;
 
         if (c) childId = c;
         if (s) sessionId = s;
