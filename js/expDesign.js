@@ -427,49 +427,70 @@ function generateNewGoalFor2P3G(player2Pos, player1Pos, oldGoals, player2Current
 }
 
 /**
- * Check if a new goal would block the path from human to the goal (matching original)
+ * Check if a new goal blocks the only optimal path from player to existing goal.
+ * A goal blocks the path if:
+ * 1. Player position, new goal, and existing goal are collinear (same line)
+ * 2. New goal is positioned between the player and existing goal
  */
 function isGoalBlockingPath(player1Pos, newGoal, existingGoals) {
-    // Check if the new goal is directly adjacent to the player1
-    // If so, it might block movement (though goals are passable, this could cause issues)
-    var distanceToPlayer1 = calculatetGirdDistance(player1Pos, newGoal);
-    if (distanceToPlayer1 <= 1) {
-        return true; // Too close, might cause blocking issues
+    if (!player1Pos || !newGoal || !existingGoals || existingGoals.length === 0) {
+        return false;
     }
 
-    // Check if the new goal is in a position that would make it impossible to reach
-    // by creating a "dead end" situation
-    var hasValidPath = false;
+    var distanceCalculator = getDistanceCalculator();
+    if (!distanceCalculator) {
+        return false;
+    }
 
-    // Check if there's at least one valid path to the goal (not blocked by other goals)
-    for (var row = 0; row < EXPSETTINGS.matrixsize; row++) {
-        for (var col = 0; col < EXPSETTINGS.matrixsize; col++) {
-            var testPos = [row, col];
-            if (gameData.gridMatrix[row][col] === OBJECT.blank) {
-                var pathToGoal = calculatetGirdDistance(testPos, newGoal);
-                var pathFromPlayer1 = calculatetGirdDistance(player1Pos, testPos);
-                var totalPath = pathFromPlayer1 + pathToGoal;
+    // Check each existing goal
+    for (var i = 0; i < existingGoals.length; i++) {
+        var existingGoal = existingGoals[i];
 
-                // If this path is reasonable and doesn't go through other goals
-                if (totalPath <= distanceToPlayer1 + 2) { // Allow some flexibility
-                    var pathBlocked = false;
-                    for (var i = 0; i < existingGoals.length; i++) {
-                        if (calculatetGirdDistance(testPos, existingGoals[i]) <= 1) {
-                            pathBlocked = true;
-                            break;
-                        }
-                    }
-                    if (!pathBlocked) {
-                        hasValidPath = true;
-                        break;
-                    }
-                }
+        // Check if the three points are collinear (on the same line)
+        // Points are collinear if they're on the same row, same column, or same diagonal
+        var isCollinear = arePointsCollinear(player1Pos, newGoal, existingGoal);
+
+        if (isCollinear) {
+            // Check if newGoal is between player1Pos and existingGoal
+            // For Manhattan distance: dist(player, existing) == dist(player, new) + dist(new, existing)
+            var distPlayerToExisting = distanceCalculator(player1Pos, existingGoal);
+            var distPlayerToNew = distanceCalculator(player1Pos, newGoal);
+            var distNewToExisting = distanceCalculator(newGoal, existingGoal);
+
+            // Check if newGoal is between player1Pos and existingGoal
+            // This means: dist(player, new) + dist(new, existing) == dist(player, existing)
+            // AND newGoal is not at the same position as player1Pos or existingGoal
+            if (distPlayerToNew > 0 && distNewToExisting > 0 &&
+                distPlayerToNew + distNewToExisting === distPlayerToExisting) {
+                return true; // New goal blocks the optimal path
             }
         }
-        if (hasValidPath) break;
     }
 
-    return !hasValidPath; // Return true if no valid path exists
+    return false; // No blocking detected
+}
+
+/**
+ * Check if three points are collinear (on the same line).
+ * Uses cross product method which works for horizontal, vertical, and diagonal lines.
+ * Three points are collinear if the cross product of vectors is zero.
+ */
+function arePointsCollinear(pos1, pos2, pos3) {
+    var row1 = pos1[0], col1 = pos1[1];
+    var row2 = pos2[0], col2 = pos2[1];
+    var row3 = pos3[0], col3 = pos3[1];
+
+    // Calculate vectors from pos1 to pos2 and pos1 to pos3
+    var vec12_row = row2 - row1;
+    var vec12_col = col2 - col1;
+    var vec13_row = row3 - row1;
+    var vec13_col = col3 - col1;
+
+    // Cross product: vec12 × vec13
+    // If cross product is zero, points are collinear
+    var crossProduct = vec12_row * vec13_col - vec13_row * vec12_col;
+
+    return crossProduct === 0;
 }
 
 /**
