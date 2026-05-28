@@ -11,17 +11,16 @@ function createTimelineStages() {
     //     handler: showConsentStage
     // });
 
-    // Add a blank fullscreen prompt stage before the welcome page
+    // Kids-style startup: collect ID/DOB, then enter fullscreen, then Game 1 instructions.
+    timeline.stages.push({
+        type: 'participant_info',
+        handler: showParticipantInfoStage
+    });
+
     timeline.stages.push({
         type: 'fullscreen_prompt',
         handler: showFullscreenPromptStage
     });
-
-    timeline.stages.push({
-        type: 'welcome_info',
-        handler: showWelcomeInfoStage
-    });
-
 
     // Add stages for each experiment in order
     for (var expIndex = 0; expIndex < NODEGAME_CONFIG.experimentOrder.length; expIndex++) {
@@ -239,6 +238,468 @@ function showConsentStage(stage) {
     });
 }
 
+function getStartupUrlParamValue(keys) {
+    var keyList = Array.isArray(keys) ? keys : [keys];
+
+    function readFromParams(source) {
+        try {
+            var params = new URLSearchParams(source || '');
+            for (var i = 0; i < keyList.length; i++) {
+                var value = params.get(keyList[i]);
+                if (value && String(value).trim()) {
+                    return String(value).trim();
+                }
+            }
+        } catch (e) {
+            // Ignore malformed URL parameters.
+        }
+        return null;
+    }
+
+    var searchValue = readFromParams(window.location.search || '');
+    if (searchValue) {
+        return searchValue;
+    }
+
+    try {
+        var hash = String(window.location.hash || '');
+        var queryStart = hash.indexOf('?');
+        if (queryStart >= 0) {
+            return readFromParams(hash.slice(queryStart + 1));
+        }
+    } catch (e) {
+        // Ignore malformed hash parameters.
+    }
+
+    return null;
+}
+
+function getStartupParticipantIdFromUrl() {
+    return getStartupUrlParamValue(['child', 'childId', 'participantId', 'PROLIFIC_PID', 'prolific_pid']);
+}
+
+function escapeHtml(value) {
+    return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+}
+
+function parseParticipantDob(dob) {
+    var match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(dob || '').trim());
+    if (!match) {
+        return null;
+    }
+
+    var year = Number(match[1]);
+    var month = Number(match[2]);
+    var day = Number(match[3]);
+
+    if (!Number.isInteger(year) || !Number.isInteger(month) || !Number.isInteger(day)) {
+        return null;
+    }
+    if (year < 1900 || month < 1 || month > 12 || day < 1 || day > 31) {
+        return null;
+    }
+
+    var date = new Date(year, month - 1, day);
+    if (
+        date.getFullYear() !== year ||
+        date.getMonth() !== month - 1 ||
+        date.getDate() !== day
+    ) {
+        return null;
+    }
+
+    return { year: year, month: month, day: day, date: date };
+}
+
+function calculateParticipantAgeFromDob(dob, referenceDate) {
+    var parsed = parseParticipantDob(dob);
+    if (!parsed) {
+        return null;
+    }
+
+    var refSource = referenceDate || new Date();
+    var ref = new Date(refSource.getFullYear(), refSource.getMonth(), refSource.getDate());
+    var birth = parsed.date;
+    if (birth > ref) {
+        return null;
+    }
+
+    var years = ref.getFullYear() - birth.getFullYear();
+    var months = ref.getMonth() - birth.getMonth();
+    var days = ref.getDate() - birth.getDate();
+
+    if (days < 0) {
+        months -= 1;
+        days += new Date(ref.getFullYear(), ref.getMonth(), 0).getDate();
+    }
+
+    if (months < 0) {
+        years -= 1;
+        months += 12;
+    }
+
+    var birthUtc = Date.UTC(parsed.year, parsed.month - 1, parsed.day);
+    var refUtc = Date.UTC(ref.getFullYear(), ref.getMonth(), ref.getDate());
+
+    return {
+        participantDob: String(parsed.year).padStart(4, '0') + '-' + String(parsed.month).padStart(2, '0') + '-' + String(parsed.day).padStart(2, '0'),
+        participantAgeReferenceDate: ref.getFullYear() + '-' + String(ref.getMonth() + 1).padStart(2, '0') + '-' + String(ref.getDate()).padStart(2, '0'),
+        participantAgeYears: years,
+        participantAgeMonths: months,
+        participantAgeDays: days,
+        participantAgeTotalDays: Math.floor((refUtc - birthUtc) / 86400000)
+    };
+}
+
+function applyStartupParticipantInfo(participantId, ageInfo) {
+    if (!participantId || !ageInfo) {
+        return;
+    }
+
+    gameData.participantId = participantId;
+    gameData.participantDob = ageInfo.participantDob;
+    gameData.participantAgeReferenceDate = ageInfo.participantAgeReferenceDate;
+    gameData.participantAgeYears = ageInfo.participantAgeYears;
+    gameData.participantAgeMonths = ageInfo.participantAgeMonths;
+    gameData.participantAgeDays = ageInfo.participantAgeDays;
+    gameData.participantAgeTotalDays = ageInfo.participantAgeTotalDays;
+
+    if (window.DataRecording) {
+        if (typeof window.DataRecording.setParticipantId === 'function') {
+            window.DataRecording.setParticipantId(participantId);
+        }
+        if (typeof window.DataRecording.setParticipantDob === 'function') {
+            window.DataRecording.setParticipantDob(ageInfo.participantDob);
+        }
+        if (typeof window.DataRecording.setParticipantAgeInfo === 'function') {
+            window.DataRecording.setParticipantAgeInfo(ageInfo);
+        }
+    }
+}
+
+function getStartupAIConditionOverride() {
+    var rawValue = getStartupUrlParamValue(['aiCondition', 'condition', 'ai_condition']);
+    if (!rawValue || !window.NodeGameConfig || typeof window.NodeGameConfig.getAIConditionConfig !== 'function') {
+        return null;
+    }
+
+    var normalized = String(rawValue).trim().toLowerCase();
+    var aliases = {
+        individual: 'individual-rl',
+        individual_rl: 'individual-rl',
+        individualrl: 'individual-rl',
+        joint: 'joint-rl',
+        joint_rl: 'joint-rl',
+        jointrl: 'joint-rl',
+        shared: 'sa-model',
+        shared_agency: 'sa-model',
+        sharedagency: 'sa-model',
+        sa: 'sa-model',
+        sa_model: 'sa-model',
+        samodel: 'sa-model'
+    };
+    var conditionId = aliases[normalized] || normalized;
+    return window.NodeGameConfig.getAIConditionConfig(conditionId) ? conditionId : null;
+}
+
+function buildClientFallbackAIConditionAssignment(participantId, ageInfo, reason) {
+    var conditions = window.NodeGameConfig && typeof window.NodeGameConfig.getAllAIConditions === 'function'
+        ? window.NodeGameConfig.getAllAIConditions()
+        : [];
+    if (!conditions.length) {
+        return null;
+    }
+
+    var selectedCondition = conditions[Math.floor(Math.random() * conditions.length)];
+    return {
+        assignmentId: 'client_fallback_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8),
+        participantId: participantId,
+        dob: ageInfo.participantDob,
+        ageGroup: ageInfo.participantAgeYears,
+        condition: selectedCondition.id,
+        conditionLabel: selectedCondition.label,
+        rlAgentType: selectedCondition.rlAgentType,
+        analysisCode: selectedCondition.analysisCode,
+        status: 'reserved',
+        assignmentStrategy: 'client-uniform',
+        assignmentSource: 'client-fallback',
+        fallbackReason: reason || 'assignment_api_unavailable',
+        quotaVersion: 'client-fallback',
+        quotaSnapshot: null,
+        eventId: null,
+        stationId: null
+    };
+}
+
+function applyAIConditionAssignment(assignment) {
+    if (!assignment || !assignment.condition || !window.NodeGameConfig || typeof window.NodeGameConfig.setAssignedAICondition !== 'function') {
+        return false;
+    }
+
+    return window.NodeGameConfig.setAssignedAICondition(assignment.condition, assignment);
+}
+
+async function assignAIConditionForParticipant(participantId, ageInfo) {
+    var assignmentConfig = window.NodeGameConfig && typeof window.NodeGameConfig.getAIConditionAssignmentConfig === 'function'
+        ? window.NodeGameConfig.getAIConditionAssignmentConfig()
+        : null;
+
+    var overrideCondition = getStartupAIConditionOverride();
+    if (overrideCondition) {
+        var condition = window.NodeGameConfig.getAIConditionConfig(overrideCondition);
+        var overrideAssignment = {
+            assignmentId: 'url_override_' + Date.now().toString(36),
+            participantId: participantId,
+            dob: ageInfo.participantDob,
+            ageGroup: ageInfo.participantAgeYears,
+            condition: condition.id,
+            conditionLabel: condition.label,
+            rlAgentType: condition.rlAgentType,
+            analysisCode: condition.analysisCode,
+            status: 'reserved',
+            assignmentStrategy: 'url-override',
+            assignmentSource: 'url-override',
+            quotaVersion: 'url-override'
+        };
+        applyAIConditionAssignment(overrideAssignment);
+        return overrideAssignment;
+    }
+
+    if (!assignmentConfig || assignmentConfig.enabled === false) {
+        return null;
+    }
+
+    try {
+        var response = await fetch(assignmentConfig.assignmentEndpoint || '/api/assign-ai-condition', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                participantId: participantId,
+                dob: ageInfo.participantDob,
+                ageYears: ageInfo.participantAgeYears,
+                eventId: assignmentConfig.eventId || null,
+                stationId: assignmentConfig.stationId || null
+            })
+        });
+
+        var payload = await response.json();
+        if (!response.ok || !payload || payload.ok !== true || !payload.assignment) {
+            var apiError = new Error(payload && payload.error ? payload.error : 'assignment_request_failed');
+            apiError.httpStatus = response.status;
+            apiError.serverResponse = payload;
+            throw apiError;
+        }
+
+        applyAIConditionAssignment(payload.assignment);
+        return payload.assignment;
+    } catch (error) {
+        console.warn('AI condition assignment API unavailable:', error);
+
+        var serverRejectedRequest = error && error.serverResponse && error.httpStatus && error.httpStatus < 500;
+        if (assignmentConfig.localFallbackEnabled && !serverRejectedRequest) {
+            var fallbackAssignment = buildClientFallbackAIConditionAssignment(participantId, ageInfo, error.message || String(error));
+            if (fallbackAssignment && applyAIConditionAssignment(fallbackAssignment)) {
+                return fallbackAssignment;
+            }
+        }
+
+        throw error;
+    }
+}
+
+function getAIConditionExportFields() {
+    var assignment = null;
+    if (window.NodeGameConfig && typeof window.NodeGameConfig.getAssignedAIConditionMetadata === 'function') {
+        assignment = window.NodeGameConfig.getAssignedAIConditionMetadata();
+    }
+    assignment = assignment || gameData.aiConditionAssignment || null;
+
+    return {
+        assignedAICondition: (assignment && assignment.condition) || gameData.assignedAICondition || '',
+        assignedAIConditionLabel: (assignment && assignment.conditionLabel) || gameData.assignedAIConditionLabel || '',
+        assignedAIRLAgentType: (assignment && assignment.rlAgentType) || gameData.assignedAIRLAgentType || '',
+        assignedAIAnalysisCode: (assignment && assignment.analysisCode) || gameData.assignedAIAnalysisCode || '',
+        aiConditionAssignmentId: (assignment && assignment.assignmentId) || '',
+        aiConditionAssignmentStatus: (assignment && assignment.status) || '',
+        aiConditionAssignmentSource: (assignment && assignment.assignmentSource) || '',
+        aiConditionAssignmentStrategy: (assignment && assignment.assignmentStrategy) || '',
+        aiConditionQuotaVersion: (assignment && assignment.quotaVersion) || '',
+        aiConditionAgeGroup: assignment && assignment.ageGroup != null ? assignment.ageGroup : '',
+        aiConditionAssignmentJson: assignment ? JSON.stringify(assignment) : ''
+    };
+}
+
+async function completeAssignedAIConditionAssignment() {
+    var assignmentConfig = window.NodeGameConfig && typeof window.NodeGameConfig.getAIConditionAssignmentConfig === 'function'
+        ? window.NodeGameConfig.getAIConditionAssignmentConfig()
+        : null;
+    var assignment = window.NodeGameConfig && typeof window.NodeGameConfig.getAssignedAIConditionMetadata === 'function'
+        ? window.NodeGameConfig.getAssignedAIConditionMetadata()
+        : null;
+
+    if (!assignmentConfig || !assignmentConfig.completionEndpoint || !assignment || assignment.status === 'completed') {
+        return assignment || null;
+    }
+
+    if (assignment.assignmentSource === 'client-fallback' || assignment.assignmentSource === 'url-override') {
+        var localCompleted = Object.assign({}, assignment, {
+            status: 'completed',
+            completedAt: new Date().toISOString()
+        });
+        applyAIConditionAssignment(localCompleted);
+        return localCompleted;
+    }
+
+    try {
+        var response = await fetch(assignmentConfig.completionEndpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                assignmentId: assignment.assignmentId,
+                participantId: assignment.participantId || gameData.participantId || ''
+            })
+        });
+        var payload = await response.json();
+        if (!response.ok || !payload || payload.ok !== true) {
+            throw new Error(payload && payload.error ? payload.error : 'assignment_completion_failed');
+        }
+
+        var completedAssignment = Object.assign({}, assignment, {
+            status: payload.status || 'completed',
+            completedAt: new Date().toISOString()
+        });
+        applyAIConditionAssignment(completedAssignment);
+        return completedAssignment;
+    } catch (error) {
+        console.warn('Unable to mark AI condition assignment completed:', error);
+        return assignment;
+    }
+}
+
+/**
+ * Show ID and DOB entry stage.
+ */
+function showParticipantInfoStage(stage) {
+    var container = document.getElementById('container');
+    var initialParticipantId = getStartupParticipantIdFromUrl() || '';
+    var escapedParticipantId = escapeHtml(initialParticipantId);
+
+    container.innerHTML = `
+        <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#f8f9fa;padding:20px;font-family:Arial, sans-serif;">
+            <div data-stage-focus="true" tabindex="-1" style="background:white;padding:36px;border-radius:10px;box-shadow:0 4px 6px rgba(0,0,0,0.1);max-width:640px;width:100%;text-align:center;">
+                <h2 style="color:#333;margin:0 0 12px;font-size:30px;">Before we begin</h2>
+                <p style="font-size:18px;color:#333;line-height:1.5;margin:0 0 24px;">Please enter the participant ID and date of birth.</p>
+
+                <form id="participantInfoForm" style="display:flex;flex-direction:column;gap:18px;align-items:stretch;">
+                    <label style="font-weight:bold;color:#333;text-align:left;">
+                        Participant ID
+                        <input id="participantIdInput" required type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="32" placeholder="C001" value="${escapedParticipantId}" style="width:100%;box-sizing:border-box;margin-top:6px;padding:12px;border:1px solid #bbb;border-radius:6px;font-size:16px;">
+                    </label>
+
+                    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;text-align:left;">
+                        <label style="font-weight:bold;color:#333;">
+                            Month
+                            <select id="dobMonth" required style="width:100%;margin-top:6px;padding:12px;border:1px solid #bbb;border-radius:6px;font-size:16px;background:white;">
+                                <option value="">Month</option>
+                                ${Array.from({ length: 12 }, function(_, i) { return '<option value="' + (i + 1) + '">' + (i + 1) + '</option>'; }).join('')}
+                            </select>
+                        </label>
+                        <label style="font-weight:bold;color:#333;">
+                            Day
+                            <select id="dobDay" required style="width:100%;margin-top:6px;padding:12px;border:1px solid #bbb;border-radius:6px;font-size:16px;background:white;">
+                                <option value="">Day</option>
+                                ${Array.from({ length: 31 }, function(_, i) { return '<option value="' + (i + 1) + '">' + (i + 1) + '</option>'; }).join('')}
+                            </select>
+                        </label>
+                        <label style="font-weight:bold;color:#333;">
+                            Year
+                            <select id="dobYear" required style="width:100%;box-sizing:border-box;margin-top:6px;padding:12px;border:1px solid #bbb;border-radius:6px;font-size:16px;background:white;">
+                                <option value="">Year</option>
+                                ${Array.from({ length: 9 }, function(_, i) { var year = 2016 + i; return '<option value="' + year + '">' + year + '</option>'; }).join('')}
+                            </select>
+                        </label>
+                    </div>
+
+                    <div id="participantInfoError" role="alert" style="min-height:22px;color:#dc3545;font-size:15px;text-align:center;"></div>
+
+                    <button id="participantInfoContinueBtn" type="submit" style="align-self:center;background:#007bff;color:white;border:none;padding:13px 28px;font-size:18px;border-radius:6px;cursor:pointer;">
+                        Continue
+                    </button>
+                </form>
+            </div>
+        </div>
+    `;
+
+    var form = document.getElementById('participantInfoForm');
+    var errorEl = document.getElementById('participantInfoError');
+    var continueBtn = document.getElementById('participantInfoContinueBtn');
+
+    function setError(message) {
+        if (errorEl) {
+            errorEl.textContent = message || '';
+        }
+    }
+
+    function setSubmitting(isSubmitting) {
+        if (!continueBtn) return;
+        continueBtn.disabled = !!isSubmitting;
+        continueBtn.textContent = isSubmitting ? 'Assigning...' : 'Continue';
+        continueBtn.style.background = isSubmitting ? '#6c757d' : '#007bff';
+        continueBtn.style.cursor = isSubmitting ? 'wait' : 'pointer';
+    }
+
+    form.addEventListener('submit', async function(event) {
+        event.preventDefault();
+
+        var participantId = String(document.getElementById('participantIdInput').value || '').trim();
+        var year = Number(document.getElementById('dobYear').value);
+        var month = Number(document.getElementById('dobMonth').value);
+        var day = Number(document.getElementById('dobDay').value);
+        var dob = String(year).padStart(4, '0') + '-' + String(month).padStart(2, '0') + '-' + String(day).padStart(2, '0');
+        var ageInfo = calculateParticipantAgeFromDob(dob, new Date());
+
+        if (!participantId) {
+            setError('Please enter a participant ID.');
+            return;
+        }
+
+        if (!/^[A-Za-z0-9_-]{1,32}$/.test(participantId)) {
+            setError('Participant ID can use letters, numbers, hyphen, or underscore.');
+            return;
+        }
+
+        if (!ageInfo) {
+            setError('Please enter a real date of birth that is not in the future.');
+            return;
+        }
+
+        try {
+            setError('');
+            setSubmitting(true);
+            applyStartupParticipantInfo(participantId, ageInfo);
+            await assignAIConditionForParticipant(participantId, ageInfo);
+            nextStage();
+        } catch (error) {
+            console.error('Unable to assign AI condition:', error);
+            setError('Could not assign an AI condition. Please check the server and try again.');
+            setSubmitting(false);
+        }
+    });
+
+    var participantIdInput = document.getElementById('participantIdInput');
+    if (participantIdInput) {
+        participantIdInput.focus();
+    }
+}
+
 
 /**
  * Show fullscreen prompt stage (blank page with instruction)
@@ -247,9 +708,20 @@ function showFullscreenPromptStage(stage) {
     var container = document.getElementById('container');
 
     container.innerHTML = `
-        <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#fff;">
-            <div style="color:#333;text-align:center;font-family:Arial, sans-serif;max-width:720px;padding:30px;font-size:24px;">
-                <h2 style="margin:0 0 10px;">Please press <span style=\"font-family:monospace;background:#f0f0f0;padding:2px 6px;border-radius:4px;\">Space Bar</span> to start the game in fullscreen!</h2>
+        <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#f7fbff;padding:24px;font-family:Arial, sans-serif;">
+            <div tabindex="-1" style="color:#243044;text-align:center;max-width:760px;width:100%;padding:34px 30px;border:3px solid #007bff;border-radius:14px;background:#fff;box-shadow:0 10px 24px rgba(0, 70, 140, 0.14);">
+                <div aria-hidden="true" style="display:flex;justify-content:center;gap:10px;margin-bottom:16px;">
+                    <span style="width:18px;height:18px;background:#ffcc00;border-radius:4px;transform:rotate(10deg);display:inline-block;"></span>
+                    <span style="width:18px;height:18px;background:#2cc6a0;border-radius:50%;display:inline-block;"></span>
+                    <span style="width:18px;height:18px;background:#7c8cff;border-radius:4px;transform:rotate(-10deg);display:inline-block;"></span>
+                </div>
+                <h1 style="margin:0 0 12px;font-size:46px;line-height:1.05;color:#1f2937;">Welcome to the Game!</h1>
+                <p style="margin:0 0 24px;font-size:25px;line-height:1.35;color:#344054;">Get ready to play.</p>
+                <div style="display:inline-flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;font-size:26px;font-weight:bold;color:#333;">
+                    <span>Press</span>
+                    <span style="font-family:monospace;background:#eef4ff;border:2px solid #9cc8ff;padding:8px 16px;border-radius:8px;box-shadow:0 3px 0 #b7d7ff;">Space Bar</span>
+                    <span>to enter fullscreen</span>
+                </div>
             </div>
         </div>
     `;
@@ -1227,12 +1699,16 @@ function showEndExperimentInfoStage(stage) {
         var storageSettings = window.NodeGameConfig.getDataStorageConfig();
         if (storageSettings && storageSettings.type === 'local') {
             console.log('Local mode detected — skipping Google Drive upload.');
-            nextStage();
+            completeAssignedAIConditionAssignment().finally(function() {
+                nextStage();
+            });
             return;
         }
     }
 
-    saveDataToGoogleDrive();
+    completeAssignedAIConditionAssignment().finally(function() {
+        saveDataToGoogleDrive();
+    });
 }
 
 /**
@@ -1338,6 +1814,9 @@ async function showLocalCompletionStage() {
             throw new Error('Excel library (XLSX) is not loaded.');
         }
 
+        updateStatus('Completing AI condition assignment...', '#17a2b8');
+        await completeAssignedAIConditionAssignment();
+
         var questionnaireArray = convertQuestionnaireToArray(gameData.questionnaireData);
 
         var workbook = XLSX.utils.book_new();
@@ -1361,6 +1840,12 @@ async function showLocalCompletionStage() {
                 if (!copy.participantId) copy.participantId = pid;
                 var pdob = gameData.participantDob || (window.DataRecording && window.DataRecording.getParticipantDob && window.DataRecording.getParticipantDob()) || '';
                 copy.participantDob = pdob;
+                copy.participantAgeReferenceDate = gameData.participantAgeReferenceDate || '';
+                copy.participantAgeYears = gameData.participantAgeYears == null ? '' : gameData.participantAgeYears;
+                copy.participantAgeMonths = gameData.participantAgeMonths == null ? '' : gameData.participantAgeMonths;
+                copy.participantAgeDays = gameData.participantAgeDays == null ? '' : gameData.participantAgeDays;
+                copy.participantAgeTotalDays = gameData.participantAgeTotalDays == null ? '' : gameData.participantAgeTotalDays;
+                Object.assign(copy, getAIConditionExportFields());
                 return copy;
             });
 
@@ -1383,9 +1868,29 @@ async function showLocalCompletionStage() {
         try {
             var pid = gameData.participantId || (window.DataRecording && window.DataRecording.getParticipantId && window.DataRecording.getParticipantId()) || '';
             var pdob = gameData.participantDob || (window.DataRecording && window.DataRecording.getParticipantDob && window.DataRecording.getParticipantDob()) || '';
+            var aiConditionFields = getAIConditionExportFields();
             var participantInfo = XLSX.utils.aoa_to_sheet([
-                ['participantId', 'participantDob', 'exportTimestamp'],
-                [pid, pdob, new Date().toISOString()]
+                ['participantId', 'participantDob', 'participantAgeReferenceDate', 'participantAgeYears', 'participantAgeMonths', 'participantAgeDays', 'participantAgeTotalDays', 'assignedAICondition', 'assignedAIConditionLabel', 'assignedAIRLAgentType', 'assignedAIAnalysisCode', 'aiConditionAssignmentId', 'aiConditionAssignmentStatus', 'aiConditionAssignmentSource', 'aiConditionAssignmentStrategy', 'aiConditionQuotaVersion', 'aiConditionAgeGroup', 'exportTimestamp'],
+                [
+                    pid,
+                    pdob,
+                    gameData.participantAgeReferenceDate || '',
+                    gameData.participantAgeYears == null ? '' : gameData.participantAgeYears,
+                    gameData.participantAgeMonths == null ? '' : gameData.participantAgeMonths,
+                    gameData.participantAgeDays == null ? '' : gameData.participantAgeDays,
+                    gameData.participantAgeTotalDays == null ? '' : gameData.participantAgeTotalDays,
+                    aiConditionFields.assignedAICondition,
+                    aiConditionFields.assignedAIConditionLabel,
+                    aiConditionFields.assignedAIRLAgentType,
+                    aiConditionFields.assignedAIAnalysisCode,
+                    aiConditionFields.aiConditionAssignmentId,
+                    aiConditionFields.aiConditionAssignmentStatus,
+                    aiConditionFields.aiConditionAssignmentSource,
+                    aiConditionFields.aiConditionAssignmentStrategy,
+                    aiConditionFields.aiConditionQuotaVersion,
+                    aiConditionFields.aiConditionAgeGroup,
+                    new Date().toISOString()
+                ]
             ]);
             XLSX.utils.book_append_sheet(workbook, participantInfo, 'Participant Info');
         } catch (e) {
@@ -1609,6 +2114,12 @@ function saveDataToGoogleDrive() {
                 var copy = Object.assign({}, trial);
                 if (!copy.participantId) copy.participantId = pid;
                 copy.participantDob = pdob;
+                copy.participantAgeReferenceDate = gameData.participantAgeReferenceDate || '';
+                copy.participantAgeYears = gameData.participantAgeYears == null ? '' : gameData.participantAgeYears;
+                copy.participantAgeMonths = gameData.participantAgeMonths == null ? '' : gameData.participantAgeMonths;
+                copy.participantAgeDays = gameData.participantAgeDays == null ? '' : gameData.participantAgeDays;
+                copy.participantAgeTotalDays = gameData.participantAgeTotalDays == null ? '' : gameData.participantAgeTotalDays;
+                Object.assign(copy, getAIConditionExportFields());
                 return copy;
             });
         } catch (e) {
@@ -2200,6 +2711,9 @@ window.updateWaitingStatus = updateWaitingStatus;
 window.showGameReadyMessage = showGameReadyMessage;
 window.showConnectionLostMessage = showConnectionLostMessage;
 window.exportExperimentData = exportExperimentData;
+window.assignAIConditionForParticipant = assignAIConditionForParticipant;
+window.completeAssignedAIConditionAssignment = completeAssignedAIConditionAssignment;
+window.getAIConditionExportFields = getAIConditionExportFields;
 
 // Make timeline navigation functions available globally
 window.nextStage = function() {
@@ -2218,9 +2732,30 @@ window.nextStage = function() {
  */
 function exportExperimentData() {
     try {
+        var aiConditionFields = getAIConditionExportFields();
+
         // Prepare experiment data
         const experimentData = {
             participantId: gameData.participantId || `participant_${Date.now()}`,
+            participantDob: gameData.participantDob || '',
+            participantAgeReferenceDate: gameData.participantAgeReferenceDate || '',
+            participantAgeYears: gameData.participantAgeYears == null ? '' : gameData.participantAgeYears,
+            participantAgeMonths: gameData.participantAgeMonths == null ? '' : gameData.participantAgeMonths,
+            participantAgeDays: gameData.participantAgeDays == null ? '' : gameData.participantAgeDays,
+            participantAgeTotalDays: gameData.participantAgeTotalDays == null ? '' : gameData.participantAgeTotalDays,
+            assignedAICondition: aiConditionFields.assignedAICondition,
+            assignedAIConditionLabel: aiConditionFields.assignedAIConditionLabel,
+            assignedAIRLAgentType: aiConditionFields.assignedAIRLAgentType,
+            assignedAIAnalysisCode: aiConditionFields.assignedAIAnalysisCode,
+            aiConditionAssignmentId: aiConditionFields.aiConditionAssignmentId,
+            aiConditionAssignmentStatus: aiConditionFields.aiConditionAssignmentStatus,
+            aiConditionAssignmentSource: aiConditionFields.aiConditionAssignmentSource,
+            aiConditionAssignmentStrategy: aiConditionFields.aiConditionAssignmentStrategy,
+            aiConditionQuotaVersion: aiConditionFields.aiConditionQuotaVersion,
+            aiConditionAgeGroup: aiConditionFields.aiConditionAgeGroup,
+            aiConditionAssignment: window.NodeGameConfig && window.NodeGameConfig.getAssignedAIConditionMetadata
+                ? window.NodeGameConfig.getAssignedAIConditionMetadata()
+                : null,
             timestamp: new Date().toISOString(),
             experimentOrder: NODEGAME_CONFIG.experimentOrder,
             allTrialsData: gameData.allTrialsData || [],

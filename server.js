@@ -13,6 +13,8 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
+app.use(express.json({ limit: '1mb' }));
+
 // Serve static files
 app.use(express.static('public'));
 app.use(express.static(__dirname)); // Serve files from root directory
@@ -70,6 +72,471 @@ function loadMapData() {
 
 // Load maps on startup
 loadMapData();
+
+// AI condition assignment configuration.
+const AI_CONDITION_QUOTA_CONFIG_PATH = path.join(__dirname, 'config', 'aiConditionQuotas.json');
+const AI_CONDITION_ASSIGNMENTS_PATH = path.join(__dirname, 'data', 'aiConditionAssignments.json');
+const ACTIVE_ASSIGNMENT_STATUSES = new Set(['reserved', 'completed']);
+let aiConditionRemoteQuotaCache = null;
+
+function loadLocalAIConditionQuotaConfig() {
+    try {
+        const raw = fs.readFileSync(AI_CONDITION_QUOTA_CONFIG_PATH, 'utf8');
+        const parsed = JSON.parse(raw);
+        parsed.conditions = Array.isArray(parsed.conditions) ? parsed.conditions : [];
+        parsed.quotas = Array.isArray(parsed.quotas) ? parsed.quotas : [];
+        parsed.assignmentStrategy = parsed.assignmentStrategy || 'weighted_remaining';
+        parsed.zeroNeededFallbackStrategy = parsed.zeroNeededFallbackStrategy || 'uniform_age_conditions';
+        parsed.quotaSource = 'local-json';
+        return parsed;
+    } catch (error) {
+        console.error('Failed to load AI condition quota config:', error);
+        return {
+            version: 'missing',
+            assignmentStrategy: 'uniform',
+            zeroNeededFallbackStrategy: 'uniform_age_conditions',
+            quotaSource: 'local-json-missing',
+            conditions: [],
+            quotas: []
+        };
+    }
+}
+
+function parseCsvLine(line) {
+    const cells = [];
+    let current = '';
+    let inQuotes = false;
+
+    for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        const nextChar = line[i + 1];
+
+        if (char === '"' && inQuotes && nextChar === '"') {
+            current += '"';
+            i += 1;
+        } else if (char === '"') {
+            inQuotes = !inQuotes;
+        } else if (char === ',' && !inQuotes) {
+            cells.push(current);
+            current = '';
+        } else {
+            current += char;
+        }
+    }
+
+    cells.push(current);
+    return cells.map(value => value.trim());
+}
+
+function parseAIConditionQuotaCsv(csvText, baseConfig, csvUrl) {
+    const lines = String(csvText || '')
+        .replace(/^\uFEFF/, '')
+        .split(/\r?\n/)
+        .filter(line => line.trim().length > 0);
+
+    if (lines.length < 2) {
+        throw new Error('remote_quota_csv_empty');
+    }
+
+    const headers = parseCsvLine(lines[0]).map(header => header.trim());
+    const normalizedHeaders = headers.map(header => header.toLowerCase());
+    const ageGroupIndex = normalizedHeaders.indexOf('agegroup');
+    const conditionIndex = normalizedHeaders.indexOf('condition');
+    const neededNIndex = normalizedHeaders.indexOf('neededn');
+
+    if (ageGroupIndex < 0 || conditionIndex < 0 || neededNIndex < 0) {
+        throw new Error('remote_quota_csv_missing_required_columns');
+    }
+
+    const knownConditions = new Set((baseConfig.conditions || []).map(condition => condition.id));
+    const quotas = lines.slice(1).map((line, rowIndex) => {
+        const cells = parseCsvLine(line);
+        const ageGroup = normalizeAgeGroup(cells[ageGroupIndex]);
+        const condition = String(cells[conditionIndex] || '').trim();
+        const neededN = Number(cells[neededNIndex]);
+
+        if (!Number.isFinite(ageGroup)) {
+            throw new Error(`remote_quota_csv_invalid_age_group_row_${rowIndex + 2}`);
+        }
+        if (!knownConditions.has(condition)) {
+            throw new Error(`remote_quota_csv_unknown_condition_row_${rowIndex + 2}`);
+        }
+        if (!Number.isFinite(neededN) || neededN < 0) {
+            throw new Error(`remote_quota_csv_invalid_needed_n_row_${rowIndex + 2}`);
+        }
+
+        return {
+            ageGroup,
+            condition,
+            targetN: Math.max(0, Math.floor(neededN)),
+            completedN: 0,
+            remainingN: Math.max(0, Math.floor(neededN))
+        };
+    });
+
+    return Object.assign({}, baseConfig, {
+        version: `${baseConfig.version || 'quota'}-google-sheet`,
+        quotaSource: 'google-sheet-csv',
+        remoteQuotaCsvUrl: csvUrl,
+        remoteQuotaFetchedAt: new Date().toISOString(),
+        quotas
+    });
+}
+
+async function loadAIConditionQuotaConfig() {
+    const localConfig = loadLocalAIConditionQuotaConfig();
+    const remoteCsvConfig = localConfig.remoteQuotaCsv || {};
+    const csvUrl = process.env.AI_CONDITION_QUOTA_CSV_URL || remoteCsvConfig.url;
+
+    if (remoteCsvConfig.enabled !== true || !csvUrl) {
+        return localConfig;
+    }
+
+    const cacheTtlMs = Number.isFinite(Number(remoteCsvConfig.cacheTtlMs))
+        ? Number(remoteCsvConfig.cacheTtlMs)
+        : 60000;
+    const now = Date.now();
+
+    if (
+        aiConditionRemoteQuotaCache &&
+        aiConditionRemoteQuotaCache.url === csvUrl &&
+        aiConditionRemoteQuotaCache.expiresAt > now
+    ) {
+        return aiConditionRemoteQuotaCache.config;
+    }
+
+    try {
+        if (typeof fetch !== 'function') {
+            throw new Error('fetch_unavailable_in_node_runtime');
+        }
+
+        const response = await fetch(csvUrl);
+        if (!response.ok) {
+            throw new Error(`remote_quota_csv_http_${response.status}`);
+        }
+
+        const csvText = await response.text();
+        const remoteConfig = parseAIConditionQuotaCsv(csvText, localConfig, csvUrl);
+        aiConditionRemoteQuotaCache = {
+            url: csvUrl,
+            expiresAt: now + Math.max(0, cacheTtlMs),
+            config: remoteConfig
+        };
+        return remoteConfig;
+    } catch (error) {
+        console.warn('Falling back to local AI condition quota config:', error);
+        return Object.assign({}, localConfig, {
+            quotaSource: 'local-json-fallback',
+            remoteQuotaCsvUrl: csvUrl,
+            remoteQuotaError: error.message || String(error)
+        });
+    }
+}
+
+function readAIConditionAssignments() {
+    try {
+        if (!fs.existsSync(AI_CONDITION_ASSIGNMENTS_PATH)) {
+            return [];
+        }
+        const raw = fs.readFileSync(AI_CONDITION_ASSIGNMENTS_PATH, 'utf8');
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed.assignments) ? parsed.assignments : [];
+    } catch (error) {
+        console.error('Failed to read AI condition assignments:', error);
+        return [];
+    }
+}
+
+function writeAIConditionAssignments(assignments) {
+    const dir = path.dirname(AI_CONDITION_ASSIGNMENTS_PATH);
+    fs.mkdirSync(dir, { recursive: true });
+    const payload = {
+        updatedAt: new Date().toISOString(),
+        assignments: assignments
+    };
+    const tempPath = AI_CONDITION_ASSIGNMENTS_PATH + '.tmp';
+    fs.writeFileSync(tempPath, JSON.stringify(payload, null, 2));
+    fs.renameSync(tempPath, AI_CONDITION_ASSIGNMENTS_PATH);
+}
+
+function normalizeAgeGroup(value) {
+    const age = Number(value);
+    if (!Number.isFinite(age)) {
+        return null;
+    }
+    return Math.floor(age);
+}
+
+function calculateAgeYearsFromDob(dob) {
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(dob || '').trim());
+    if (!match) {
+        return null;
+    }
+
+    const year = Number(match[1]);
+    const month = Number(match[2]);
+    const day = Number(match[3]);
+    const birth = new Date(year, month - 1, day);
+    if (
+        birth.getFullYear() !== year ||
+        birth.getMonth() !== month - 1 ||
+        birth.getDate() !== day ||
+        birth > new Date()
+    ) {
+        return null;
+    }
+
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+        age -= 1;
+    }
+    return age;
+}
+
+function getConditionConfig(config, conditionId) {
+    return config.conditions.find(condition => condition.id === conditionId) || {
+        id: conditionId,
+        label: conditionId,
+        rlAgentType: conditionId,
+        analysisCode: conditionId
+    };
+}
+
+function getQuotaAvailability(config, assignments, ageGroup) {
+    return config.quotas
+        .filter(row => Number(row.ageGroup) === Number(ageGroup))
+        .map(row => {
+            const condition = row.condition;
+            const consumed = assignments.filter(assignment => (
+                Number(assignment.ageGroup) === Number(ageGroup) &&
+                assignment.condition === condition &&
+                ACTIVE_ASSIGNMENT_STATUSES.has(assignment.status || 'reserved')
+            )).length;
+            const configuredRemaining = Number.isFinite(Number(row.remainingN))
+                ? Number(row.remainingN)
+                : Math.max(0, Number(row.targetN || 0) - Number(row.completedN || 0));
+            const availableN = Math.max(0, configuredRemaining - consumed);
+            return {
+                ageGroup: Number(ageGroup),
+                condition,
+                targetN: Number(row.targetN || 0),
+                completedN: Number(row.completedN || 0),
+                configuredRemaining,
+                consumedAssignmentsN: consumed,
+                availableN
+            };
+        });
+}
+
+function getOverflowAvailabilityForMissingAgeGroup(config, ageGroup) {
+    return (config.conditions || []).map(condition => ({
+        ageGroup: Number(ageGroup),
+        condition: condition.id,
+        targetN: 0,
+        completedN: 0,
+        configuredRemaining: 0,
+        consumedAssignmentsN: 0,
+        availableN: 0,
+        missingAgeGroup: true
+    }));
+}
+
+function chooseQuotaRow(availability, strategy, zeroNeededFallbackStrategy) {
+    const available = availability.filter(row => row.availableN > 0);
+
+    if (available.length) {
+        if (strategy === 'uniform') {
+            return Object.assign({}, available[Math.floor(Math.random() * available.length)], {
+                overflowAssignment: false
+            });
+        }
+
+        const total = available.reduce((sum, row) => sum + row.availableN, 0);
+        let draw = Math.random() * total;
+        for (const row of available) {
+            draw -= row.availableN;
+            if (draw <= 0) {
+                return Object.assign({}, row, {
+                    overflowAssignment: false
+                });
+            }
+        }
+        return Object.assign({}, available[available.length - 1], {
+            overflowAssignment: false
+        });
+    }
+
+    if (zeroNeededFallbackStrategy === 'uniform_age_conditions' && availability.length) {
+        return Object.assign({}, availability[Math.floor(Math.random() * availability.length)], {
+            overflowAssignment: true
+        });
+    }
+
+    return null;
+}
+
+function createAssignmentId() {
+    return 'assign_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8);
+}
+
+function publicAssignmentPayload(assignment, config) {
+    const conditionConfig = getConditionConfig(config, assignment.condition);
+    return {
+        assignmentId: assignment.assignmentId,
+        participantId: assignment.participantId,
+        dob: assignment.dob,
+        ageGroup: assignment.ageGroup,
+        condition: assignment.condition,
+        conditionLabel: conditionConfig.label,
+        rlAgentType: conditionConfig.rlAgentType,
+        analysisCode: conditionConfig.analysisCode,
+        status: assignment.status,
+        assignmentStrategy: assignment.assignmentStrategy,
+        assignmentSource: assignment.assignmentSource,
+        quotaVersion: assignment.quotaVersion,
+        quotaSnapshot: assignment.quotaSnapshot,
+        overflowAssignment: assignment.overflowAssignment === true,
+        overflowReason: assignment.overflowReason || null,
+        eventId: assignment.eventId || null,
+        stationId: assignment.stationId || null
+    };
+}
+
+app.get('/api/ai-condition-quotas', async (req, res) => {
+    const config = await loadAIConditionQuotaConfig();
+    const assignments = readAIConditionAssignments();
+    const ageGroups = [...new Set(config.quotas.map(row => Number(row.ageGroup)).filter(Number.isFinite))].sort();
+    const availability = {};
+    ageGroups.forEach(ageGroup => {
+        availability[ageGroup] = getQuotaAvailability(config, assignments, ageGroup);
+    });
+    res.json({
+        ok: true,
+        version: config.version,
+        assignmentStrategy: config.assignmentStrategy,
+        quotaSource: config.quotaSource,
+        remoteQuotaFetchedAt: config.remoteQuotaFetchedAt || null,
+        remoteQuotaError: config.remoteQuotaError || null,
+        conditions: config.conditions,
+        availability
+    });
+});
+
+app.post('/api/assign-ai-condition', async (req, res) => {
+    try {
+        const config = await loadAIConditionQuotaConfig();
+        const assignments = readAIConditionAssignments();
+        const body = req.body || {};
+        const participantId = String(body.participantId || '').trim();
+        const dob = String(body.dob || '').trim();
+        const ageFromBody = normalizeAgeGroup(body.ageYears);
+        const ageGroup = ageFromBody == null ? calculateAgeYearsFromDob(dob) : ageFromBody;
+
+        if (!participantId) {
+            res.status(400).json({ ok: false, error: 'missing_participant_id' });
+            return;
+        }
+        if (!Number.isFinite(ageGroup)) {
+            res.status(400).json({ ok: false, error: 'missing_or_invalid_age_group' });
+            return;
+        }
+
+        const existing = assignments.find(assignment => (
+            assignment.participantId === participantId &&
+            ACTIVE_ASSIGNMENT_STATUSES.has(assignment.status || 'reserved')
+        ));
+        if (existing) {
+            res.json({
+                ok: true,
+                reused: true,
+                assignment: publicAssignmentPayload(existing, config)
+            });
+            return;
+        }
+
+        const configuredAvailability = getQuotaAvailability(config, assignments, ageGroup);
+        const availability = configuredAvailability.length
+            ? configuredAvailability
+            : getOverflowAvailabilityForMissingAgeGroup(config, ageGroup);
+        const chosen = chooseQuotaRow(availability, config.assignmentStrategy, config.zeroNeededFallbackStrategy);
+        if (!chosen) {
+            res.status(409).json({
+                ok: false,
+                error: 'no_condition_available',
+                ageGroup,
+                availability
+            });
+            return;
+        }
+
+        const conditionConfig = getConditionConfig(config, chosen.condition);
+        const assignment = {
+            assignmentId: createAssignmentId(),
+            timestamp: new Date().toISOString(),
+            participantId,
+            dob,
+            ageGroup,
+            condition: chosen.condition,
+            conditionLabel: conditionConfig.label,
+            rlAgentType: conditionConfig.rlAgentType,
+            analysisCode: conditionConfig.analysisCode,
+            status: 'reserved',
+            assignmentStrategy: chosen.overflowAssignment
+                ? `${config.assignmentStrategy}+zero-needed-uniform`
+                : config.assignmentStrategy,
+            assignmentSource: config.quotaSource || 'local-json',
+            quotaVersion: config.version,
+            quotaSnapshot: availability,
+            remainingBeforeAssignment: chosen.availableN,
+            overflowAssignment: chosen.overflowAssignment === true,
+            overflowReason: chosen.overflowAssignment === true
+                ? (configuredAvailability.length ? 'all_needed_n_zero_for_age_group' : 'age_group_missing_from_quota')
+                : null,
+            eventId: body.eventId || null,
+            stationId: body.stationId || null
+        };
+
+        assignments.push(assignment);
+        writeAIConditionAssignments(assignments);
+
+        res.json({
+            ok: true,
+            reused: false,
+            assignment: publicAssignmentPayload(assignment, config)
+        });
+    } catch (error) {
+        console.error('AI condition assignment failed:', error);
+        res.status(500).json({ ok: false, error: 'assignment_failed' });
+    }
+});
+
+app.post('/api/complete-ai-condition-assignment', (req, res) => {
+    try {
+        const body = req.body || {};
+        const assignmentId = String(body.assignmentId || '').trim();
+        const participantId = String(body.participantId || '').trim();
+        const assignments = readAIConditionAssignments();
+        const assignment = assignments.find(item => (
+            (assignmentId && item.assignmentId === assignmentId) ||
+            (!assignmentId && participantId && item.participantId === participantId)
+        ));
+
+        if (!assignment) {
+            res.status(404).json({ ok: false, error: 'assignment_not_found' });
+            return;
+        }
+
+        assignment.status = 'completed';
+        assignment.completedAt = new Date().toISOString();
+        writeAIConditionAssignments(assignments);
+        res.json({ ok: true, assignmentId: assignment.assignmentId, status: assignment.status });
+    } catch (error) {
+        console.error('AI condition assignment completion failed:', error);
+        res.status(500).json({ ok: false, error: 'assignment_completion_failed' });
+    }
+});
 
 /**
  * Game Room Class

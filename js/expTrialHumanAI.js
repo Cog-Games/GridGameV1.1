@@ -11,6 +11,24 @@
 function getAIAction(gridMatrix, currentPos, goals, playerPos = null) {
     if (!goals || goals.length === 0) return [0, 0];
 
+    var assignedCondition = window.NodeGameConfig && typeof window.NodeGameConfig.getAssignedAICondition === 'function'
+        ? window.NodeGameConfig.getAssignedAICondition()
+        : null;
+    var rlAgentType = window.NodeGameConfig && typeof window.NodeGameConfig.getRLAgentType === 'function'
+        ? window.NodeGameConfig.getRLAgentType()
+        : null;
+
+    if ((assignedCondition === 'sa-model' || rlAgentType === 'sa-model') && window.SharedAgencyAgent && window.SharedAgencyAgent.getAIAction) {
+        return window.SharedAgencyAgent.getAIAction(
+            gridMatrix,
+            currentPos,
+            goals,
+            playerPos,
+            window.gameData,
+            window.gameData ? window.gameData.currentTrialData : null
+        );
+    }
+
     // Use the RL agent from rlAgent.js
     if (window.RLAgent && window.RLAgent.getAIAction) {
         return window.RLAgent.getAIAction(gridMatrix, currentPos, goals, playerPos);

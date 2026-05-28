@@ -19,6 +19,16 @@ var gameData = {
     gameStartTime: 0,
     participantId: null,  // Prolific or manual participant ID
     participantDob: null, // Date of birth 'YYYY-MM-DD'
+    participantAgeReferenceDate: null,
+    participantAgeYears: null,
+    participantAgeMonths: null,
+    participantAgeDays: null,
+    participantAgeTotalDays: null,
+    assignedAICondition: null,
+    assignedAIConditionLabel: null,
+    assignedAIRLAgentType: null,
+    assignedAIAnalysisCode: null,
+    aiConditionAssignment: null,
 
     // Player configuration
     playerConfig: {
@@ -70,6 +80,17 @@ function initializeTrialData(trialIndex, experimentType, design) {
 
     gameData.currentTrialData = {
         participantId: gameData.participantId || (window.DataRecording ? window.DataRecording.getParticipantId() : null),
+        participantDob: gameData.participantDob || (window.DataRecording ? window.DataRecording.getParticipantDob() : null),
+        participantAgeReferenceDate: gameData.participantAgeReferenceDate || null,
+        participantAgeYears: gameData.participantAgeYears,
+        participantAgeMonths: gameData.participantAgeMonths,
+        participantAgeDays: gameData.participantAgeDays,
+        participantAgeTotalDays: gameData.participantAgeTotalDays,
+        assignedAICondition: gameData.assignedAICondition || null,
+        assignedAIConditionLabel: gameData.assignedAIConditionLabel || null,
+        assignedAIRLAgentType: gameData.assignedAIRLAgentType || null,
+        assignedAIAnalysisCode: gameData.assignedAIAnalysisCode || null,
+        aiConditionAssignment: gameData.aiConditionAssignment || null,
         trialIndex: trialIndex,
         experimentType: experimentType,
         player1Trajectory: [],  // Changed from trajectory

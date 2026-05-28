@@ -77,6 +77,41 @@ const NODEGAME_CONFIG = {
     },
 
     // =================================================================================================
+    // AI CONDITION ASSIGNMENT
+    // =================================================================================================
+    aiConditions: {
+        'individual-rl': {
+            id: 'individual-rl',
+            label: 'Individual RL',
+            rlAgentType: 'individual',
+            analysisCode: 'individual'
+        },
+        'joint-rl': {
+            id: 'joint-rl',
+            label: 'Joint RL',
+            rlAgentType: 'joint',
+            analysisCode: 'joint'
+        },
+        'sa-model': {
+            id: 'sa-model',
+            label: 'Shared Agency Model',
+            rlAgentType: 'sa-model',
+            analysisCode: 'sa_model'
+        }
+    },
+
+    aiConditionAssignment: {
+        enabled: true,
+        assignmentEndpoint: '/api/assign-ai-condition',
+        completionEndpoint: '/api/complete-ai-condition-assignment',
+        localFallbackEnabled: true,
+        localFallbackStrategy: 'uniform',
+        eventId: 'default',
+        stationId: '',
+        currentAssignment: null
+    },
+
+    // =================================================================================================
     // EXPERIMENT SELECTION
     // =================================================================================================
 
@@ -318,14 +353,14 @@ function setPlayer2Type(type) {
 
 /**
  * Set the RL agent type
- * @param {string} agentType - 'individual' or 'joint'
+ * @param {string} agentType - 'individual', 'joint', or 'sa-model'
  */
 function setRLAgentType(agentType) {
-    if (['individual', 'joint'].includes(agentType)) {
+    if (['individual', 'joint', 'sa-model'].includes(agentType)) {
         NODEGAME_CONFIG.rlAgent.type = agentType;
         console.log(`RL Agent type set to: ${agentType}`);
     } else {
-        console.error(`Invalid RL agent type: ${agentType}. Must be 'individual' or 'joint'`);
+        console.error(`Invalid RL agent type: ${agentType}. Must be 'individual', 'joint', or 'sa-model'`);
     }
 }
 
@@ -335,6 +370,58 @@ function setRLAgentType(agentType) {
  */
 function getRLAgentType() {
     return NODEGAME_CONFIG.rlAgent.type;
+}
+
+function getAIConditionConfig(conditionId) {
+    return NODEGAME_CONFIG.aiConditions[conditionId] || null;
+}
+
+function getAllAIConditions() {
+    return Object.keys(NODEGAME_CONFIG.aiConditions).map(function(conditionId) {
+        return NODEGAME_CONFIG.aiConditions[conditionId];
+    });
+}
+
+function setAssignedAICondition(conditionId, assignmentMetadata) {
+    var condition = getAIConditionConfig(conditionId);
+    if (!condition) {
+        console.error('Unknown AI condition:', conditionId);
+        return false;
+    }
+
+    NODEGAME_CONFIG.aiConditionAssignment.currentAssignment = Object.assign({}, assignmentMetadata || {}, {
+        condition: condition.id,
+        conditionLabel: condition.label,
+        rlAgentType: condition.rlAgentType,
+        analysisCode: condition.analysisCode
+    });
+
+    setRLAgentType(condition.rlAgentType);
+
+    if (window.gameData) {
+        window.gameData.assignedAICondition = condition.id;
+        window.gameData.assignedAIConditionLabel = condition.label;
+        window.gameData.assignedAIRLAgentType = condition.rlAgentType;
+        window.gameData.assignedAIAnalysisCode = condition.analysisCode;
+        window.gameData.aiConditionAssignment = NODEGAME_CONFIG.aiConditionAssignment.currentAssignment;
+    }
+
+    console.log('Assigned AI condition:', NODEGAME_CONFIG.aiConditionAssignment.currentAssignment);
+    return true;
+}
+
+function getAssignedAICondition() {
+    var assignment = NODEGAME_CONFIG.aiConditionAssignment.currentAssignment;
+    return assignment ? assignment.condition : null;
+}
+
+function getAssignedAIConditionMetadata() {
+    var assignment = NODEGAME_CONFIG.aiConditionAssignment.currentAssignment;
+    return assignment ? Object.assign({}, assignment) : null;
+}
+
+function getAIConditionAssignmentConfig() {
+    return NODEGAME_CONFIG.aiConditionAssignment;
 }
 
 /**
@@ -423,13 +510,16 @@ function enterFullscreen() {
                            docElement.msRequestFullscreen;
 
     if (requestFullscreen) {
-        requestFullscreen.call(docElement)
-            .then(function() {
+        var maybePromise = requestFullscreen.call(docElement);
+        if (maybePromise && typeof maybePromise.then === 'function') {
+            maybePromise.then(function() {
                 console.log('Entered fullscreen mode');
-            })
-            .catch(function(error) {
-                console.error('Failed to enter fullscreen:', error);
+            }).catch(function(error) {
+                console.warn('Fullscreen request was not allowed:', error);
             });
+        } else {
+            console.log('Entered fullscreen mode');
+        }
     }
 }
 
@@ -447,13 +537,16 @@ function exitFullscreen() {
                         document.msExitFullscreen;
 
     if (exitFullscreen) {
-        exitFullscreen.call(document)
-            .then(function() {
+        var maybePromise = exitFullscreen.call(document);
+        if (maybePromise && typeof maybePromise.then === 'function') {
+            maybePromise.then(function() {
                 console.log('Exited fullscreen mode');
-            })
-            .catch(function(error) {
-                console.error('Failed to exit fullscreen:', error);
+            }).catch(function(error) {
+                console.warn('Fullscreen exit was not allowed:', error);
             });
+        } else {
+            console.log('Exited fullscreen mode');
+        }
     }
 }
 
@@ -469,6 +562,12 @@ window.NodeGameConfig = {
     setAIMovementMode: setAIMovementMode,
     getAIMovementMode: getAIMovementMode,
     isAIMovementModeEnabled: isAIMovementModeEnabled,
+    getAIConditionConfig: getAIConditionConfig,
+    getAllAIConditions: getAllAIConditions,
+    setAssignedAICondition: setAssignedAICondition,
+    getAssignedAICondition: getAssignedAICondition,
+    getAssignedAIConditionMetadata: getAssignedAIConditionMetadata,
+    getAIConditionAssignmentConfig: getAIConditionAssignmentConfig,
     setExperimentMode: setExperimentMode,
     getExperimentMode: getExperimentMode,
     getParticipantIdConfig: getParticipantIdConfig,

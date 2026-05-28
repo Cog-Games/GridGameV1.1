@@ -1,0 +1,41 @@
+{
+  "version": "2026-05-28",
+  "assignmentStrategy": "weighted_remaining",
+  "zeroNeededFallbackStrategy": "uniform_age_conditions",
+  "remoteQuotaCsv": {
+    "enabled": true,
+    "url": "https://docs.google.com/spreadsheets/d/e/2PACX-1vS84BtUtiprklXkU-LoOaCjMeb3rzY-Z4a2VQZEOIUy77IUfqtI66V5QYhAZ8bFm9s7kBVohlltMxRy/pub?gid=179376943&single=true&output=csv",
+    "cacheTtlMs": 60000
+  },
+  "conditions": [
+    {
+      "id": "individual-rl",
+      "label": "Individual RL",
+      "rlAgentType": "individual",
+      "analysisCode": "individual"
+    },
+    {
+      "id": "joint-rl",
+      "label": "Joint RL",
+      "rlAgentType": "joint",
+      "analysisCode": "joint"
+    },
+    {
+      "id": "sa-model",
+      "label": "Shared Agency Model",
+      "rlAgentType": "sa-model",
+      "analysisCode": "sa_model"
+    }
+  ],
+  "quotas": [
+    { "ageGroup": 5, "condition": "individual-rl", "targetN": 20, "completedN": 13, "remainingN": 7 },
+    { "ageGroup": 5, "condition": "joint-rl", "targetN": 20, "completedN": 16, "remainingN": 4 },
+    { "ageGroup": 5, "condition": "sa-model", "targetN": 20, "completedN": 0, "remainingN": 20 },
+    { "ageGroup": 6, "condition": "individual-rl", "targetN": 20, "completedN": 19, "remainingN": 1 },
+    { "ageGroup": 6, "condition": "joint-rl", "targetN": 20, "completedN": 20, "remainingN": 0 },
+    { "ageGroup": 6, "condition": "sa-model", "targetN": 20, "completedN": 0, "remainingN": 20 },
+    { "ageGroup": 7, "condition": "individual-rl", "targetN": 20, "completedN": 17, "remainingN": 3 },
+    { "ageGroup": 7, "condition": "joint-rl", "targetN": 20, "completedN": 16, "remainingN": 4 },
+    { "ageGroup": 7, "condition": "sa-model", "targetN": 20, "completedN": 0, "remainingN": 20 }
+  ]
+}

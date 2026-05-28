@@ -50,6 +50,7 @@
   <script src="js/gameState.js"></script>
   <script src="js/dataRecording.js"></script>
   <script src="js/expDesign.js"></script>
+  <script src="js/sharedAgencyAgent.js"></script>
   <script src="js/expTrialHumanAI.js"></script>
   <script src="js/expTimeline.js"></script>
   <script src="js/human-AI-version.js"></script>
@@ -58,7 +59,7 @@
     // Check URL parameters and set RL agent type
     const urlParams = new URLSearchParams(window.location.search);
     const rlType = urlParams.get('rlType');
-    if (rlType && ['individual', 'joint'].includes(rlType)) {
+    if (rlType && ['individual', 'joint', 'sa-model'].includes(rlType)) {
       window.NodeGameConfig.setRLAgentType(rlType);
     }
 

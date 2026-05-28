@@ -8,6 +8,7 @@
 // Participant ID and DOB storage
 var participantId = null;
 var participantDob = null; // 'YYYY-MM-DD'
+var participantAgeInfo = null;
 
 var participantIdSource = null;
 var pendingParticipantIdResolver = null;
@@ -92,7 +93,13 @@ function promptForParticipantId(manualConfig) {
  * @param {string} id - Participant identifier
  */
 function setParticipantId(id) {
-    participantId = id;
+    participantId = id ? String(id).trim() : null;
+    if (participantId && window.localStorage) {
+        window.localStorage.setItem('nodegame_manual_participant_id', participantId);
+    }
+    if (window.gameData) {
+        window.gameData.participantId = participantId;
+    }
     if (pendingParticipantIdResolver) {
         pendingParticipantIdResolver(participantId);
         pendingParticipantIdResolver = null;
@@ -191,6 +198,19 @@ function setParticipantDob(dob) {
     }
 }
 
+function setParticipantAgeInfo(ageInfo) {
+    participantAgeInfo = ageInfo ? Object.assign({}, ageInfo) : null;
+    if (!window.gameData || !participantAgeInfo) {
+        return;
+    }
+
+    window.gameData.participantAgeReferenceDate = participantAgeInfo.participantAgeReferenceDate || null;
+    window.gameData.participantAgeYears = participantAgeInfo.participantAgeYears;
+    window.gameData.participantAgeMonths = participantAgeInfo.participantAgeMonths;
+    window.gameData.participantAgeDays = participantAgeInfo.participantAgeDays;
+    window.gameData.participantAgeTotalDays = participantAgeInfo.participantAgeTotalDays;
+}
+
 /**
  * Extract Prolific participant ID from URL parameters
  */
@@ -231,6 +251,24 @@ function getParticipantDob() {
         participantDob = window.localStorage.getItem('nodegame_participant_dob');
     }
     return participantDob;
+}
+
+function getParticipantAgeInfo() {
+    if (participantAgeInfo) {
+        return Object.assign({}, participantAgeInfo);
+    }
+
+    if (window.gameData) {
+        return {
+            participantAgeReferenceDate: window.gameData.participantAgeReferenceDate || null,
+            participantAgeYears: window.gameData.participantAgeYears,
+            participantAgeMonths: window.gameData.participantAgeMonths,
+            participantAgeDays: window.gameData.participantAgeDays,
+            participantAgeTotalDays: window.gameData.participantAgeTotalDays
+        };
+    }
+
+    return null;
 }
 
 function getParticipantIdAsync() {
@@ -358,6 +396,17 @@ function finalizeTrial(completed) {
             gameData.currentTrialData.participantId = getParticipantId();
         }
     }
+    gameData.currentTrialData.participantDob = gameData.participantDob || getParticipantDob();
+    gameData.currentTrialData.participantAgeReferenceDate = gameData.participantAgeReferenceDate || null;
+    gameData.currentTrialData.participantAgeYears = gameData.participantAgeYears;
+    gameData.currentTrialData.participantAgeMonths = gameData.participantAgeMonths;
+    gameData.currentTrialData.participantAgeDays = gameData.participantAgeDays;
+    gameData.currentTrialData.participantAgeTotalDays = gameData.participantAgeTotalDays;
+    gameData.currentTrialData.assignedAICondition = gameData.assignedAICondition || null;
+    gameData.currentTrialData.assignedAIConditionLabel = gameData.assignedAIConditionLabel || null;
+    gameData.currentTrialData.assignedAIRLAgentType = gameData.assignedAIRLAgentType || null;
+    gameData.currentTrialData.assignedAIAnalysisCode = gameData.assignedAIAnalysisCode || null;
+    gameData.currentTrialData.aiConditionAssignment = gameData.aiConditionAssignment || null;
 
     gameData.allTrialsData.push({...gameData.currentTrialData});
 
@@ -381,6 +430,8 @@ window.DataRecording = {
     setParticipantId: setParticipantId,
     getParticipantDob: getParticipantDob,
     setParticipantDob: setParticipantDob,
+    getParticipantAgeInfo: getParticipantAgeInfo,
+    setParticipantAgeInfo: setParticipantAgeInfo,
     initializeParticipantIdFlow: initializeParticipantIdFlow,
     saveDataLocally: saveDataLocally
 };
