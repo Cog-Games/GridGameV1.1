@@ -669,6 +669,17 @@ function applyAIConditionAssignment(assignment) {
     return window.NodeGameConfig.setAssignedAICondition(assignment.condition, assignment);
 }
 
+function shouldUseClientQuotaAssignmentDirectly(assignmentConfig) {
+    var clientQuotaCsvConfig = assignmentConfig && assignmentConfig.clientQuotaCsv;
+    var hostname = window.location && window.location.hostname ? window.location.hostname : '';
+    return !!(
+        clientQuotaCsvConfig &&
+        clientQuotaCsvConfig.enabled === true &&
+        clientQuotaCsvConfig.url &&
+        hostname.indexOf('github.io') >= 0
+    );
+}
+
 async function assignAIConditionForParticipant(participantId, ageInfo) {
     var assignmentConfig = window.NodeGameConfig && typeof window.NodeGameConfig.getAIConditionAssignmentConfig === 'function'
         ? window.NodeGameConfig.getAIConditionAssignmentConfig()
@@ -699,6 +710,19 @@ async function assignAIConditionForParticipant(participantId, ageInfo) {
         return null;
     }
 
+    if (shouldUseClientQuotaAssignmentDirectly(assignmentConfig)) {
+        var staticAssignment = await buildClientQuotaFallbackAIConditionAssignment(
+            participantId,
+            ageInfo,
+            assignmentConfig,
+            'static_github_pages'
+        );
+        if (staticAssignment && applyAIConditionAssignment(staticAssignment)) {
+            return staticAssignment;
+        }
+        throw new Error('client_quota_assignment_failed');
+    }
+
     try {
         var response = await fetch(assignmentConfig.assignmentEndpoint || '/api/assign-ai-condition', {
             method: 'POST',
@@ -714,7 +738,22 @@ async function assignAIConditionForParticipant(participantId, ageInfo) {
             })
         });
 
-        var payload = await response.json();
+        var payload = null;
+        var contentType = response.headers && response.headers.get ? response.headers.get('content-type') : '';
+        if (contentType && contentType.indexOf('application/json') >= 0) {
+            payload = await response.json();
+        } else if (!response.ok) {
+            var nonJsonError = new Error('assignment_api_non_json_response');
+            nonJsonError.httpStatus = response.status;
+            nonJsonError.serverResponse = {
+                contentType: contentType || '',
+                status: response.status
+            };
+            throw nonJsonError;
+        } else {
+            payload = await response.json();
+        }
+
         if (!response.ok || !payload || payload.ok !== true || !payload.assignment) {
             var apiError = new Error(payload && payload.error ? payload.error : 'assignment_request_failed');
             apiError.httpStatus = response.status;
@@ -725,10 +764,9 @@ async function assignAIConditionForParticipant(participantId, ageInfo) {
         applyAIConditionAssignment(payload.assignment);
         return payload.assignment;
     } catch (error) {
-        console.warn('AI condition assignment API unavailable:', error);
-
         var serverRejectedRequest = error && error.serverResponse && error.httpStatus && error.httpStatus < 500;
         if (assignmentConfig.localFallbackEnabled && !serverRejectedRequest) {
+            console.warn('AI condition assignment API unavailable; using client fallback:', error);
             var fallbackAssignment = await buildClientQuotaFallbackAIConditionAssignment(participantId, ageInfo, assignmentConfig, error.message || String(error));
             if (fallbackAssignment && applyAIConditionAssignment(fallbackAssignment)) {
                 return fallbackAssignment;
@@ -773,7 +811,11 @@ async function completeAssignedAIConditionAssignment() {
         return assignment || null;
     }
 
-    if (assignment.assignmentSource === 'client-fallback' || assignment.assignmentSource === 'url-override') {
+    if (
+        assignment.assignmentSource === 'client-fallback' ||
+        assignment.assignmentSource === 'google-sheet-csv-client' ||
+        assignment.assignmentSource === 'url-override'
+    ) {
         var localCompleted = Object.assign({}, assignment, {
             status: 'completed',
             completedAt: new Date().toISOString()
