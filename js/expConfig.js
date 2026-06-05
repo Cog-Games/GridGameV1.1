@@ -106,6 +106,12 @@ const NODEGAME_CONFIG = {
         completionEndpoint: '/api/complete-ai-condition-assignment',
         localFallbackEnabled: true,
         localFallbackStrategy: 'uniform',
+        clientQuotaCsv: {
+            enabled: true,
+            url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS84BtUtiprklXkU-LoOaCjMeb3rzY-Z4a2VQZEOIUy77IUfqtI66V5QYhAZ8bFm9s7kBVohlltMxRy/pub?gid=179376943&single=true&output=csv',
+            cacheTtlMs: 60000,
+            zeroNeededFallbackStrategy: 'uniform_age_conditions'
+        },
         eventId: 'default',
         stationId: '',
         currentAssignment: null

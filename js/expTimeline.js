@@ -406,6 +406,232 @@ function getStartupAIConditionOverride() {
     return window.NodeGameConfig.getAIConditionConfig(conditionId) ? conditionId : null;
 }
 
+var startupAIConditionQuotaCsvCache = null;
+
+function parseStartupCsvLine(line) {
+    var cells = [];
+    var current = '';
+    var inQuotes = false;
+
+    for (var i = 0; i < line.length; i++) {
+        var char = line[i];
+        var nextChar = line[i + 1];
+
+        if (char === '"' && inQuotes && nextChar === '"') {
+            current += '"';
+            i += 1;
+        } else if (char === '"') {
+            inQuotes = !inQuotes;
+        } else if (char === ',' && !inQuotes) {
+            cells.push(current);
+            current = '';
+        } else {
+            current += char;
+        }
+    }
+
+    cells.push(current);
+    return cells.map(function(value) {
+        return String(value || '').trim();
+    });
+}
+
+function parseStartupAIConditionQuotaCsv(csvText) {
+    var lines = String(csvText || '')
+        .replace(/^\uFEFF/, '')
+        .split(/\r?\n/)
+        .filter(function(line) {
+            return line.trim().length > 0;
+        });
+
+    if (lines.length < 2) {
+        throw new Error('client_quota_csv_empty');
+    }
+
+    var headers = parseStartupCsvLine(lines[0]);
+    var normalizedHeaders = headers.map(function(header) {
+        return header.trim().toLowerCase();
+    });
+    var ageGroupIndex = normalizedHeaders.indexOf('agegroup');
+    var conditionIndex = normalizedHeaders.indexOf('condition');
+    var neededNIndex = normalizedHeaders.indexOf('neededn');
+
+    if (ageGroupIndex < 0 || conditionIndex < 0 || neededNIndex < 0) {
+        throw new Error('client_quota_csv_missing_required_columns');
+    }
+
+    return lines.slice(1).map(function(line, rowIndex) {
+        var cells = parseStartupCsvLine(line);
+        var ageGroup = Math.floor(Number(cells[ageGroupIndex]));
+        var condition = String(cells[conditionIndex] || '').trim();
+        var neededN = Math.floor(Number(cells[neededNIndex]));
+
+        if (!Number.isFinite(ageGroup)) {
+            throw new Error('client_quota_csv_invalid_age_group_row_' + (rowIndex + 2));
+        }
+        if (!window.NodeGameConfig || !window.NodeGameConfig.getAIConditionConfig(condition)) {
+            throw new Error('client_quota_csv_unknown_condition_row_' + (rowIndex + 2));
+        }
+        if (!Number.isFinite(neededN) || neededN < 0) {
+            throw new Error('client_quota_csv_invalid_needed_n_row_' + (rowIndex + 2));
+        }
+
+        return {
+            ageGroup: ageGroup,
+            condition: condition,
+            neededN: neededN,
+            availableN: neededN
+        };
+    });
+}
+
+async function loadStartupAIConditionQuotaRows(clientQuotaCsvConfig) {
+    if (!clientQuotaCsvConfig || clientQuotaCsvConfig.enabled !== true || !clientQuotaCsvConfig.url) {
+        return null;
+    }
+
+    var cacheTtlMs = Number(clientQuotaCsvConfig.cacheTtlMs);
+    if (!Number.isFinite(cacheTtlMs)) {
+        cacheTtlMs = 60000;
+    }
+
+    var now = Date.now();
+    if (
+        startupAIConditionQuotaCsvCache &&
+        startupAIConditionQuotaCsvCache.url === clientQuotaCsvConfig.url &&
+        startupAIConditionQuotaCsvCache.expiresAt > now
+    ) {
+        return startupAIConditionQuotaCsvCache.rows;
+    }
+
+    var response = await fetch(clientQuotaCsvConfig.url, { cache: 'no-store' });
+    if (!response.ok) {
+        throw new Error('client_quota_csv_http_' + response.status);
+    }
+
+    var csvText = await response.text();
+    var rows = parseStartupAIConditionQuotaCsv(csvText);
+    startupAIConditionQuotaCsvCache = {
+        url: clientQuotaCsvConfig.url,
+        expiresAt: now + Math.max(0, cacheTtlMs),
+        rows: rows
+    };
+    return rows;
+}
+
+function chooseStartupWeightedRow(rows) {
+    if (!rows || !rows.length) {
+        return null;
+    }
+
+    var total = rows.reduce(function(sum, row) {
+        return sum + Math.max(0, Number(row.availableN || row.neededN || 0));
+    }, 0);
+
+    if (total <= 0) {
+        return rows[Math.floor(Math.random() * rows.length)];
+    }
+
+    var draw = Math.random() * total;
+    for (var i = 0; i < rows.length; i++) {
+        draw -= Math.max(0, Number(rows[i].availableN || rows[i].neededN || 0));
+        if (draw <= 0) {
+            return rows[i];
+        }
+    }
+
+    return rows[rows.length - 1];
+}
+
+function buildClientQuotaAssignmentFromRows(participantId, ageInfo, quotaRows, sourceUrl) {
+    var conditions = window.NodeGameConfig && typeof window.NodeGameConfig.getAllAIConditions === 'function'
+        ? window.NodeGameConfig.getAllAIConditions()
+        : [];
+    var ageGroup = Math.floor(Number(ageInfo.participantAgeYears));
+    var rowsForAge = (quotaRows || []).filter(function(row) {
+        return Number(row.ageGroup) === Number(ageGroup);
+    });
+    var availableRows = rowsForAge.filter(function(row) {
+        return Number(row.neededN) > 0;
+    });
+    var overflowAssignment = false;
+    var overflowReason = null;
+    var candidateRows = availableRows;
+
+    if (!candidateRows.length && rowsForAge.length) {
+        candidateRows = rowsForAge;
+        overflowAssignment = true;
+        overflowReason = 'all_needed_n_zero_for_age_group';
+    }
+
+    if (!candidateRows.length) {
+        candidateRows = conditions.map(function(condition) {
+            return {
+                ageGroup: ageGroup,
+                condition: condition.id,
+                neededN: 0,
+                availableN: 0,
+                missingAgeGroup: true
+            };
+        });
+        overflowAssignment = true;
+        overflowReason = 'age_group_missing_from_quota';
+    }
+
+    var selectedRow = chooseStartupWeightedRow(candidateRows);
+    if (!selectedRow) {
+        return null;
+    }
+
+    var selectedCondition = window.NodeGameConfig.getAIConditionConfig(selectedRow.condition);
+    if (!selectedCondition) {
+        return null;
+    }
+
+    return {
+        assignmentId: 'client_quota_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8),
+        participantId: participantId,
+        dob: ageInfo.participantDob,
+        ageGroup: ageGroup,
+        condition: selectedCondition.id,
+        conditionLabel: selectedCondition.label,
+        rlAgentType: selectedCondition.rlAgentType,
+        analysisCode: selectedCondition.analysisCode,
+        status: 'reserved',
+        assignmentStrategy: overflowAssignment ? 'client-weighted-needed+overflow-uniform' : 'client-weighted-needed',
+        assignmentSource: 'google-sheet-csv-client',
+        quotaVersion: 'google-sheet-client',
+        quotaSnapshot: rowsForAge.length ? rowsForAge : candidateRows,
+        remoteQuotaCsvUrl: sourceUrl || null,
+        remainingBeforeAssignment: selectedRow.neededN || 0,
+        overflowAssignment: overflowAssignment,
+        overflowReason: overflowReason,
+        eventId: null,
+        stationId: null
+    };
+}
+
+async function buildClientQuotaFallbackAIConditionAssignment(participantId, ageInfo, assignmentConfig, reason) {
+    try {
+        var clientQuotaCsvConfig = assignmentConfig && assignmentConfig.clientQuotaCsv;
+        var quotaRows = await loadStartupAIConditionQuotaRows(clientQuotaCsvConfig);
+        var quotaAssignment = buildClientQuotaAssignmentFromRows(
+            participantId,
+            ageInfo,
+            quotaRows,
+            clientQuotaCsvConfig && clientQuotaCsvConfig.url
+        );
+        if (quotaAssignment) {
+            quotaAssignment.fallbackReason = reason || 'assignment_api_unavailable';
+            return quotaAssignment;
+        }
+    } catch (error) {
+        console.warn('Client quota CSV fallback failed:', error);
+    }
+
+    return buildClientFallbackAIConditionAssignment(participantId, ageInfo, reason);
+}
+
 function buildClientFallbackAIConditionAssignment(participantId, ageInfo, reason) {
     var conditions = window.NodeGameConfig && typeof window.NodeGameConfig.getAllAIConditions === 'function'
         ? window.NodeGameConfig.getAllAIConditions()
@@ -503,7 +729,7 @@ async function assignAIConditionForParticipant(participantId, ageInfo) {
 
         var serverRejectedRequest = error && error.serverResponse && error.httpStatus && error.httpStatus < 500;
         if (assignmentConfig.localFallbackEnabled && !serverRejectedRequest) {
-            var fallbackAssignment = buildClientFallbackAIConditionAssignment(participantId, ageInfo, error.message || String(error));
+            var fallbackAssignment = await buildClientQuotaFallbackAIConditionAssignment(participantId, ageInfo, assignmentConfig, error.message || String(error));
             if (fallbackAssignment && applyAIConditionAssignment(fallbackAssignment)) {
                 return fallbackAssignment;
             }
