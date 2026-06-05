@@ -2169,7 +2169,10 @@ async function showLocalCompletionStage() {
         downloadExcelFileLocally(workbook, excelFilename, { silent: true });
 
         updateStatus('Uploading Excel to Google Drive...', '#17a2b8');
-        await uploadWorkbookToGoogleDrive(workbook, excelFilename);
+        var uploadResult = await uploadWorkbookToGoogleDrive(workbook, excelFilename);
+        if (!uploadResult || uploadResult.savedToDrive !== true) {
+            throw (uploadResult && uploadResult.error) || new Error('google_drive_upload_failed');
+        }
 
         updateStatus('✅ Excel saved locally.<br>✅ Excel uploaded to Google Drive.<br><strong>You may close this window.</strong>', '#28a745');
     } catch (error) {
