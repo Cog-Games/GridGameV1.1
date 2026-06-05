@@ -2178,29 +2178,120 @@ async function showLocalCompletionStage() {
     }
 }
 
+function appendParticipantInfoSheet(workbook) {
+    try {
+        var pid = gameData.participantId || (window.DataRecording && window.DataRecording.getParticipantId && window.DataRecording.getParticipantId()) || '';
+        var pdob = gameData.participantDob || (window.DataRecording && window.DataRecording.getParticipantDob && window.DataRecording.getParticipantDob()) || '';
+        var aiConditionFields = getAIConditionExportFields();
+        var participantInfo = XLSX.utils.aoa_to_sheet([
+            ['participantId', 'participantDob', 'participantAgeReferenceDate', 'participantAgeYears', 'participantAgeMonths', 'participantAgeDays', 'participantAgeTotalDays', 'assignedAICondition', 'assignedAIConditionLabel', 'assignedAIRLAgentType', 'assignedAIAnalysisCode', 'aiConditionAssignmentId', 'aiConditionAssignmentStatus', 'aiConditionAssignmentSource', 'aiConditionAssignmentStrategy', 'aiConditionQuotaVersion', 'aiConditionAgeGroup', 'exportTimestamp'],
+            [
+                pid,
+                pdob,
+                gameData.participantAgeReferenceDate || '',
+                gameData.participantAgeYears == null ? '' : gameData.participantAgeYears,
+                gameData.participantAgeMonths == null ? '' : gameData.participantAgeMonths,
+                gameData.participantAgeDays == null ? '' : gameData.participantAgeDays,
+                gameData.participantAgeTotalDays == null ? '' : gameData.participantAgeTotalDays,
+                aiConditionFields.assignedAICondition,
+                aiConditionFields.assignedAIConditionLabel,
+                aiConditionFields.assignedAIRLAgentType,
+                aiConditionFields.assignedAIAnalysisCode,
+                aiConditionFields.aiConditionAssignmentId,
+                aiConditionFields.aiConditionAssignmentStatus,
+                aiConditionFields.aiConditionAssignmentSource,
+                aiConditionFields.aiConditionAssignmentStrategy,
+                aiConditionFields.aiConditionQuotaVersion,
+                aiConditionFields.aiConditionAgeGroup,
+                new Date().toISOString()
+            ]
+        ]);
+        XLSX.utils.book_append_sheet(workbook, participantInfo, 'Participant Info');
+    } catch (e) {
+        console.warn('Unable to append Participant Info sheet:', e);
+    }
+}
+
+function buildSessionWorkbook(experimentData, questionnaireData) {
+    if (typeof XLSX === 'undefined') {
+        throw new Error('Excel library (XLSX) is not loaded.');
+    }
+
+    var workbook = XLSX.utils.book_new();
+    var rows = Array.isArray(experimentData) ? experimentData : [];
+
+    if (rows.length > 0) {
+        var processedData = rows.map(function(trial) {
+            var copy = {};
+            Object.keys(trial || {}).forEach(function(key) {
+                var value = trial[key];
+                if (Array.isArray(value) || (typeof value === 'object' && value !== null)) {
+                    copy[key] = JSON.stringify(value);
+                } else if (value === undefined) {
+                    copy[key] = '';
+                } else {
+                    copy[key] = value;
+                }
+            });
+            return copy;
+        });
+        var experimentSheet = XLSX.utils.json_to_sheet(processedData);
+        XLSX.utils.book_append_sheet(workbook, experimentSheet, 'Experiment Data');
+    } else {
+        var emptySheet = XLSX.utils.aoa_to_sheet([["No experiment data available"]]);
+        XLSX.utils.book_append_sheet(workbook, emptySheet, 'Experiment Data');
+    }
+
+    var questionnaireArray = Array.isArray(questionnaireData) ? questionnaireData : convertQuestionnaireToArray(questionnaireData);
+    if (questionnaireArray && questionnaireArray.length > 0) {
+        var questionnaireSheet = XLSX.utils.aoa_to_sheet(questionnaireArray);
+        XLSX.utils.book_append_sheet(workbook, questionnaireSheet, 'Questionnaire Data');
+    } else {
+        var emptyQuestionnaireSheet = XLSX.utils.aoa_to_sheet([["No questionnaire data available"]]);
+        XLSX.utils.book_append_sheet(workbook, emptyQuestionnaireSheet, 'Questionnaire Data');
+    }
+
+    appendParticipantInfoSheet(workbook);
+    return workbook;
+}
+
 /**
  * Send Excel file to Google Drive
  */
-function sendExcelToGoogleDrive(experimentData, questionnaireData, filename, options) {
+async function sendExcelToGoogleDrive(experimentData, questionnaireData, filename, options) {
     options = options || {};
+    var workbook = null;
 
     try {
-        console.log('sendExcelToGoogleDrive called in local mode; skipping remote upload.');
+        workbook = buildSessionWorkbook(experimentData, questionnaireData);
+        var uploadResult = await uploadWorkbookToGoogleDrive(workbook, filename);
+        if (!uploadResult || uploadResult.savedToDrive !== true) {
+            throw (uploadResult && uploadResult.error) || new Error('google_drive_upload_failed');
+        }
 
         if (typeof options.resolve === 'function') {
-            options.resolve({ savedToDrive: false, mode: 'local' });
-            return;
+            options.resolve(uploadResult);
         }
 
         if (!options.skipNextStage) {
             nextStage();
         }
     } catch (error) {
-        console.error('Error creating Excel file for Google Drive:', error);
+        console.error('Error creating or uploading Excel file for Google Drive:', error);
+
+        try {
+            var storageSettings = window.NodeGameConfig && window.NodeGameConfig.getDataStorageConfig
+                ? window.NodeGameConfig.getDataStorageConfig()
+                : null;
+            if (workbook && storageSettings && storageSettings.localFallback !== false) {
+                downloadExcelFileLocally(workbook, filename, { silent: true });
+            }
+        } catch (fallbackError) {
+            console.error('Local fallback download failed:', fallbackError);
+        }
 
         if (typeof options.resolve === 'function') {
             options.resolve({ savedToDrive: false, error: error });
-            return;
         }
 
         if (!options.skipNextStage) {
@@ -2243,6 +2334,19 @@ function downloadExcelFileLocally(wb, filename, options) {
     }
 }
 
+function arrayBufferToBase64(arrayBuffer) {
+    var bytes = new Uint8Array(arrayBuffer);
+    var binary = '';
+    var chunkSize = 0x8000;
+
+    for (var i = 0; i < bytes.length; i += chunkSize) {
+        var chunk = bytes.subarray(i, i + chunkSize);
+        binary += String.fromCharCode.apply(null, chunk);
+    }
+
+    return btoa(binary);
+}
+
 /**
  * Upload an existing workbook to Google Drive (Apps Script endpoint).
  * Does not change timeline stages; resolves best-effort under no-cors.
@@ -2260,7 +2364,7 @@ function uploadWorkbookToGoogleDrive(workbook, filename) {
             }
 
             const wbout = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-            const base64String = btoa(String.fromCharCode.apply(null, new Uint8Array(wbout)));
+            const base64String = arrayBufferToBase64(wbout);
 
             const formData = new FormData();
             formData.append('filename', filename);
