@@ -1,5 +1,5 @@
 {
-  "version": "2026-05-28",
+  "version": "2026-06-25",
   "assignmentStrategy": "weighted_remaining",
   "zeroNeededFallbackStrategy": "uniform_age_conditions",
   "remoteQuotaCsv": {
@@ -28,14 +28,14 @@
     }
   ],
   "quotas": [
-    { "ageGroup": 5, "condition": "individual-rl", "targetN": 20, "completedN": 13, "remainingN": 7 },
-    { "ageGroup": 5, "condition": "joint-rl", "targetN": 20, "completedN": 16, "remainingN": 4 },
-    { "ageGroup": 5, "condition": "sa-model", "targetN": 20, "completedN": 0, "remainingN": 20 },
-    { "ageGroup": 6, "condition": "individual-rl", "targetN": 20, "completedN": 19, "remainingN": 1 },
-    { "ageGroup": 6, "condition": "joint-rl", "targetN": 20, "completedN": 20, "remainingN": 0 },
-    { "ageGroup": 6, "condition": "sa-model", "targetN": 20, "completedN": 0, "remainingN": 20 },
-    { "ageGroup": 7, "condition": "individual-rl", "targetN": 20, "completedN": 17, "remainingN": 3 },
-    { "ageGroup": 7, "condition": "joint-rl", "targetN": 20, "completedN": 16, "remainingN": 4 },
-    { "ageGroup": 7, "condition": "sa-model", "targetN": 20, "completedN": 0, "remainingN": 20 }
+    { "ageGroup": 5, "condition": "individual-rl", "targetN": 6, "completedN": 0, "remainingN": 6 },
+    { "ageGroup": 5, "condition": "joint-rl", "targetN": 2, "completedN": 0, "remainingN": 2 },
+    { "ageGroup": 5, "condition": "sa-model", "targetN": 13, "completedN": 0, "remainingN": 13 },
+    { "ageGroup": 6, "condition": "individual-rl", "targetN": 0, "completedN": 0, "remainingN": 0 },
+    { "ageGroup": 6, "condition": "joint-rl", "targetN": 0, "completedN": 0, "remainingN": 0 },
+    { "ageGroup": 6, "condition": "sa-model", "targetN": 13, "completedN": 0, "remainingN": 13 },
+    { "ageGroup": 7, "condition": "individual-rl", "targetN": 2, "completedN": 0, "remainingN": 2 },
+    { "ageGroup": 7, "condition": "joint-rl", "targetN": 0, "completedN": 0, "remainingN": 0 },
+    { "ageGroup": 7, "condition": "sa-model", "targetN": 11, "completedN": 0, "remainingN": 11 }
   ]
 }

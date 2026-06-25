@@ -151,9 +151,16 @@ function parseAIConditionQuotaCsv(csvText, baseConfig, csvUrl) {
     const knownConditions = new Set((baseConfig.conditions || []).map(condition => condition.id));
     const quotas = lines.slice(1).map((line, rowIndex) => {
         const cells = parseCsvLine(line);
-        const ageGroup = normalizeAgeGroup(cells[ageGroupIndex]);
+        const rawAgeGroup = String(cells[ageGroupIndex] || '').trim();
         const condition = String(cells[conditionIndex] || '').trim();
-        const neededN = Number(cells[neededNIndex]);
+        const rawNeededN = String(cells[neededNIndex] || '').trim();
+
+        if (!rawAgeGroup && !condition) {
+            return null;
+        }
+
+        const ageGroup = normalizeAgeGroup(rawAgeGroup);
+        const neededN = rawNeededN === '' ? 0 : Number(rawNeededN);
 
         if (!Number.isFinite(ageGroup)) {
             throw new Error(`remote_quota_csv_invalid_age_group_row_${rowIndex + 2}`);
@@ -172,7 +179,11 @@ function parseAIConditionQuotaCsv(csvText, baseConfig, csvUrl) {
             completedN: 0,
             remainingN: Math.max(0, Math.floor(neededN))
         };
-    });
+    }).filter(row => row !== null);
+
+    if (!quotas.length) {
+        throw new Error('remote_quota_csv_no_quota_rows');
+    }
 
     return Object.assign({}, baseConfig, {
         version: `${baseConfig.version || 'quota'}-google-sheet`,

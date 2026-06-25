@@ -462,9 +462,16 @@ function parseStartupAIConditionQuotaCsv(csvText) {
 
     return lines.slice(1).map(function(line, rowIndex) {
         var cells = parseStartupCsvLine(line);
-        var ageGroup = Math.floor(Number(cells[ageGroupIndex]));
+        var rawAgeGroup = String(cells[ageGroupIndex] || '').trim();
         var condition = String(cells[conditionIndex] || '').trim();
-        var neededN = Math.floor(Number(cells[neededNIndex]));
+        var rawNeededN = String(cells[neededNIndex] || '').trim();
+
+        if (!rawAgeGroup && !condition) {
+            return null;
+        }
+
+        var ageGroup = Math.floor(Number(rawAgeGroup));
+        var neededN = rawNeededN === '' ? 0 : Math.floor(Number(rawNeededN));
 
         if (!Number.isFinite(ageGroup)) {
             throw new Error('client_quota_csv_invalid_age_group_row_' + (rowIndex + 2));
@@ -482,6 +489,8 @@ function parseStartupAIConditionQuotaCsv(csvText) {
             neededN: neededN,
             availableN: neededN
         };
+    }).filter(function(row) {
+        return row !== null;
     });
 }
 
