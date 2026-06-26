@@ -552,7 +552,30 @@ function chooseStartupWeightedRow(rows) {
     return rows[rows.length - 1];
 }
 
-function buildClientQuotaAssignmentFromRows(participantId, ageInfo, quotaRows, sourceUrl) {
+function getConfiguredMissingAgeGroupCondition(assignmentConfig) {
+    var conditionId = (assignmentConfig && assignmentConfig.missingAgeGroupCondition) || 'sa-model';
+    if (window.NodeGameConfig && typeof window.NodeGameConfig.getAIConditionConfig === 'function') {
+        return window.NodeGameConfig.getAIConditionConfig(conditionId) || window.NodeGameConfig.getAIConditionConfig('sa-model');
+    }
+    return null;
+}
+
+function isAgeOutsideConfiguredQuotaRows(ageInfo, quotaRows) {
+    var ageGroup = Math.floor(Number(ageInfo && ageInfo.participantAgeYears));
+    if (!Number.isFinite(ageGroup)) {
+        return false;
+    }
+
+    if (!quotaRows || !quotaRows.length) {
+        return ageGroup < 5 || ageGroup > 7;
+    }
+
+    return !quotaRows.some(function(row) {
+        return Number(row.ageGroup) === Number(ageGroup);
+    });
+}
+
+function buildClientQuotaAssignmentFromRows(participantId, ageInfo, quotaRows, sourceUrl, assignmentConfig) {
     var conditions = window.NodeGameConfig && typeof window.NodeGameConfig.getAllAIConditions === 'function'
         ? window.NodeGameConfig.getAllAIConditions()
         : [];
@@ -574,7 +597,14 @@ function buildClientQuotaAssignmentFromRows(participantId, ageInfo, quotaRows, s
     }
 
     if (!candidateRows.length) {
-        candidateRows = conditions.map(function(condition) {
+        var missingAgeGroupCondition = getConfiguredMissingAgeGroupCondition(assignmentConfig);
+        candidateRows = missingAgeGroupCondition ? [{
+            ageGroup: ageGroup,
+            condition: missingAgeGroupCondition.id,
+            neededN: 0,
+            availableN: 0,
+            missingAgeGroup: true
+        }] : conditions.map(function(condition) {
             return {
                 ageGroup: ageGroup,
                 condition: condition.id,
@@ -607,7 +637,9 @@ function buildClientQuotaAssignmentFromRows(participantId, ageInfo, quotaRows, s
         rlAgentType: selectedCondition.rlAgentType,
         analysisCode: selectedCondition.analysisCode,
         status: 'reserved',
-        assignmentStrategy: overflowAssignment ? 'client-weighted-needed+overflow-uniform' : 'client-weighted-needed',
+        assignmentStrategy: overflowReason === 'age_group_missing_from_quota'
+            ? 'client-weighted-needed+missing-age-sa-model'
+            : (overflowAssignment ? 'client-weighted-needed+overflow-uniform' : 'client-weighted-needed'),
         assignmentSource: 'google-sheet-csv-client',
         quotaVersion: 'google-sheet-client',
         quotaSnapshot: rowsForAge.length ? rowsForAge : candidateRows,
@@ -628,7 +660,8 @@ async function buildClientQuotaFallbackAIConditionAssignment(participantId, ageI
             participantId,
             ageInfo,
             quotaRows,
-            clientQuotaCsvConfig && clientQuotaCsvConfig.url
+            clientQuotaCsvConfig && clientQuotaCsvConfig.url,
+            assignmentConfig
         );
         if (quotaAssignment) {
             quotaAssignment.fallbackReason = reason || 'assignment_api_unavailable';
@@ -649,7 +682,24 @@ function buildClientFallbackAIConditionAssignment(participantId, ageInfo, reason
         return null;
     }
 
-    var selectedCondition = conditions[Math.floor(Math.random() * conditions.length)];
+    var quotaRows = null;
+    try {
+        quotaRows = startupAIConditionQuotaCsvCache && startupAIConditionQuotaCsvCache.rows;
+    } catch (error) {
+        quotaRows = null;
+    }
+    var assignmentConfig = window.NodeGameConfig && typeof window.NodeGameConfig.getAIConditionAssignmentConfig === 'function'
+        ? window.NodeGameConfig.getAIConditionAssignmentConfig()
+        : null;
+    var selectedCondition = isAgeOutsideConfiguredQuotaRows(ageInfo, quotaRows)
+        ? getConfiguredMissingAgeGroupCondition(assignmentConfig)
+        : null;
+
+    if (!selectedCondition) {
+        selectedCondition = conditions[Math.floor(Math.random() * conditions.length)];
+    }
+
+    var missingAgeGroupAssignment = selectedCondition && selectedCondition.id === ((assignmentConfig && assignmentConfig.missingAgeGroupCondition) || 'sa-model') && isAgeOutsideConfiguredQuotaRows(ageInfo, quotaRows);
     return {
         assignmentId: 'client_fallback_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8),
         participantId: participantId,
@@ -660,7 +710,7 @@ function buildClientFallbackAIConditionAssignment(participantId, ageInfo, reason
         rlAgentType: selectedCondition.rlAgentType,
         analysisCode: selectedCondition.analysisCode,
         status: 'reserved',
-        assignmentStrategy: 'client-uniform',
+        assignmentStrategy: missingAgeGroupAssignment ? 'client-missing-age-sa-model' : 'client-uniform',
         assignmentSource: 'client-fallback',
         fallbackReason: reason || 'assignment_api_unavailable',
         quotaVersion: 'client-fallback',

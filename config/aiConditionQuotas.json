@@ -2,6 +2,7 @@
   "version": "2026-06-25",
   "assignmentStrategy": "weighted_remaining",
   "zeroNeededFallbackStrategy": "uniform_age_conditions",
+  "missingAgeGroupCondition": "sa-model",
   "remoteQuotaCsv": {
     "enabled": true,
     "url": "https://docs.google.com/spreadsheets/d/e/2PACX-1vS84BtUtiprklXkU-LoOaCjMeb3rzY-Z4a2VQZEOIUy77IUfqtI66V5QYhAZ8bFm9s7kBVohlltMxRy/pub?gid=179376943&single=true&output=csv",

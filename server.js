@@ -87,6 +87,7 @@ function loadLocalAIConditionQuotaConfig() {
         parsed.quotas = Array.isArray(parsed.quotas) ? parsed.quotas : [];
         parsed.assignmentStrategy = parsed.assignmentStrategy || 'weighted_remaining';
         parsed.zeroNeededFallbackStrategy = parsed.zeroNeededFallbackStrategy || 'uniform_age_conditions';
+        parsed.missingAgeGroupCondition = parsed.missingAgeGroupCondition || 'sa-model';
         parsed.quotaSource = 'local-json';
         return parsed;
     } catch (error) {
@@ -95,6 +96,7 @@ function loadLocalAIConditionQuotaConfig() {
             version: 'missing',
             assignmentStrategy: 'uniform',
             zeroNeededFallbackStrategy: 'uniform_age_conditions',
+            missingAgeGroupCondition: 'sa-model',
             quotaSource: 'local-json-missing',
             conditions: [],
             quotas: []
@@ -315,6 +317,15 @@ function getConditionConfig(config, conditionId) {
     };
 }
 
+function getConfiguredCondition(config, conditionId) {
+    return (config.conditions || []).find(condition => condition.id === conditionId) || null;
+}
+
+function getMissingAgeGroupCondition(config) {
+    const conditionId = config.missingAgeGroupCondition || 'sa-model';
+    return getConfiguredCondition(config, conditionId) || getConfiguredCondition(config, 'sa-model');
+}
+
 function getQuotaAvailability(config, assignments, ageGroup) {
     return config.quotas
         .filter(row => Number(row.ageGroup) === Number(ageGroup))
@@ -342,7 +353,12 @@ function getQuotaAvailability(config, assignments, ageGroup) {
 }
 
 function getOverflowAvailabilityForMissingAgeGroup(config, ageGroup) {
-    return (config.conditions || []).map(condition => ({
+    const condition = getMissingAgeGroupCondition(config);
+    if (!condition) {
+        return [];
+    }
+
+    return [{
         ageGroup: Number(ageGroup),
         condition: condition.id,
         targetN: 0,
@@ -351,7 +367,7 @@ function getOverflowAvailabilityForMissingAgeGroup(config, ageGroup) {
         consumedAssignmentsN: 0,
         availableN: 0,
         missingAgeGroup: true
-    }));
+    }];
 }
 
 function chooseQuotaRow(availability, strategy, zeroNeededFallbackStrategy) {
@@ -468,10 +484,13 @@ app.post('/api/assign-ai-condition', async (req, res) => {
         }
 
         const configuredAvailability = getQuotaAvailability(config, assignments, ageGroup);
-        const availability = configuredAvailability.length
+        const missingAgeGroup = configuredAvailability.length === 0;
+        const availability = !missingAgeGroup
             ? configuredAvailability
             : getOverflowAvailabilityForMissingAgeGroup(config, ageGroup);
-        const chosen = chooseQuotaRow(availability, config.assignmentStrategy, config.zeroNeededFallbackStrategy);
+        const chosen = missingAgeGroup && availability.length
+            ? Object.assign({}, availability[0], { overflowAssignment: true })
+            : chooseQuotaRow(availability, config.assignmentStrategy, config.zeroNeededFallbackStrategy);
         if (!chosen) {
             res.status(409).json({
                 ok: false,
@@ -495,7 +514,7 @@ app.post('/api/assign-ai-condition', async (req, res) => {
             analysisCode: conditionConfig.analysisCode,
             status: 'reserved',
             assignmentStrategy: chosen.overflowAssignment
-                ? `${config.assignmentStrategy}+zero-needed-uniform`
+                ? (missingAgeGroup ? `${config.assignmentStrategy}+missing-age-sa-model` : `${config.assignmentStrategy}+zero-needed-uniform`)
                 : config.assignmentStrategy,
             assignmentSource: config.quotaSource || 'local-json',
             quotaVersion: config.version,
@@ -503,7 +522,7 @@ app.post('/api/assign-ai-condition', async (req, res) => {
             remainingBeforeAssignment: chosen.availableN,
             overflowAssignment: chosen.overflowAssignment === true,
             overflowReason: chosen.overflowAssignment === true
-                ? (configuredAvailability.length ? 'all_needed_n_zero_for_age_group' : 'age_group_missing_from_quota')
+                ? (missingAgeGroup ? 'age_group_missing_from_quota' : 'all_needed_n_zero_for_age_group')
                 : null,
             eventId: body.eventId || null,
             stationId: body.stationId || null
