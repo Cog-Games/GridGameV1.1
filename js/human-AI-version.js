@@ -114,7 +114,7 @@ function startStandaloneExperiment(experimentType) {
 
         // Start timeline
         // console.log('Running continuous experiments');
-        runNextStage();
+        if (!window.KidSessionSave || !window.KidSessionSave.offerRecovery()) runNextStage();
 
     } catch (error) {
         console.error('Error starting experiment:', error);
@@ -133,7 +133,9 @@ function runNextStage() {
     var stage = timeline.stages[timeline.currentStage];
     // console.log('Running stage:', stage.type, 'Index:', timeline.currentStage, 'Handler:', stage.handler.name);
 
+    if (window.KidSessionSave) window.KidSessionSave.backup();
     stage.handler(stage);
+    if (window.KidSessionSave && stage.type === 'participant_info') window.KidSessionSave.attachImport();
 }
 
 /**

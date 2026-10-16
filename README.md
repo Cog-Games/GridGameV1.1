@@ -143,31 +143,47 @@ var nTrialsFor2P3G = 2;  // Number of 2P3G trials
 
 This project is for research purposes. Please ensure proper attribution if used in academic work.
 
-## Kid RL/SA Google Drive uploads
+## Kid RL/SA Google Drive checkpoints and recovery
 
-The shared Apps Script now requires `cake-session-upsert-v1`. The kid completion
-flow sends a random session ID and write token, revision, completed status, and
-the existing Excel workbook. The server names files
-`cake_kid_<participantId>_<sessionId>.xlsx` in its configured study folder.
-Local downloads retain their existing `experiment_data_...xlsx` filenames.
+The public kid entry (`index.html`) uses `js/sessionSave.js` and the shared
+`cake-session-upsert-v1` Apps Script protocol. After ID, DOB and condition
+assignment, it creates one session file with status `in_progress`. Each finalized
+trial queues a cumulative workbook update to that same file. Questionnaire
+submission queues the final workbook with status `completed`. The Session sheet
+contains session ID, revision, status and checkpoint reason.
 
-Success requires a readable CORS response confirming the matching protocol,
-session, revision, filename and a nonempty Drive file ID. Network failures and
-server errors keep the completion page open with a retry button; they do not
-advance to completion/redirect. Retries within the open page reuse the session
-identity and update one Drive file. Keep the page open until confirmation; the
-upload identity is held in page memory, not restored after reload.
+The server names files `cake_kid_<participantId>_<sessionId>.xlsx` in its existing
+study folder. A session ID and write token are generated once and persisted.
+Only a matching server acknowledgement confirms an upload. Requests are serialized;
+if several checkpoints arrive during an upload, the next request contains the
+newest cumulative snapshot, including all completed rounds. Failed uploads retry
+on reconnection and every 15 seconds while the page is open.
+
+Before network requests, the app writes a browser localStorage backup containing
+raw data, maps, conditions, progress, session identity and pending upload bytes.
+Stage changes, recorded moves and questionnaire answers also refresh the local
+backup. Reloading offers a saved-session selector and resume button. Completed
+rounds remain intact; an unfinished round restarts, with its partial data retained
+separately in Interrupted Trials. Partial questionnaire answers are restored.
+Starting another participant retains older backups in this browser. The page
+also offers Download backup and a JSON backup import control at startup.
+
+Backups are specific to this browser/origin and may be lost if browser storage is
+cleared. Storage failures are displayed, with a downloadable backup option; they
+are never reported as locally saved. Use one tab per session. Importing an older
+backup when Drive already has a newer revision is not acknowledged as saved.
+Existing pre-checkpoint sessions cannot acquire a backup retroactively.
 
 Validation:
 
-- `node --test tests/google-drive-upload.test.cjs` checks protocol, retries and
-  rejection of errors/mismatched acknowledgements.
-- `node tests/verify-live-drive.cjs --live` requires Playwright and Chromium and
-  explicitly uploads synthetic TEST_ONLY data. It loads the public game with the
-  locally modified timeline, tests browser CORS, duplicate requests, offline
-  failure and retry. Optional `PLAYWRIGHT_MODULE` and `CHROMIUM_EXECUTABLE` select
-  existing installations. Add `--deployed` to test only the publicly served code
-  without injecting the local timeline. It does not deploy the local changes.
-- On 2026-10-16, browser validation passed and Drive readback confirmed the
-  synthetic 2P3G trajectory, SA condition, questionnaire and participant fields:
-  https://docs.google.com/spreadsheets/d/1CWz_-DNusnVN9tE-eJF2UHd_lst_Rx6A/edit
+- `node --test tests/google-drive-upload.test.cjs tests/session-save.test.cjs`
+  checks acknowledgement errors, stable identity, serialized uploads, durable
+  retry and storage-quota failure.
+- `node tests/session-checkpoints.cjs` uses a real browser and mocked Drive:
+  actual startup/trial/questionnaire hooks, offline buffering, reload recovery,
+  mid-trial restart and final completion. Requires Playwright and Chromium;
+  `PLAYWRIGHT_MODULE` and `CHROMIUM_EXECUTABLE` can select existing installations.
+- Add `--live` to upload synthetic TEST_ONLY checkpoints to the real service.
+  Add `--deployed` to use only published source, without local routing overrides.
+- `tests/verify-live-drive.cjs --live [--deployed]` retains the lower-level
+  transport and completion-error/retry validation from the earlier upload fix.

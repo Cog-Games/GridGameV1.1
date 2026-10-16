@@ -1013,6 +1013,7 @@ function showParticipantInfoStage(stage) {
             setSubmitting(true);
             applyStartupParticipantInfo(participantId, ageInfo);
             await assignAIConditionForParticipant(participantId, ageInfo);
+            if (window.KidSessionSave) window.KidSessionSave.begin();
             nextStage();
         } catch (error) {
             console.error('Unable to assign AI condition:', error);
@@ -1720,8 +1721,8 @@ function showQuestionnaireStage(stage) {
             }
         ];
 
-        var answers = {};
-        var qIndex = 0;
+        var answers = gameData.questionnaireDraft || {};
+        var qIndex = Math.min(Object.keys(answers).length, questions.length - 1);
         var selIndex = 2; // default to middle
 
         function renderQuestion() {
@@ -1745,7 +1746,7 @@ function showQuestionnaireStage(stage) {
                 <div style=\"display:flex; align-items:center; justify-content:center; min-height:100vh; background:#f8f9fa; padding:20px;\">\n                    <div style=\"background:white; padding:32px; border-radius:16px; box-shadow:0 10px 25px rgba(0,0,0,0.1); width:100%; max-width:720px;\">\n                        <div style=\"text-align:center; margin-bottom:12px; color:#6b7280; font-weight:600;\">📋 Post-Game Questionnaire</div>\n                        <div style=\"text-align:center; margin-bottom:8px; color:#6b7280; font-weight:600;\">${q.title}</div>\n                        <h2 style=\"text-align:center; margin:8px 0 20px; color:#111827;\">${q.prompt}</h2>\n                        <div style=\"margin-bottom:16px; text-align:center; color:#6b7280;\">Use ↑ ↓ to choose, press Space to confirm</div>\n                        <div id=\"options\" style=\"display:flex; flex-direction:column;\">${optionsHtml}</div>\n                    </div>\n                </div>`;
         }
 
-        function handleKeys(e) {
+        async function handleKeys(e) {
             if (e.code === 'ArrowUp' || e.key === 'ArrowUp') {
                 e.preventDefault();
                 selIndex = Math.max(0, selIndex - 1);
@@ -1757,6 +1758,8 @@ function showQuestionnaireStage(stage) {
             } else if (e.code === 'Space' || e.key === ' ') {
                 e.preventDefault();
                 answers[questions[qIndex].name] = questions[qIndex].options[selIndex];
+                gameData.questionnaireDraft = answers;
+                if (window.KidSessionSave) window.KidSessionSave.backup();
                 if (qIndex < questions.length - 1) {
                     qIndex += 1;
                     selIndex = 2;
@@ -1764,6 +1767,8 @@ function showQuestionnaireStage(stage) {
                 } else {
                     document.removeEventListener('keydown', handleKeys);
                     gameData.questionnaireData = answers;
+                    await completeAssignedAIConditionAssignment();
+                    if (window.KidSessionSave) window.KidSessionSave.checkpoint('questionnaire_complete', timeline.currentStage + 1);
                     nextStage();
                 }
             }
@@ -1966,7 +1971,7 @@ function showQuestionnaireStage(stage) {
     });
 
     // Handle form submission
-    document.getElementById('questionnaireForm').addEventListener('submit', function (e) {
+    document.getElementById('questionnaireForm').addEventListener('submit', async function (e) {
         e.preventDefault();
 
         var formData = new FormData(this);
@@ -1978,6 +1983,8 @@ function showQuestionnaireStage(stage) {
 
         // Store questionnaire data
         gameData.questionnaireData = questionnaireData;
+        await completeAssignedAIConditionAssignment();
+        if (window.KidSessionSave) window.KidSessionSave.checkpoint('questionnaire_complete', timeline.currentStage + 1);
 
         // Proceed to next stage
         nextStage();
@@ -1988,6 +1995,7 @@ function showQuestionnaireStage(stage) {
  * Show end experiment info stage (matching testExpWithAI.js)
  */
 function showEndExperimentInfoStage(stage) {
+    if (window.KidSessionSave && window.KidSessionSave.getRecord()) { showLocalCompletionStage(); return; }
     var container = document.getElementById('container');
 
     // Exit fullscreen mode when experiment ends
@@ -2109,6 +2117,23 @@ function showProlificRedirectStage(stage) {
 }
 
 async function showLocalCompletionStage() {
+    if (window.KidSessionSave && window.KidSessionSave.getRecord()) {
+        var container = document.getElementById('container');
+        container.textContent = 'Saving your completed session… Please keep this page open.';
+        var saved = window.KidSessionSave.getRecord();
+        var workbook = buildSessionWorkbook(gameData.allTrialsData, gameData.questionnaireData);
+        downloadExcelFileLocally(workbook, 'experiment_data_' + saved.sessionId + '.xlsx', {silent:true});
+        var result = await window.KidSessionSave.flush();
+        var latest = window.KidSessionSave.getRecord();
+        if (result.savedToDrive && latest.ackRevision >= latest.revision && latest.sessionStatus === 'completed') {
+            container.textContent = window.KidSessionSave.locallySaved()
+                ? 'Session complete. Your data is saved on this device and Google Drive. You may close this window.'
+                : 'Session complete. Google Drive confirmed saving. Local backup is unavailable; retain your downloaded Excel file.';
+        } else {
+            showDriveUploadFailure(new Error('Your backup is on this device; the final Drive save is not confirmed.'), showLocalCompletionStage);
+        }
+        return;
+    }
     var container = document.getElementById('container');
     var participantId = window.DataRecording ? (window.DataRecording.getParticipantId() || 'participant') : 'participant';
     var safeParticipantId = participantId.replace(/[^a-zA-Z0-9_-]/g, '_');
@@ -2415,15 +2440,16 @@ function arrayBufferToBase64(arrayBuffer) {
 var googleDriveUploadSession = null;
 
 /** Upload Excel and require a matching server acknowledgement before success. */
-async function uploadWorkbookToGoogleDrive(workbook, filename) {
+async function uploadWorkbookToGoogleDrive(workbook, filename, options) {
+    options = options || {};
     var controller = new AbortController();
     var timeout = setTimeout(function() { controller.abort(); }, 60000);
     try {
         if (typeof XLSX === 'undefined') throw new Error('XLSX not available');
         var endpoint = 'https://script.google.com/macros/s/AKfycbyfQ-XKsoFbmQZGM7c741rEXh2ZUpVK-uUIu9ycooXKnaxM5-hRSzIUhQ-uWZ668Qql/exec';
         var protocol = 'cake-session-upsert-v1';
-        var filedata = XLSX.write(workbook, { bookType: 'xlsx', type: 'base64', compression: true });
-        if (!googleDriveUploadSession) {
+        var filedata = options.filedata || XLSX.write(workbook, { bookType: 'xlsx', type: 'base64', compression: true });
+        if (!options.session && !googleDriveUploadSession) {
             function randomToken() {
                 return Array.from(crypto.getRandomValues(new Uint8Array(16)), function(value) {
                     return value.toString(16).padStart(2, '0');
@@ -2436,13 +2462,13 @@ async function uploadWorkbookToGoogleDrive(workbook, filename) {
                     .replace(/[^A-Za-z0-9@._+-]/g, '_').slice(0, 254)
             };
         }
-        var session = googleDriveUploadSession;
-        if (session.filedata !== filedata) {
+        var session = options.session || googleDriveUploadSession;
+        if (!options.session && session.filedata !== filedata) {
             session.revision += 1;
             session.filedata = filedata;
         }
         // Capture revision for this request even if another upload starts later.
-        var revision = session.revision;
+        var revision = options.revision || session.revision;
         var expectedFilename = 'cake_' + session.filenameLabel + '_' + session.sessionId + '.xlsx';
         var check = await fetch(endpoint, {
             method: 'GET', mode: 'cors', credentials: 'omit', signal: controller.signal
@@ -2456,7 +2482,7 @@ async function uploadWorkbookToGoogleDrive(workbook, filename) {
             body: new URLSearchParams({
                 protocol: protocol, filename: expectedFilename, filenameLabel: session.filenameLabel,
                 filedata: filedata, filetype: 'excel', sessionId: session.sessionId,
-                writeToken: session.writeToken, revision: String(revision), sessionStatus: 'completed'
+                writeToken: session.writeToken, revision: String(revision), sessionStatus: options.sessionStatus || 'completed'
             })
         });
         if (!response.ok) throw new Error('Google Drive returned HTTP ' + response.status);
@@ -2466,7 +2492,7 @@ async function uploadWorkbookToGoogleDrive(workbook, filename) {
         }
         if (ack.protocol !== protocol || ack.sessionId !== session.sessionId ||
             ack.revision !== revision || !Number.isSafeInteger(ack.storedRevision) ||
-            ack.storedRevision < revision || ack.fileName !== expectedFilename ||
+            ack.storedRevision < revision || (options.session && ack.storedRevision !== revision) || ack.fileName !== expectedFilename ||
             typeof ack.fileId !== 'string' || !ack.fileId.trim()) {
             throw new Error('Google Drive did not confirm this session and revision.');
         }

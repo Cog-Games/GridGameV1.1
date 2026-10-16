@@ -352,6 +352,7 @@ function recordPlayer1Move(action, reactionTime) {
     gameData.currentTrialData.player1Actions.push(action);
     gameData.currentTrialData.player1RT.push(reactionTime);
     gameData.currentTrialData.player1Trajectory.push([...gameData.player1]);
+    if (window.KidSessionSave) window.KidSessionSave.backup();
 }
 
 /**
@@ -366,6 +367,7 @@ function recordPlayer2Move(action, reactionTime = null) {
     // Record the trajectory after the move (new position)
     // This will be called after the player2 position is updated
     gameData.currentTrialData.player2Trajectory.push([...gameData.player2]);
+    if (window.KidSessionSave) window.KidSessionSave.backup();
 }
 
 /**
@@ -409,6 +411,7 @@ function finalizeTrial(completed) {
     gameData.currentTrialData.aiConditionAssignment = gameData.aiConditionAssignment || null;
 
     gameData.allTrialsData.push({...gameData.currentTrialData});
+    if (window.KidSessionSave) window.KidSessionSave.checkpoint('trial_complete', timeline.currentStage + 1);
 
     // Reset movement flags to prevent issues in next trial
     timeline.isMoving = false;
