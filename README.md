@@ -142,3 +142,32 @@ var nTrialsFor2P3G = 2;  // Number of 2P3G trials
 ## License
 
 This project is for research purposes. Please ensure proper attribution if used in academic work.
+
+## Kid RL/SA Google Drive uploads
+
+The shared Apps Script now requires `cake-session-upsert-v1`. The kid completion
+flow sends a random session ID and write token, revision, completed status, and
+the existing Excel workbook. The server names files
+`cake_kid_<participantId>_<sessionId>.xlsx` in its configured study folder.
+Local downloads retain their existing `experiment_data_...xlsx` filenames.
+
+Success requires a readable CORS response confirming the matching protocol,
+session, revision, filename and a nonempty Drive file ID. Network failures and
+server errors keep the completion page open with a retry button; they do not
+advance to completion/redirect. Retries within the open page reuse the session
+identity and update one Drive file. Keep the page open until confirmation; the
+upload identity is held in page memory, not restored after reload.
+
+Validation:
+
+- `node --test tests/google-drive-upload.test.cjs` checks protocol, retries and
+  rejection of errors/mismatched acknowledgements.
+- `node tests/verify-live-drive.cjs --live` requires Playwright and Chromium and
+  explicitly uploads synthetic TEST_ONLY data. It loads the public game with the
+  locally modified timeline, tests browser CORS, duplicate requests, offline
+  failure and retry. Optional `PLAYWRIGHT_MODULE` and `CHROMIUM_EXECUTABLE` select
+  existing installations. Add `--deployed` to test only the publicly served code
+  without injecting the local timeline. It does not deploy the local changes.
+- On 2026-10-16, browser validation passed and Drive readback confirmed the
+  synthetic 2P3G trajectory, SA condition, questionnaire and participant fields:
+  https://docs.google.com/spreadsheets/d/1CWz_-DNusnVN9tE-eJF2UHd_lst_Rx6A/edit

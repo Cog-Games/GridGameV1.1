@@ -2236,7 +2236,7 @@ async function showLocalCompletionStage() {
         updateStatus('✅ Excel saved locally.<br>✅ Excel uploaded to Google Drive.<br><strong>You may close this window.</strong>', '#28a745');
     } catch (error) {
         console.error('Failed to save session data:', error);
-        updateStatus('Error saving data: ' + (error.message || error), '#dc3545');
+        showDriveUploadFailure(error, showLocalCompletionStage);
     }
 }
 
@@ -2357,7 +2357,9 @@ async function sendExcelToGoogleDrive(experimentData, questionnaireData, filenam
         }
 
         if (!options.skipNextStage) {
-            nextStage();
+            showDriveUploadFailure(error, function() {
+                sendExcelToGoogleDrive(experimentData, questionnaireData, filename, options);
+            });
         }
     }
 }
@@ -2409,45 +2411,94 @@ function arrayBufferToBase64(arrayBuffer) {
     return btoa(binary);
 }
 
-/**
- * Upload an existing workbook to Google Drive (Apps Script endpoint).
- * Does not change timeline stages; resolves best-effort under no-cors.
- * @param {Object} workbook - XLSX workbook object
- * @param {string} filename - Target filename on Drive
- * @returns {Promise<{savedToDrive:boolean,error?:any}>}
- */
-function uploadWorkbookToGoogleDrive(workbook, filename) {
-    return new Promise(function(resolve) {
-        try {
-            if (typeof XLSX === 'undefined') {
-                console.error('XLSX library not found.');
-                resolve({ savedToDrive: false, error: new Error('XLSX not available') });
-                return;
+// One identity per page/session. Retries update the same Drive file.
+var googleDriveUploadSession = null;
+
+/** Upload Excel and require a matching server acknowledgement before success. */
+async function uploadWorkbookToGoogleDrive(workbook, filename) {
+    var controller = new AbortController();
+    var timeout = setTimeout(function() { controller.abort(); }, 60000);
+    try {
+        if (typeof XLSX === 'undefined') throw new Error('XLSX not available');
+        var endpoint = 'https://script.google.com/macros/s/AKfycbyfQ-XKsoFbmQZGM7c741rEXh2ZUpVK-uUIu9ycooXKnaxM5-hRSzIUhQ-uWZ668Qql/exec';
+        var protocol = 'cake-session-upsert-v1';
+        var filedata = XLSX.write(workbook, { bookType: 'xlsx', type: 'base64', compression: true });
+        if (!googleDriveUploadSession) {
+            function randomToken() {
+                return Array.from(crypto.getRandomValues(new Uint8Array(16)), function(value) {
+                    return value.toString(16).padStart(2, '0');
+                }).join('');
             }
-
-            const wbout = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-            const base64String = arrayBufferToBase64(wbout);
-
-            const formData = new FormData();
-            formData.append('filename', filename);
-            formData.append('filedata', base64String);
-            formData.append('filetype', 'excel');
-
-            fetch("https://script.google.com/macros/s/AKfycbyfQ-XKsoFbmQZGM7c741rEXh2ZUpVK-uUIu9ycooXKnaxM5-hRSzIUhQ-uWZ668Qql/exec", {
-                method: 'POST',
-                mode: 'no-cors',
-                body: formData
-            }).then(function() {
-                resolve({ savedToDrive: true });
-            }).catch(function(error) {
-                console.error('Google Drive upload error:', error);
-                resolve({ savedToDrive: false, error: error });
-            });
-        } catch (error) {
-            console.error('Failed to upload workbook to Google Drive:', error);
-            resolve({ savedToDrive: false, error: error });
+            googleDriveUploadSession = {
+                sessionId: randomToken(), writeToken: randomToken(), revision: 0,
+                filedata: null,
+                filenameLabel: ('kid_' + (gameData.participantId || 'participant'))
+                    .replace(/[^A-Za-z0-9@._+-]/g, '_').slice(0, 254)
+            };
         }
-    });
+        var session = googleDriveUploadSession;
+        if (session.filedata !== filedata) {
+            session.revision += 1;
+            session.filedata = filedata;
+        }
+        // Capture revision for this request even if another upload starts later.
+        var revision = session.revision;
+        var expectedFilename = 'cake_' + session.filenameLabel + '_' + session.sessionId + '.xlsx';
+        var check = await fetch(endpoint, {
+            method: 'GET', mode: 'cors', credentials: 'omit', signal: controller.signal
+        });
+        var capability = check.ok ? await check.json() : null;
+        if (!capability || capability.protocol !== protocol) {
+            throw new Error('Google Drive upload service has an incompatible protocol.');
+        }
+        var response = await fetch(endpoint, {
+            method: 'POST', mode: 'cors', credentials: 'omit', signal: controller.signal,
+            body: new URLSearchParams({
+                protocol: protocol, filename: expectedFilename, filenameLabel: session.filenameLabel,
+                filedata: filedata, filetype: 'excel', sessionId: session.sessionId,
+                writeToken: session.writeToken, revision: String(revision), sessionStatus: 'completed'
+            })
+        });
+        if (!response.ok) throw new Error('Google Drive returned HTTP ' + response.status);
+        var ack = await response.json();
+        if (!ack || ack.status !== 'success') {
+            throw new Error((ack && ack.message) || 'Google Drive did not confirm saving.');
+        }
+        if (ack.protocol !== protocol || ack.sessionId !== session.sessionId ||
+            ack.revision !== revision || !Number.isSafeInteger(ack.storedRevision) ||
+            ack.storedRevision < revision || ack.fileName !== expectedFilename ||
+            typeof ack.fileId !== 'string' || !ack.fileId.trim()) {
+            throw new Error('Google Drive did not confirm this session and revision.');
+        }
+        return { savedToDrive: true, fileId: ack.fileId, fileName: ack.fileName,
+            sessionId: session.sessionId, revision: revision };
+    } catch (error) {
+        console.error('Google Drive upload not confirmed:', error);
+        return { savedToDrive: false, error: error };
+    } finally {
+        clearTimeout(timeout);
+    }
+}
+
+// Keep failures visible and let the participant retry without leaving the page.
+function showDriveUploadFailure(error, retry) {
+    var container = document.getElementById('container');
+    container.innerHTML = '';
+    var panel = document.createElement('div');
+    panel.style.cssText = 'max-width:600px;margin:60px auto;padding:32px;background:white;text-align:center';
+    var message = document.createElement('p');
+    message.textContent = 'Google Drive upload has NOT been confirmed. Keep this page open and retain your downloaded Excel file. ' +
+        (error && error.message ? error.message : 'Please retry.');
+    var button = document.createElement('button');
+    button.textContent = 'Retry Google Drive upload';
+    button.onclick = function() {
+        button.disabled = true;
+        button.textContent = 'Saving…';
+        retry();
+    };
+    panel.appendChild(message);
+    panel.appendChild(button);
+    container.appendChild(panel);
 }
 
 /**
