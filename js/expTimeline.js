@@ -2119,6 +2119,7 @@ function showProlificRedirectStage(stage) {
 async function showLocalCompletionStage() {
     if (window.KidSessionSave && window.KidSessionSave.getRecord()) {
         var container = document.getElementById('container');
+        container.dataset.kidCompletion = 'true';
         container.textContent = 'Saving your completed session… Please keep this page open.';
         var saved = window.KidSessionSave.getRecord();
         var workbook = buildSessionWorkbook(gameData.allTrialsData, gameData.questionnaireData);

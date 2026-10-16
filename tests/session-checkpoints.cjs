@@ -6,6 +6,7 @@ const live=process.argv.includes('--live'), deployed=process.argv.includes('--de
  const browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_EXECUTABLE || undefined});
  try {
   const page=await browser.newPage();
+  page.on('console', m=>{if(m.type()==='error' && /Google Drive|CORS|Failed to fetch/.test(m.text())) console.log('browser-upload-error:',m.text());});
   const acknowledgements=[], requests=[];
   if(!deployed) await page.route('https://cog-games.github.io/GridGameV1.1/**',async route=>{
    const path=new URL(route.request().url()).pathname.replace('/GridGameV1.1/','') || 'index.html';
@@ -32,7 +33,17 @@ const live=process.argv.includes('--live'), deployed=process.argv.includes('--de
   await page.locator('#dobYear').selectOption('2018'); await page.locator('#dobMonth').selectOption('1'); await page.locator('#dobDay').selectOption('1');
   await page.locator('#participantInfoContinueBtn').click();
   await page.waitForFunction(()=>window.KidSessionSave?.getRecord()?.revision===1);
-  let r=await page.evaluate(async()=>{await KidSessionSave.flush();return KidSessionSave.getRecord()});
+  async function syncConfirmed() {
+   let state;
+   for(let attempt=0;attempt<(live?4:1);attempt++) {
+    state=await page.evaluate(async()=>{await KidSessionSave.flush();return KidSessionSave.getRecord()});
+    if(state.ackRevision>=state.revision) return state;
+    console.log('Save not yet confirmed; retaining the same session and retrying.');
+    if(live) await page.waitForTimeout(15000);
+   }
+   return state;
+  }
+  let r=await syncConfirmed();
   assert.equal(r.ackRevision,1);assert.equal(r.sessionStatus,'in_progress');const id=r.sessionId,fileId=r.fileId;
   console.log('start',JSON.stringify({sessionId:id,fileId}));
   async function round(n){return page.evaluate(async n=>{
@@ -41,8 +52,8 @@ const live=process.argv.includes('--live'), deployed=process.argv.includes('--de
    gameData.currentTrialData={trialIndex:n,experimentType:'1P1G',trialStartTime:Date.now()-1000,validationOnly:true,player1Trajectory:[[1,1],[1,2]],player2Trajectory:[],player1Actions:['right'],player1RT:[100]};
    DataRecording.finalizeTrial(true);await KidSessionSave.flush();return KidSessionSave.getRecord();
   },n)}
-  r=await round(0);assert.equal(r.ackRevision,2);assert.equal(r.fileId,fileId);
-  r=await round(1);assert.equal(r.ackRevision,3);assert.equal(r.snapshot.gameData.allTrialsData.length,2);
+  r=await round(0);if(live && r.ackRevision<r.revision) r=await syncConfirmed();assert.equal(r.ackRevision,2);assert.equal(r.fileId,fileId);
+  r=await round(1);if(live && r.ackRevision<r.revision) r=await syncConfirmed();assert.equal(r.ackRevision,3);assert.equal(r.snapshot.gameData.allTrialsData.length,2);
   offline=true;r=await round(2);assert.equal(r.revision,4);assert.equal(r.ackRevision,3);
   await page.evaluate(()=>{timeline.currentStage=timeline.stages.findIndex(s=>s.type==='questionnaire');gameData.questionnaireDraft={ai_detection:'Probably a computer'};KidSessionSave.backup();});
   await page.reload({waitUntil:'networkidle'});
@@ -51,14 +62,28 @@ const live=process.argv.includes('--live'), deployed=process.argv.includes('--de
   assert.equal(await page.locator('#container').innerText().then(t=>t.includes('collaborate')),true);
   offline=false;
   r=await page.evaluate(async()=>{window.dispatchEvent(new Event('online'));await KidSessionSave.flush();return KidSessionSave.getRecord();});
+  if(live && r.ackRevision<4) r=await syncConfirmed();
   assert.equal(r.ackRevision,4);assert.equal(r.fileId,fileId);assert.equal(r.sessionStatus,'in_progress');
   // Complete the remaining questionnaire pages through their real key handlers.
+  if(!live) offline=true;
   await page.keyboard.press('Space');await page.keyboard.press('Space');
   await page.waitForFunction(()=>KidSessionSave.getRecord().sessionStatus==='completed');
   r=await page.evaluate(async()=>{await KidSessionSave.flush();return KidSessionSave.getRecord();});
+  if(!live) {
+   assert.equal(r.ackRevision,4);
+   await page.getByRole('button',{name:'Retry Google Drive upload'}).waitFor();
+   offline=false;
+   r=await page.evaluate(async()=>{window.dispatchEvent(new Event('online'));await KidSessionSave.flush();return KidSessionSave.getRecord();});
+  }
+  if(live && r.ackRevision < 5) {
+   console.log('Final response was not confirmed; testing the visible retry action.');
+   await page.getByRole('button',{name:'Retry Google Drive upload'}).click();
+   r=await syncConfirmed();
+  }
   assert.equal(r.ackRevision,5);assert.equal(r.fileId,fileId);assert.equal(r.snapshot.gameData.allTrialsData.length,3);
   assert.equal(Object.keys(r.snapshot.gameData.questionnaireData).length,3);
-  await page.waitForFunction(()=>document.querySelector('#container').textContent.includes('You may close this window'));
+  console.log('completion-ui', await page.locator('#container').innerText());
+  await page.waitForFunction(()=>document.querySelector('#container').textContent.includes('You may close this window'), {}, {timeout:15000});
   if(!live) {
    assert.deepEqual(requests.map(p=>p.sessionStatus),['in_progress','in_progress','in_progress','in_progress','completed']);
    assert.deepEqual(requests.map(p=>+p.revision),[1,2,3,4,5]);

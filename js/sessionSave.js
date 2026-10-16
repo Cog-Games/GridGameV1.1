@@ -16,6 +16,13 @@
     }
     function status() {
         if (!record) return;
+        var completion = document.getElementById('container');
+        if (completion && completion.dataset && completion.dataset.kidCompletion === 'true' &&
+            record.sessionStatus === 'completed' && record.ackRevision >= record.revision) {
+            completion.textContent = storageError
+                ? 'Session complete. Google Drive confirmed saving. Local backup is unavailable; retain your downloaded Excel file.'
+                : 'Session complete. Your data is saved on this device and Google Drive. You may close this window.';
+        }
         var node = document.getElementById('sessionSaveStatus');
         if (!node) {
             node = document.createElement('div'); node.id = 'sessionSaveStatus';
