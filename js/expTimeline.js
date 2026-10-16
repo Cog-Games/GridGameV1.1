@@ -2475,13 +2475,13 @@ async function uploadWorkbookToGoogleDrive(workbook, filename, options) {
             method: 'GET', mode: 'cors', credentials: 'omit', signal: controller.signal
         });
         var capability = check.ok ? await check.json() : null;
-        if (!capability || capability.protocol !== protocol) {
+        if (!capability || capability.protocol !== protocol || capability.kidFolderId !== '1ZfsdDJgtBYv6iZz7o4tDPVK0drrORYS8') {
             throw new Error('Google Drive upload service has an incompatible protocol.');
         }
         var response = await fetch(endpoint, {
             method: 'POST', mode: 'cors', credentials: 'omit', signal: controller.signal,
             body: new URLSearchParams({
-                protocol: protocol, filename: expectedFilename, filenameLabel: session.filenameLabel,
+                studyId: 'kid-rl-sa', protocol: protocol, filename: expectedFilename, filenameLabel: session.filenameLabel,
                 filedata: filedata, filetype: 'excel', sessionId: session.sessionId,
                 writeToken: session.writeToken, revision: String(revision), sessionStatus: options.sessionStatus || 'completed'
             })
@@ -2491,7 +2491,7 @@ async function uploadWorkbookToGoogleDrive(workbook, filename, options) {
         if (!ack || ack.status !== 'success') {
             throw new Error((ack && ack.message) || 'Google Drive did not confirm saving.');
         }
-        if (ack.protocol !== protocol || ack.sessionId !== session.sessionId ||
+        if (ack.folderId !== '1ZfsdDJgtBYv6iZz7o4tDPVK0drrORYS8' || ack.protocol !== protocol || ack.sessionId !== session.sessionId ||
             ack.revision !== revision || !Number.isSafeInteger(ack.storedRevision) ||
             ack.storedRevision < revision || (options.session && ack.storedRevision !== revision) || ack.fileName !== expectedFilename ||
             typeof ack.fileId !== 'string' || !ack.fileId.trim()) {

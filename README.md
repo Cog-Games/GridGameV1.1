@@ -152,8 +152,14 @@ trial queues a cumulative workbook update to that same file. Questionnaire
 submission queues the final workbook with status `completed`. The Session sheet
 contains session ID, revision, status and checkpoint reason.
 
-The server names files `cake_kid_<participantId>_<sessionId>.xlsx` in its existing
-study folder. A session ID and write token are generated once and persisted.
+The server names files `cake_kid_<participantId>_<sessionId>.xlsx` in `testExp1 / Kid RL-SA Experiment Data`:
+https://drive.google.com/drive/folders/1ZfsdDJgtBYv6iZz7o4tDPVK0drrORYS8
+
+The shared Apps Script routes kid labels (including older kid clients) to that
+folder and keeps other studies in their existing folder. Existing kid workbooks
+retain their file IDs during migration. The client checks the acknowledged folder
+ID as well as session and revision. Server source is in
+`server/google-apps-script/Code.gs`; web-app deployment version 7 enables routing. A session ID and write token are generated once and persisted.
 Only a matching server acknowledgement confirms an upload. Requests are serialized;
 if several checkpoints arrive during an upload, the next request contains the
 newest cumulative snapshot, including all completed rounds. Failed uploads retry
@@ -166,11 +172,13 @@ backup. Reloading offers a saved-session selector and resume button. Completed
 rounds remain intact; an unfinished round restarts, with its partial data retained
 separately in Interrupted Trials. Partial questionnaire answers are restored.
 Starting another participant retains older backups in this browser. The page
-also offers Download backup and a JSON backup import control at startup.
+keeps backup status and download controls hidden during gameplay. JSON backup
+import remains available at startup, and the administrator can export a backup
+using `KidSessionSave.downloadBackup()` when needed.
 
 Backups are specific to this browser/origin and may be lost if browser storage is
-cleared. Storage failures are displayed, with a downloadable backup option; they
-are never reported as locally saved. Use one tab per session. Importing an older
+cleared. Local storage failures are never reported as locally saved on the completion
+page. Automatic backup and upload retry run without a floating status strip. Use one tab per session. Importing an older
 backup when Drive already has a newer revision is not acknowledged as saved.
 Existing pre-checkpoint sessions cannot acquire a backup retroactively.
 
@@ -187,3 +195,5 @@ Validation:
   Add `--deployed` to use only published source, without local routing overrides.
 - `tests/verify-live-drive.cjs --live [--deployed]` retains the lower-level
   transport and completion-error/retry validation from the earlier upload fix.
+
+Server routing regression: `node tests/drive-folder-routing.test.mjs`.

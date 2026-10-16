@@ -23,17 +23,8 @@
                 ? 'Session complete. Google Drive confirmed saving. Local backup is unavailable; retain your downloaded Excel file.'
                 : 'Session complete. Your data is saved on this device and Google Drive. You may close this window.';
         }
-        var node = document.getElementById('sessionSaveStatus');
-        if (!node) {
-            node = document.createElement('div'); node.id = 'sessionSaveStatus';
-            node.style.cssText = 'position:fixed;bottom:0;left:0;background:white;padding:6px 12px;font:13px sans-serif;z-index:10000';
-            node.setAttribute('role', 'status'); document.body.appendChild(node);
-        }
-        node.textContent = storageError ? 'Local backup unavailable. Keep this page open and download a backup. ' :
-            record.ackRevision >= record.revision ? 'Saved on this device and Google Drive. ' :
-            'Saved on this device. Google Drive update pending; reconnect to sync. ';
-        var button = document.createElement('button'); button.textContent = 'Download backup';
-        button.onclick = downloadBackup; node.appendChild(button);
+        // Keep automatic backups silent during the experiment.
+
     }
     function snapshot() {
         return {

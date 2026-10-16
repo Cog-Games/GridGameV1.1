@@ -10,9 +10,9 @@ function harness(change = x => x) {
   const context = { crypto: webcrypto, Uint8Array, URLSearchParams, AbortController, setTimeout, clearTimeout,
     console: { error() {} }, gameData: { participantId: 'TEST_ONLY' },
     XLSX: { write: wb => wb.bytes }, fetch: async (url, options) => {
-      if (options.method === 'GET') return { ok: true, json: async () => ({ protocol: 'cake-session-upsert-v1' }) };
+      if (options.method === 'GET') return { ok: true, json: async () => ({ kidFolderId:'1ZfsdDJgtBYv6iZz7o4tDPVK0drrORYS8', protocol: 'cake-session-upsert-v1' }) };
       const p = Object.fromEntries(options.body); posts.push(p);
-      return { ok: true, json: async () => change({ status: 'success', protocol: p.protocol,
+      return { ok: true, json: async () => change({ status: 'success', folderId:'1ZfsdDJgtBYv6iZz7o4tDPVK0drrORYS8', protocol: p.protocol,
         sessionId: p.sessionId, revision: Number(p.revision), storedRevision: Number(p.revision),
         fileName: p.filename, fileId: 'test-drive-file' }) };
     } };
@@ -36,6 +36,7 @@ for (const [name, change] of Object.entries({
   'stale stored revision': a => ({ ...a, storedRevision: 0 }),
   'missing file ID': a => ({ ...a, fileId: '' }),
   'wrong filename': a => ({ ...a, fileName: 'wrong.xlsx' }),
+  'wrong folder': a => ({ ...a, folderId: 'other-study' }),
   'wrong protocol': a => ({ ...a, protocol: 'old' }),
   'empty acknowledgement': () => null
 })) test('rejects ' + name, async () => assert.equal((await harness(change).upload({ bytes: 'data' })).savedToDrive, false));

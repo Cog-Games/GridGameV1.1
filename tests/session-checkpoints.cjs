@@ -18,11 +18,11 @@ const live=process.argv.includes('--live'), deployed=process.argv.includes('--de
   await page.route('https://script.google.com/**',async route=>{
    if(offline) return route.abort();
    if(live) return route.continue();
-   if(route.request().method()==='GET') return route.fulfill({json:{protocol:'cake-session-upsert-v1'}});
+   if(route.request().method()==='GET') return route.fulfill({json:{kidFolderId:'1ZfsdDJgtBYv6iZz7o4tDPVK0drrORYS8', protocol:'cake-session-upsert-v1'}});
    const p=Object.fromEntries(new URLSearchParams(route.request().postData())); requests.push(p);
    if(saved) assert.equal(p.sessionId,saved.sessionId);
    saved=p;
-   const ack={status:'success',protocol:p.protocol,sessionId:p.sessionId,revision:+p.revision,storedRevision:+p.revision,fileId:'mock-file',fileName:`cake_${p.filenameLabel}_${p.sessionId}.xlsx`};
+   const ack={status:'success',folderId:'1ZfsdDJgtBYv6iZz7o4tDPVK0drrORYS8',protocol:p.protocol,sessionId:p.sessionId,revision:+p.revision,storedRevision:+p.revision,fileId:'mock-file',fileName:`cake_${p.filenameLabel}_${p.sessionId}.xlsx`};
    acknowledgements.push(ack); await route.fulfill({json:ack});
   });
   if(live) page.on('response',async response=>{
@@ -44,6 +44,8 @@ const live=process.argv.includes('--live'), deployed=process.argv.includes('--de
    return state;
   }
   let r=await syncConfirmed();
+  assert.equal(await page.locator('#sessionSaveStatus').count(),0);
+  assert.equal(await page.getByRole('button',{name:'Download backup',exact:true}).count(),0);
   assert.equal(r.ackRevision,1);assert.equal(r.sessionStatus,'in_progress');const id=r.sessionId,fileId=r.fileId;
   console.log('start',JSON.stringify({sessionId:id,fileId}));
   async function round(n){return page.evaluate(async n=>{
